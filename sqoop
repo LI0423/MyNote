@@ -1,0 +1,71 @@
+Sqoop
+
+1.列出mysql数据库
+    sqoop list-databases \
+
+2.列出指定数据库中的表
+    sqoop list-tables \
+
+3.创建一张与mysql一样的表
+    sqoop create-hive-table \
+    --connect jdbc:mysql://localhost:3306/mysql \
+    --username root \
+    --password root \
+    --table tableName \
+    --hive-table hk
+
+4.导入mysql中表的数据到指定表
+    sqoop import \
+    --connect jdbc:mysql://localhost:3306/mysql \
+    --username root \
+    --password root \
+    --table tableName
+    -m 1
+
+    (1)指定分隔符和导入路径
+    --target-dir /user/hadoop/my_table  \
+    --fields-terminated-by '\t'  \
+    -m 2
+
+    (2)带where条件
+    --where “name = 'xxx'”
+
+    (3)查询指定列
+    --columns "name"
+
+    (4)指定自定义查询sql
+    --query 'select .... from ... where ... '       指定语句必须有where条件
+
+5.mysql数据导入hive
+    sqoop import \
+    --connect ... \
+    --username ... \
+    --password ... \
+    --table table \
+    --hive-import \
+    -m 1
+
+    导入过程:
+    第一步：导入mysql.help_keyword的数据到hdfs的默认路径
+    第二步：自动仿造mysql.help_keyword去创建一张hive表, 创建在默认的default库中
+    第三步：把临时目录中的数据导入到hive表中
+
+    (1)
+    sqoop import  \
+    --connect jdbc:mysql://localhost:3306/mysql  \
+    --username root  \
+    --password root  \
+    --table help_keyword  \
+    --fields-terminated-by "\t"  \      列分隔符
+    --lines-terminated-by "\n"  \       行分隔符
+    --hive-import  \
+    --hive-overwrite  \             指定覆盖导入
+    --create-hive-table  \          自动创建hive表，sqoop会自动创建hive表，不会自动创建不存在的库，需手动创建  create database my_db
+    --delete-target-dir \           指定删除中间结果数据目录
+    --hive-database my_db           导入指定hive库
+    --hive-table new_table           导入指定hive表，库表内容可以合写为  --hive-table my_db.new_table 
+
+    (2)增量导入
+    执行增量导入之前，先清空hive数据库指定表的数据
+    --incremental append \
+

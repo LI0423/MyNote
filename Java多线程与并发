@@ -1,0 +1,75 @@
+Java多线程与并发
+
+1.为什么需要多线程
+ （1）CPU增加了缓存，用来均衡与内存的速度差异；//导致“可见性”问题
+ （2）操作系统增加了进程、线程，以分时复用CPU，进而均衡CPU与I/O设备的速度差异；//导致“原子性”问题
+ （3）编译程序优化指令执行次序，使缓存能够得到更加合理地利用。//导致“有序性”问题
+
+2.并发三要素：
+ （1）可见性：一个线程对共享变量的修改，另一个线程能够立刻看到。
+ （2）原子性：一个操作或者多个操作要么全部执行并且执行的过程不会被任何因素打断，要么就都不执行。
+ （2）有序性：程序执行的顺序按照代码的先后顺序执行。
+
+3.线程使用
+ （1）实现Runnable接口
+    public class MyThread implements Runnable{
+        public void run(){
+            //...
+        }
+    }
+
+    public static void main(String[] args){
+        MyThread thread = new MyThread();
+        Thread run = new Thread(instance);
+        run.start();
+    }
+ （2）实现Callable接口
+    public class MyCallable implements Callable{
+        public void call(){
+            return 123;
+        }
+    }
+
+    public static void main(String[] args){
+        MyCallable mc = new MyCallable();
+        FutureTask<Integer> ft = new FutureTask<>(mc);
+        Thread thread = new Thread(ft);
+        thread.start(); 
+    }
+ （3）继承Thread类
+    public class MyThread extends Thread{
+        public void run(){
+            //...
+        }
+    }
+
+    public static void main(String[] args){
+        MyThread mt =new MyThread();
+        mt.start();
+    }
+
+4.基础线程机制
+ （1）Executor
+    主要有三种Executor：
+    CachedThreadPool：一个任务只创建一个线程；
+    FixedThreadPool：所有任务只能使用固定大小的线程；
+    SingleThreadExecutor：相当于大小为1的FixedThreadPool。
+
+    public static void main(String[] args) {
+        ExecutorService executorService = Executors.newCachedThreadPool();
+        for (int i = 0; i < 5; i++) {
+            executorService.execute(new MyRunnable());
+        }
+        executorService.shutdown();
+    }
+5.synchronized详解
+    Monitorenter和MonitorExit会让对象在执行使其锁计数器加一或者减一。每一个对象在同一时间只与一个Monitor相关联，一个monitor在同一时间只能被一个线程获取，
+    一个对象在尝试获得与这个对象相关联的Monitor时，会发生三种情况之一：
+    （1）monitor计数器为0时，就是目前还没有被获得，线程会立刻获得，然后计数器+1，别的线程想要获得时就要等待。
+    （2）线程已经拿到这个锁的所有权，又重入这把锁，锁计数器就会累加，变为2，并随着累加的次数一直累加。
+    （3）这把锁已经被别的线程获取了，等待锁释放。
+6.JVM锁的优化
+    （1）锁粗化：减少不必要的紧连在一起的unlock，lock操作，将多个连续的锁扩展成一个范围更大的锁。
+    （2）锁消除：通过运行时JIT编译器的逃逸分析来消除一些没有在当前同步块以外被其他线程贡献的数据的锁的保护，通过逃逸分析也可以在线程本地Stack上进行对象空间的
+    分配（同时减少Heap上的垃圾收集开销）
+    （3）轻量级锁：
