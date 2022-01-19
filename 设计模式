@@ -1,0 +1,302 @@
+一、单例模式
+    1.定义
+        指一个类只有一个实例，且该类能自行创建这个实例的一种模式。
+    2.特点
+        单例类只有一个实例对象；该单例对象必须由单例类自行创建；单例类对外提供一个访问该单例的全局访问点。
+    3.优缺点
+    （1）优点：
+        单例模式可以保证内存里只有一个实例，减少内存开销。
+        可以避免对资源的多重占用。
+        设置全局访问点，可以优化和共享访问资源。
+    （2）缺点：
+        单例模式一般没有接口，扩展困难。如果要扩展，除了修改原来的代码没有第二种途径。
+    3.实现
+    （1）懒汉式单例
+        类加载时没有生成单例，只有当第一次调用getInstance方法时才去创建这个单例。
+
+        public class LazySingleton{
+            private static volatile LazySingleton instance = null;
+            private LazySingleton(){
+                //private 避免类在外部被实例化
+            }
+
+            public static synchronized LazySingleton getInstance(){
+                if (instance == null){
+                    instance = new LazySingleton();
+                }
+                return instance;
+            }
+        }
+    
+    （2）饿汉式单例
+        类一旦加载就创建一个单例，在调用getInstance之前单例就存在。
+
+        public class HungrySingleton{
+            private static volatile HungrySingleton instance = new HungrySingleton ();
+            private HungrySingleton{
+
+            }
+
+            public static HungrySingleton getInstance(){
+                return instance
+            }
+        }
+二、原型模式
+    1.定义
+        用一个已经创建的实例作为原型，通过复制该原型对象来创建一个和原型相同或相似的对象。原型实例指定了要创建的对象的种类。
+    2.优缺点
+    （1）优点：
+        Java自带的原型模式基于内存的二进制流的复制，在性能上比直接new一个对象更加优良。
+        可以使用深克隆方式保存对象的状态，使用原型模式将对象复制一份，并将其状态保存起来，简化了创建对象的过程，以便在需要的时候使用（例如恢复到历史某一状态），可辅助实现撤销操作。
+    （2）缺点：
+        需要为每一个类都配置一个clone方法。
+        当对象之间存在多重嵌套引用，为了实现深克隆，每一层对象对应的类都必须支持深克隆，实现起来比较麻烦。
+    3.结构
+    （1）抽象原型类：规定了具体原型对象必须实现的接口。
+    （2）具体原型类：实现抽象原型类的clone()方法，是可被复制的对象。
+    （3）访问类：使用具体原型类中的clone()方法来创建新的对象。
+    4.实现
+    浅克隆：创建一个新对象，新对象的属性和原来对象完全相同，对于非基本类型属性，仍指向原有属性所指向的对象的内存地址。
+    深克隆：创建一个新对象，属性中引用的其他对象也会被克隆，不再指向原有对象地址。
+
+    class RealizeType implements Cloneable{
+        RealizeType(){
+            System.out.println("具体原型创建成功");
+        }
+
+        public Object clone() throws CloneNotSupportedException{
+            System.out.println("具体原型复制成功");
+            return (RealizeType) super.clone();
+        }
+    }
+
+    5.应用场景
+    （1）对象之间相同或相似，即只是个别的几个属性不同的时候。
+    （2）创建对象成本较大，例如初始化时间长，占用CPU太多等。
+    （3）系统中大量使用该类对象，且各个调用者都需要给它的属性重新赋值。
+三、简单工厂模式
+    1.定义
+        定义一个创建产品对象的工厂接口，将产品对象的实际创建工作推迟到具体子工厂类当中。
+    2.优缺点
+    （1）优点：
+        工厂类包含必要的逻辑判断，可以决定在什么时候创建哪一个产品的实例。
+        客户端无需知道所创建具体产品的类名，只需知道参数即可。
+        可以引入配置文件，在不修改客户端代码的情况下更换和添加新的具体产品类。
+    （2）缺点：
+        工厂模式的工厂类单一，负责所有产品的创建，职责过重，一旦异常，整个系统将受影响。
+        使用简单工厂模式会增加系统中类的个数，增加系统的复杂度和理解难度。
+        系统扩展困难，一旦增加新产品不得不修改工厂逻辑，在产品类型较多时可能造成逻辑过于复杂。
+    3.结构
+    （1）简单工厂：负责创建所有实例的内部逻辑，工厂类的创建产品类的方法可以被外界直接调用，创建所需的产品对象。
+    （2）抽象产品：简单工厂创建的所有对象的父类，负责描述所有实例共有的公共接口。
+    （3）具体产品：简单工厂模式的创建目标。
+    4.实现
+    public class client{
+        public static void main(String[] args){
+
+        }
+        //抽象产品
+        public interface Product{
+            void show();
+        }
+        //具体产品
+        static class ConcreateProduct1 implements Product{
+            public void show(){
+                System.out.println("具体产品1");
+            }
+        }
+        static class ConcreateProduct2 implements Product{
+            public void show(){
+                System.out.println("具体产品2");
+            }
+        }
+        final class Const{
+            static final int PRODUCT_A = 0;
+            static final int PRODUCT_B = 1;
+        }
+        static class SimpleFactory{
+            public static Product makeProduct(int kind){
+                switch(kind){
+                    case Const.PRODUCT_A:
+                        return new ConcreateProduct1();
+                    case Const.PRODUCT_B:
+                        return new ConcreateProduct2();
+                }
+            }
+        }
+    }
+四、工厂方法模式
+    1.定义
+        对简单工厂模式的进一步抽象化，可以使系统在不修改原来代码的情况下引进新的产品。
+    2.优缺点
+    （1）优点：
+        用户只需要知道具体工厂的名称就可得到所要的产品，无需知道产品的具体创建过程。
+        灵活性增强，对于新产品的创建，只需多写一个相应的工厂类。
+        典型的解耦框架。
+    （2）缺点：
+        类的个数容易增多，增加复杂度。
+        增加了系统的抽象性和理解难度。
+        抽象产品只能生产一种产品。
+    3.结构
+    （1）抽象工厂：提供了创建产品的接口，调用者通过它访问具体工厂的工厂方法来创建产品。
+    （2）具体工厂：实现抽象工厂中的抽象方法，完成具体产品的创建。
+    （3）抽象产品：定义产品的规范，描述了产品的主要特性和功能。
+    （4）具体产品：实现抽象产品所定义的接口，由具体工厂来创建，同具体工厂之间一一对应。
+    4.实现
+    public class AbstractFactory{
+        public static void main(String[] args){
+            try{
+                Product a;
+                AbstractFactory af;
+                af = (AbstractFactory) ReadXML1.getObject();
+                a = af.newProduct();
+                a.show();
+            }catch(Exception e){
+                System.out.println(e.getMessage());
+            }
+        }
+
+        //抽象产品
+        interface Product{
+            public void show();
+        }
+
+        //具体产品1:实现抽象产品中的抽象方法
+        class ConcreateProduct1 implements Product{
+            public void show(){
+                System.out.println("具体产品1");
+            }
+        }
+
+        //具体产品2:实现抽象产品中的抽象方法
+        class ConcreateProduct2 implements Product{
+            public void show(){
+                System.out.println("具体产品2");
+            }
+        }
+
+        //抽象工厂：提供了产品的生成方法
+        class ConcreateFactory1 implements AbstractFactory {
+            public Product newProduct(){
+                System.out.println("具体工厂生产--》具体产品1");
+                return new ConcreateProduct1;
+            }
+        }
+
+        //抽象工厂：提供了产品的生成方法
+        class ConcreateFactory2 implements AbstractFactory {
+            public Product newProduct(){
+                System.out.println("具体工厂生产--》具体产品2");       
+                return new ConcreateProduct2;
+
+            }
+        }
+    }
+五、抽象工厂模式
+    1.定义
+        为访问类提供一个创建一组相关或相互依赖对象的接口，且访问类无须指定所要产品的具体类就能得到同族的不同等级的产品的模式结构。工厂方法模式只生产一个等级的产品，
+        而抽象工厂模式可以生产多个等级的产品。
+    2.优缺点
+    （1）优点：
+        可以在类内部对产品族中相关联的多等级产品共同管理，而不必专门引入多个新的类来进行管理。
+        当需要产品族时，抽象工厂可以保证客户端始终只使用同一个产品的产品族。
+        抽象工厂增强了程序的可扩展性，当增加一个新的产品族时，不需要修改原代码。
+    （2）缺点：
+        当产品族中需要增加一个新的产品时，所有的工厂类都需要进行修改。
+    3.结构
+    （1）抽象工厂：提供了创建产品的接口，包含了多个创建产品的方法，可以创建多个不同等级的产品。
+    （2）具体工厂：实现抽象工厂中的抽象方法，完成具体产品的创建。
+    （3）抽象产品：定义产品的规范，描述了产品的主要特性和功能，抽象工厂模式有多个抽象产品。
+    （4）具体产品：实现抽象产品所定义的接口，由具体工厂来创建，同具体工厂之间是多对一的关系。
+    4.实现
+        抽象工厂模式的结构同工厂方法模式的结构相似，不同的是其产品的种类不止一个，所以创建产品的方法也不止一个。
+    interface AbstractFactory {
+        public Product1 newProduct1();
+        public Product2 newProduct2();
+    }
+六、建造者模式
+    1.定义
+        将一个复杂对象的构造与它的表示分离，使同样的构建过程可以创建不同的表示。将一个复杂的对象分解为多个简单的对象，然后一步一步构建而成。
+    2.优缺点
+    （1）优点：
+        封装性好，构建和表示分离。
+        扩展性好，各个具体的建造者相互独立，有利于系统的解耦。
+        客户端不知道产品内部组成的细节，建造者可以对创建过程逐步细化，而不对其他模块产生任何影响。
+    （2）缺点：
+        产品的组成部分必须相同。
+        如果产品内部发生变化，则建造者也要同步修改。
+    3.结构
+    （1）产品角色：包含多个组成部件的复杂对象，由具体建造者来创建其各个部件。
+    （2）抽象建造者：包含创建产品各个部件的抽象方法的接口，通常还包含一个返回复杂产品的方法getResult()。
+    （3）具体建造者：实现Builder接口，完成复杂产品的各个部件的具体创建方法。
+    （4）指挥者：调用建造者对象中的部件构造与装配方法完成复杂对象的创建，在指挥者中不包含具体产品的信息。
+    4.实现
+    //产品角色
+    class Product{
+        private String partA;
+        private String partB;
+
+        public void setPartA(String partA){
+            this.partA = partA;
+        }
+
+        public void setPartB(Strin partB){
+            this.partB = partB;
+        }
+
+        public void show(){
+            //显示产品特性
+        }
+    }
+
+    //抽象建造者
+    abstract class Builder{
+        //创建产品对象
+        protected Product product = new Product();
+
+        public abstract void buildPartA();
+
+        public abstract void buildPartB():
+
+        //返回产品对象
+        public Product getResult(){
+            return product;
+        }
+    }
+
+    //具体建造者
+    public class ConcreateBuilder extends Builder{
+        public void buildPartA(){
+            product.setPartA("建造PartA");
+        }
+
+        public void buildPartB(){
+            product.setPartB("建造PartB");
+        }
+    }
+
+    //指挥者
+    class Director{
+        private Builder builder;
+
+        public Director(Builder builder){
+            this.builder = builder;
+        }
+
+        //产品构建与组装方法
+        public Product construct(){
+            builder.buildPartA();
+            builder.buildPartB();
+            return builder.getResult();
+        }
+    }
+
+    //客户类
+    public class client{
+        public static void main(String[] args){
+            Builder builder = new ConcreateBuilder();
+            Director director = new Director(builder);
+            Product product = director.construct();
+            product.show();
+        }
+    }
