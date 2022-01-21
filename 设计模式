@@ -607,3 +607,71 @@
             System.out.println("子系统02的method1被调用");
         }
     }
+十二、享元模式
+    1.定义
+        运用共享技术来有效地支持大量细粒度对象的复用。
+    2.优缺点
+    （1）优点：
+        相同对象只要保存一份，降低了系统中对象的数量。
+    （2）缺点：
+        为了使对象可以共享，需要将一些不能共享的状态外部化，增加系统复杂性。
+        读取享元模式的外部状态会使运行时间变长。
+    3.结构
+    （1）抽象享元角色：是所有的具体享元类的基类，为具体享元规范需要实现的公共接口，非享元的外部状态以参数的形式通过方法传入。
+    （2）具体享元角色：实现抽象享元角色中所规定的接口。
+    （3）非享元角色：不可以共享的外部状态，以参数的形式注入具体享元的相关方法中。
+    （4）享元工厂角色：负责创建和管理享元角色，当客户对象请求创建一个享元对象时，享元工厂检查系统中是否存在符合要求的享元对象，如果存在则提供给客户；
+    如果不存在则创建一个新的享元对象。
+    4.实现
+    //非享元角色
+    class UnsharedConcreteFlyweight{
+        private String info;
+
+        UnsharedConcreteFlyweight(String info){
+            this.info = info;
+        }
+
+        public String getInfo(){
+            return info;
+        }
+
+        public void setInfo(String info){
+            this.info = info;
+        }
+    }
+
+    //抽象享元角色
+    interface Flyweight {
+        public void operation(UnsharedConcreteFlyweight state);
+    }
+
+    //具体享元角色
+    class ConcreteFlyweight implements Flyweight {
+        private String key;
+
+        ConcreteFlyweight(String key){
+            this.key = key;
+            System.out.println("具体享元"+key+"被创建");
+        }
+
+        public void operation(UnsharedConcreteFlyweight outState){
+            System.out.println("具体享元"+key+"被调用");
+            System.out.println("非享元信息是："+outState.getInfo());
+        }
+    }
+
+    //享元工厂角色
+    class FlyweightFactory{
+        private HashMap<String,Flyweight> flyweights = new HashMap<String,Flyweight>();
+
+        public Flyweight getFlyweight(String key){
+            Flyweight flyweight = (Flyweight) flyweights.get(key);
+            if (flyweight != null){
+                System.out.println("具体享元"+key+"已经存在，被成功获取");
+            }else{
+                flyweight = new ConcreteFlyweight(key);
+                flyweights.put(key,flyweight);
+            }
+            return flyweight;
+        }
+    }
