@@ -675,3 +675,240 @@
             return flyweight;
         }
     }
+十三、组合模式
+    1.定义
+        将对象组合成树状的层次结构的模式，用来表示“整体-部分”的关系，使用户对单个对象和组合对象具有一致的访问性。
+    2.优缺点
+    （1）优点：
+        组合模式使得客户端代码可以一直地处理单个对象和组合对象，无须关心自己处理的是单个对象还是组合对象。
+        更容易在组合体内加入新的对象，客户端不会因为加入了新的对象而更改源代码。
+    （2）缺点：
+        设计复杂
+        不容易限制容器中的构件
+        不容易用继承的方法来增加构件的新功能
+    3.结构
+    （1）抽象构件角色：主要作用是为树叶构件和树枝构件声明公共接口，并实现他们的默认行为。在透明式的组合模式中抽象构件还声明访问和管理子类的接口；
+        在安全式的组合模式中不声明访问和管理子类的接口，管理工作由树枝构件完成。
+    （2）树叶构件角色：组合中的叶节点对象，它没有子节点，用于继承或实现抽象构件。
+    （3）树枝构件角色：组合中的分支节点对象，有子节点，用于继承和实现抽象构件，主要作用是存储和管理子部件。
+    4.实现
+    （1）透明方式：由于抽象构件声明了所有子类中的全部方法，客户端无须区别树叶对线和树枝对象，对客户端来说是透明的。
+    （2）安全方式：将管理子构件的方法移到树枝构件中，抽象构件和树叶构件没有子对象的管理方法，由于叶子和分支有不同的接口，客户端在调用时要知道
+    树叶对象和树枝对象的存在，所以失去了透明性。
+    interface Component{
+        public void add(Component c);
+
+        public void remove(Component c);
+
+        public Component getChild(int i);
+
+        public void operation();
+    }
+
+    class Leaf implements Component{
+        private String name;
+
+        public Leaf(String name){
+            this.name = name;
+        }
+
+        public void add(Component c){
+        }
+
+        public void remove(Component c){
+        }
+
+        public Component getChild(int i){
+            return null;
+        }
+
+        public void operation(){
+            System.out.println("树叶"+name+"：被访问");
+        }
+    }
+
+    class Composite implements Component{
+        private ArrayList<Component> children = new ArrayList<Component>();
+
+        public void add(Component c){
+            children.add(c);
+        }
+
+        public void remove(Component c){
+            children.remove(c);
+        }
+
+        public Component getChild(int i){
+            return children.get(i);
+        }
+
+        public void operation(){
+            for(Object obj:children){
+                ((Component) obj).operation();
+            }
+        }
+    }
+十四、模版方法
+    1.定义
+        定义一个操作中的算法骨架，而将算法的一些步骤延迟到子类中，使得子类可以不改变算法结构的情况下重新定义该算法的某些特定步骤。
+    2.优缺点
+    （1）优点：
+        把认为是不变部分的算法封装到父类中实现，而把可变部分算法由子类继承实现，便于子类扩展。
+        在父类中提取了公共的部分代码便于代码复用。
+        部分方法是由子类实现的，子类可以通过扩展的方式增加相应的功能。
+    （2）缺点：
+        对每个不同的实现都需要定义一个子类，导致类的个数增加，系统更加庞大，设计更抽象，间接增加了系统实现的复杂度。
+        父类中的抽象方法由子类实现，子类执行的结果会影响父类。
+        由于继承关系自身的缺点，如果父类添加新的抽象方法，则所有的子类都要更改。
+    3.结构
+    （1）抽象模版类：负责给出一个算法的轮廓和骨架。
+        模版方法：定义了算法的骨架，按某种顺序调用其包含的基本方法。
+        基本方法：
+            抽象方法：在抽象类中声明，由具体子类实现。
+            具体方法：在抽象类中已经实现，在具体子类中可以继承或重写它。
+            钩子方法：在抽象类中已经实现，包括由于判断的逻辑方法和需要子类重写的空方法两种。
+    （2）具体子类：实现抽象类中所定义的抽象方法和钩子方法。
+    4.实现
+    //抽象类
+    abstract class AbstractClass{
+        //模版方法
+        public void TemplateMethod(){
+            SpecificMethod();
+            abstractMethod1();
+            abstractMethod2();
+        }
+
+        //具体方法
+        public void SpecificMethod(){
+            System,out.println("抽象类中的具体方法被调用");
+        }
+
+        //抽象方法1
+        public abstract void abstractMethod1();
+
+        //抽象方法2
+        public abstract void abstractMethod2();
+    }
+
+    class ConcreteClass extends AbstractClass{
+        public void abstractMethod1(){
+            System.out.println("抽象方法1的实现被调用");
+        }
+
+        public void abstractMethod2(){
+            System.out.println("抽象方法2的实现被调用");
+        }
+    }
+十五、策略模式
+    1.定义
+        该模式定义了一系列算法，并将每个算法封装起来，使它们可以相互替换，且算法的变化不会影响使用算法的客户。
+    2.优缺点
+    （1）优点：
+        多重条件语句不易维护，而使用策略模式可以避免使用多重条件语句。
+        提供了一系列的可供重用的算法族，恰当使用继承可以把算法族的公共代码转移到父类里面，避免重复的代码。
+        提供相同行为的不同实现，客户可以根据不同时间或空间要求选择不同的。
+    （2）缺点：
+        客户端必须理解所有策略算法的区别，以便适时选择恰当的算法类。
+        策略模式造成很多的策略类，增加维护难度。
+    3.结构
+    （1）抽象策略类：定义了一个公共接口，各种不同的算法以不同的方式实现这个接口，环境角色使用这个接口调用不同的算法，一般使用接口或抽象类实现。
+    （2）具体策略类：实现了抽象策略定义的接口，提供具体的算法实现。
+    （3）环境类：持有一个策略类的引用，最终给客户端调用。
+    4.实现
+    //抽象策略类
+    interface Strategy{
+        public void strategyMethod();   //策略方法
+    }
+
+    //具体策略类A
+    class ConcreteStrategyA implements Strategy {
+        public void strategyMethod(){
+            System.out.println("具体策略A的策略方法被访问");
+        }
+    }
+
+    //具体策略类B
+    class ConcreteStrategyB implements Strategy {
+        public void strategyMethod(){
+            System.out.println("具体策略B的策略方法被访问");
+        }
+    }
+
+    class Context {
+        private Strategy strategy;
+
+        public Strategy getStrategy(){
+            return strategy;
+        }
+
+        public void setStrategy(Strategy strategy){
+            this.strategy = strategy;
+        }
+
+        public void strategyMethod(){
+            strategy.strategyMethod();
+        }
+    }
+十六、命令模式
+    1.定义
+        将一个请求封装成一个对象，使发出的请求和执行请求的责任分隔开。
+    2.优缺点
+    （1）优点：
+        通过引入中间件（抽象接口）降低系统的耦合度。
+        扩展性良好，增加或删除命令非常方便。
+        可以实现宏命令，命令模式与组合模式结合，将多个命令装配成一个组合命令，即宏命令。
+        方便实现Undo和Redo命令。
+        可以在现有命令的基础上增加额外功能。
+    （2）缺点：
+        可能产生大量具体的命令类。
+    3.结构
+    （1）抽象命令类角色：声明执行命令的接口，拥有执行命令的抽象方法。
+    （2）具体命令类角色：是抽象命令类的具体实现类，拥有接收者对象，并通过调用接收者的功能来完成命令要执行的操作。
+    （3）实现者/接收者：执行命令功能的相关操作，是具体命令对象业务的真正实现者。
+    （4）调用者/请求者：是请求的发送者，通常拥有很多的命令对象，并通过访问命令对象来执行相关的请求，不直接访问接收者。
+    4.实现
+    //调用者
+    class Invoker {
+        private Command Command;
+
+        public Invoker(Command command){
+            this.command = command;
+        }
+
+        public void setCommand(Command command){
+            this.command = command;
+        }
+
+        public void call(){
+            System.out.println("调用者执行命令command");
+            command.execute();
+        }
+    }
+
+    //抽象命令
+    interface Command{
+        public abstract void execute();
+    }
+
+    //具体命令
+    class ConcreteCommand implements Command {
+        private Receiver receiver;
+
+        ConcreteCommand(){
+            receiver = new Receiver();
+        }
+
+        public void execute(){
+            receiver.action();
+        }
+    }
+
+    //接收者
+    class Receiver{
+        public void action(){
+            System.out.println("接收者的action()方法被调用");
+        }
+    }
+十七、责任链模式
+    1.定义
+        为了避免请求发送者与多个请求处理者耦合在一起，于是将所有请求的处理者通过前一对象
