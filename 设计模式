@@ -911,4 +911,132 @@
     }
 十七、责任链模式
     1.定义
-        为了避免请求发送者与多个请求处理者耦合在一起，于是将所有请求的处理者通过前一对象
+        为了避免请求发送者与多个请求处理者耦合在一起，于是将所有请求的处理者通过前一对象记住其下一个对象的引用而连城一条链，当有请求发生时，
+        可将请求沿着这条链传递，直到有对象处理它为止。
+    2.优缺点
+    （1）优点：
+        降低了对象之间的耦合度，使得一个对象无须直到到底是哪一个对象处理其请求以及链的结构，发送者和接收者也无须拥有对方的明确信息。
+        增加系统的可扩展性。
+        增强了贵对象指派职责的灵活性，当工作流程发生变化，可以动态地改变链内的成员或者调动它们的次序。
+        简化了对象之间的连接。
+        每个类只需要处理自己该处理的工作。
+    （2）缺点：
+        不能保证每个请求一定被处理。
+    3.结构
+    （1）抽象处理者：定义一个处理请求的接口，包含抽象处理方法和一个后继连接。
+    （2）具体处理者：实现抽象处理者的处理方法，判断能否处理本次请求，如果可以处理请求则处理，否则将请求转给它的后继者。
+    （3）客户类：创建处理链，并向链头的具体处理者对象提交请求，不关心处理细节和请求的传递过程。
+    4.实现
+    //抽象处理者
+    abstract class Handler{
+        private Handler next;
+
+        public void setNext(Handler next){
+            this.next = next;
+        }
+
+        public Handler getNext(){
+            return next;
+        }
+
+        //处理请求的方法
+        public abstract void handleRequest(String request);
+    }
+
+    class ConcreteHandler1 extends Handler{
+        public void handleRequest(String request){
+            if(request.equals("one")){
+                System.out.println("具体处理者1负责处理该请求");
+            }else{
+                if(getNext() != null){
+                    getNext().handleRequest(request);
+                }else{
+                    System.out.println("没有人处理该请求");
+                }
+            }
+        }
+    }
+
+    class ConcreteHandler2 extends Handler{
+        public void handleRequest(String request){
+            if(request.equals("two")){
+                System.out.println("具体处理者2负责处理该请求");
+            }else{
+                if(getNext() != null){
+                    getNext().handleRequest(request);
+                }else{
+                    System.out.println("没有人处理该请求");
+                }
+            }
+        }
+    }
+
+    public class ChainOfResponsibilityPattern {
+        public static void main(String[] args) {
+            //组装责任链
+            Handler handler1 = new ConcreteHandler1();
+            Handler handler2 = new ConcreteHandler2();
+            handler1.setNext(handler2);
+            //提交请求
+            handler1.handleRequest("two");
+        }
+    }
+十八、状态模式
+    1.定义
+        对有状态的对象把复杂的“判断逻辑”提取到不同的状态对象中，允许状态对象在其内部状态发生改变时改变其行为。
+    2.优缺点
+    （1）优点：
+        结构清晰，状态模式将与特定状态相关的行为局部化到一个状态中，并且将不同状态的行为分割开来。
+        将状态转换显示化，减少对象间的相互依赖。
+        状态类职责明确，有利于程序的扩展。
+    （2）缺点：
+        状态模式的使用会增加系统的类与对象的个数。
+        状态模式的结构与实现较为复杂，使用不当会导致代码混乱。
+    3.结构
+    （1）环境类：也称上下文，定义了客户端需要的接口，内部维护一个当前状态，并负责具体状态的切换。
+    （2）抽象状态类：定义一个接口，用来封装环境对象中的的特定状态所对应的行为，可以有一个或多个行为。
+    （3）具体状态类：实现抽象状态所对应的行为，并且在需要的情况下进行状态切换。
+    4.实现
+    //环境类
+    class Context {
+        private State state;
+
+        public Context(){
+            this.state = new ConcreteStateA();
+        }
+
+        public void setState(State state){
+            this.state = state;
+        }
+
+        public State getState(){
+            return (state);
+        }
+
+        public void Handler(){
+            state.Handle(this);
+        }
+    }
+
+    //抽象状态类
+    abstract class State {
+        public abstract void Handle(Context context);
+    }
+
+    //具体状态类A
+    class ConcreteStateA extends State {
+        public void Handle(Context context){
+            System.out.println("当前状态是：A");
+            context.setState(new ConcreteStateA());
+        }
+    }
+
+    //具体状态类B
+    class ConcreteStateB extends State {
+        public void Handle(Context context){
+            System.out.println("当前状态是：B");
+            context.setState(new ConcreteStateB());
+        }
+    }
+
+    
