@@ -1,0 +1,24 @@
+一、窗口函数
+1.基本语法
+    <窗口函数> over (partition by <用于分组的列名>
+                    order by <用于排序的列名>)
+    窗口函数包括专用窗口函数（rank,dense_rank,row_number等），聚合函数（sum,avg,count,max,min等）
+    partition by 用来对表分组。
+    order by 子句的功能是对分组后的结果进行排序，默认是升序。
+    group by 分组汇总后改变了表的行数，一行只有一个类别。而partition by 和 rank 函数不会减少原表中的行数。
+2.rank,dense_rank,row_number 的区别
+    rank()：如果有并列情况，会占用下一个名次的位置，例如：1，1，1，4。
+    dense_rank()：如果有并列的情况，不会占用下一个名次，例如：1，1，1，2。
+    row_number()：会忽略并列的情况，例如：1，2，3，4。
+3.聚合函数
+    聚合函数用作窗口函数中，是对自身记录以及自身记录之上的所有数据进行计算。
+    聚合函数作为窗口函数可以在每一行的数据里直观的看到截止到本行数据，统计数据是多少，对整体统计数据没影响。
+二、SQL语法
+1.WITH AS   
+    也叫做子查询部分，可以定义一个SQL片段，该SQL片段会被整个SQL语句的可读性更高，也可以用在UNION ALL的不同部分，作为提供数据的部分。
+    对与UNION ALL，使用WITH AS定义了一个UNION ALL语句，当该片段被调用2次以上，优化器会将该WITH AS短语所获取的数据放入一个Temp表中，
+    [WITH <common_table_express> [ ,n]]
+    <common_table_express>::=
+            expression_name [(column_name [ ,n])]
+        AS
+            (CTE_query_definition)

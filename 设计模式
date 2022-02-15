@@ -1038,5 +1038,169 @@
             context.setState(new ConcreteStateB());
         }
     }
+十九、观察者模式
+    1.定义
+        指多个对象间存在一对多的依赖关系，当一个对象的状态发生改变时，所有依赖于它的对象都得到通知并被自动更新。有时又称作发布-订阅
+        模式、模型-视图模式，是对象行为型模式。
+    2.优缺点
+    （1）优点： 
+        降低了目标与观察者之间的耦合关系，两者之间是抽象耦合关系。
+        目标与观察者之间建立了一套触发机制。
+    （2）缺点：
+        目标与观察者之间的依赖关系并没有完全接触，而且有可能出现循环引用。
+        当观察者对象很多时，通知的发布会花费很多时间，影响程序的效率。
+    3.结构
+    （1）抽象主题角色：也叫抽象目标类，提供了一个用于保存观察者对象的聚集类和增加、删除观察者对象的方法，以及通知所有观察者的方法。
+    （2）具体主题角色：也叫具体目标类，实现抽象目标中的通知方法，当具体主题的内部状态发生改变时，通知所有注册过的观察者对象。
+    （3）抽象观察者角色：是一个抽象类或接口，包含一个更新自己的抽象方法，当接到具体主题的更改通知时被调用。
+    （4）具体观察者角色：实现抽象观察者中定义的抽象方法，以便在得到目标的更改通知时更新自身的状态。
+    4.实现
+    //抽象目标
+    abstract class Subject {
+        protected List<Observer> observers = new ArrayList<Observer>();
 
-    
+        //增加观察者方法
+        public void add(Observer observer){
+            observers.add(observer);
+        }
+
+        //删除观察者方法
+        public void remove(Observer observer){
+            observers.remove(observer);
+        }
+
+        public abstract void notifyObserver();
+    }
+
+    //具体目标
+    class ConcreteSubject extends Subject {
+        public void notifyObserver(){
+            System.out.println("具体目标发生改变");
+
+            for(Object obs : observers){
+                ((Observer) obs).response();
+            }
+        }
+    }
+
+    //抽象观察者
+    interface Observer {
+        void response();
+    }
+
+    //具体观察者1   
+    class ConcreteObserver1 implements Observer {
+        public void response(){
+            System.out.println("具体观察者1作出反应");
+        }
+    }
+
+    //具体观察者2
+    class ConcreteObserver2 implements Observer {
+        public void response(){
+            System.out.println("具体观察者2作出反应");
+        }
+    }
+
+    public class ObserverPattern {
+        public static void main(String[] args){
+            Subject subject = new ConcreteSubject();
+            Observer obs1 = new ConcreteObserver1();
+            Observer obs2 = new ConcreteObserver2();
+            subject.add(obs1);
+            subject.add(obs2);
+            subject.notifyObserver();
+        }
+    }
+二十、中介者模式
+    1.定义：
+        定义一个中介对象来封装一系列对象之间的交互，使原有对象之间耦合松散，且可以独立地改变它们之间的交互。
+    2.优缺点
+    （1）优点：
+        降低了对象之间的耦合性，使得对象易于独立地被复用。
+        将对象间的一对多关联转变为一对一的关联，提高系统的灵活性，使得系统易于维护和扩展。
+    （2）缺点：
+        将原本多个对象直接的相互依赖变成了中介者和多个同事类的依赖关系。当同事类越多时，中介者就会越臃肿，复杂且难以维护。
+    3.结构
+    （1）抽象中介者：是中介者的接口，提供了同事对象注册与转发同事对象信息的抽象方法。
+    （2）具体中介者：实现中介者接口，定义一个List来管理同事对象，协调各个同事角色之间的交互关系，因此它依赖于同事角色。
+    （3）抽象同事类：定义同事类的接口，保存中介者对象，提供同事对象交互的抽象方法，实现所有相互影响的同事类的公共功能。
+    （4）具体同事类：是抽象同事类的实现者，当需要与其他同事对象交互时，由中介者对象负责后续的交互。
+    4.实现
+    //抽象中介者
+    abstract class Mediator {
+        public abstract void register(Colleague colleague);
+
+        public abstract void relay(Colleague colleague);
+    }
+
+    //具体中介者
+    class ConcreteMediator extends Mediator {
+        private List<Colleague> colleagues = new ArrayList<Colleague>();
+
+        public void register(Colleague colleague){
+            if(!colleagues.contains(colleague)){
+                colleagues.add(colleague);
+                colleague.setMedium(this);
+            }
+        }
+
+        public void relay(Colleague c1){
+            for(Colleague ob : colleagues){
+                if (!ob.equals(c1)){
+                    ((Colleague) ob).receive();
+                }
+            }
+        }
+    }
+
+    //抽象同事类
+    abstract class Colleague {
+        protected Mediator mediator;
+
+        public void setMedium(Mediator mediator){
+            this.mediator = mediator;
+        }
+
+        public abstract void receive();
+
+        public abstract void send();
+    }
+
+    //具体同事类
+    class ConcreteColleague1 extends Colleague {
+        public void receive(){
+            System.out.println("具体同事类1收到请求");
+        }
+
+        public void send(){
+            System.out.println("具体同事类1发出请求");
+            mediator.relay
+        }
+    }
+
+    //具体同事类
+    class ConcreteColleague2 extends Colleague {
+        public void receive(){
+            System.out.println("具体同事类2收到请求");
+        }
+
+        public void send(){
+            System.out.println("具体同事类2发出请求");
+            mediator.relay
+        }
+    }
+
+    public class MediatorPattern {
+        public static void main(String[] args) {
+            Mediator md = new ConcreteMediator();
+            Colleague c1, c2;
+            c1 = new ConcreteColleague1();
+            c2 = new ConcreteColleague2();
+            md.register(c1);
+            md.register(c2);
+            c1.send();
+            System.out.println("-----------");
+            c2.send();
+        }
+    }
