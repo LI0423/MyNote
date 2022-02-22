@@ -1,0 +1,58 @@
+1.定义
+    kafka是一个分布式消息队列：生产者、消费者的功能。对消息保存时根据Topic进行归类，发送消息者称为Producer，消息接受者称为Consumer，
+    此外kafka集群有多个kafka实例组成，每个实例（server）称为broker。无论是kafka集群，还是producer和consumer都依赖于zookeeper
+    集群保存一些meta信息，来保证系统可用性。
+
+2.核心组件
+（1）Producer：消息生产者，产生的消息将会被发送到某个topic
+（2）Consumer：消息消费者，消费的消息内容来自某个topic。
+（3）Topic：消息根据topic进行归类，topic其本质是一个目录，即将同一个主题消息归类到同一个目录。
+（4）Broker：每一个kafka实例（或者说每台kafka服务器节点）就是一个broker，一个broker可以有多个topic。
+
+3.数据处理步骤
+（1）Producer产生消息，发送到Broker中。
+（2）Leader状态的Broker接收消息，写入到相应topic中。
+（3）Leader状态的Broker接收完毕以后，传给Follow状态的Broker作为副本备份。
+（4）Consumer消费Broker中的消息。
+
+4.名词解释
+（1）Consumer Group
+    kafka用来实现一个topic消息的广播（发给所有的consumer）和单播（发给任意一个consumer）的手段。一个topic可以有多个CG。topic的消息
+    会复制（概念上的复制）到所有的CG，但每个partition只会把消息发送给该CG中的一个consumer。如果需要实现广播，只要每个consumer有一个
+    独立的CG就可以了。要实现单播只要所有的consumer在同一个CG。用CG还可以将consumer进行自由的分组而不需要多次发送消息到不同的topic。
+（2）partition
+    为了实现扩展性，一个非常大的topic可以分布到多个broker（即服务器）上，一个topic可以分为多个partition，每个partition是一个有序的
+    队列。partition中的每条消息都会被分配一个有序的id（offset）。kafka只保证按一个partition中的顺序将消息发给consumer，不保证一个
+    topic的整体（多个partition间）的顺序。
+
+5.Consumer与topic关系
+    kafka只支持topic
+（1）每个group中可以有多个consumer，每个consumer属于一个consumer group；通常情况下，一个group中会包含多个consumer，不仅可以提高topic
+    中消息的并发消费能力，而且还能提高“故障容错性”，如果group中的某个consumer失效那么其消费的partition将会有其他consumer接管。
+（2）对于topic中的一条特定的消息，只会被订阅此topic的每个group中的其中一个consumer消费，此消息不会发送给一个group的多个consumer；那么一个
+    group中所有的consumer将会交错的消费整个topic，每个group中consumer消息消费相互独立，可以认为一个group是一个订阅者。
+（3）在kafka中，一个partition中的消息同一时刻只会被group中的一个consumer消费；一个topic中的每个partition只会被一个订阅者中的一个consumer
+    消费，不过一个consumer可以同时消费多个partition中的消息。
+（4）kafka的设计原理决定，对于一个topic，同一个group中不能有多于partition个数的consumer同时消费，否则将意味着某些consumer无法得到消息。
+
+6.kafka消息的分发
+（1）kafka集群中的任何一个broker都可以向producer提供metadata信息，这些meta中包含“集群中存活的servers列表”、“partitions leader列表等信息”。
+（2）当producer获取到metadata信息之后，producer将会和Topic下所有partition leader保持socket连接。
+（3）消息由producer直接通过socket发送到broker，中间不会经过任何“路由层”。事实上，消息被路由到哪个partition上由producer客户端决定，比如可以
+采用“random”，“key-hash”，“轮询”等。
+（4）在producer端的配置文件中，开发者可以指定partition路由的方式。
+（5）Producer消息发送的应答机制
+    设置发送数据是否需要服务端的反馈，有三个值 0，1，-1
+    0:producer不会等待broker发送ack
+    1:当leader接收到消息之后发送ack
+    -1:当所有的follower都同步消息成功后发送ack
+    
+7.Consumer的负载均衡
+    当一个group中,有consumer加入或者离开时,会触发partitions均衡.均衡的最终目的,是提升topic的并发消费能力，步骤如下：
+    （1）假如topic1,具有如下partitions: P0,P1,P2,P3
+    （2）加入group A 中,有如下consumer: C0,C1
+    （3）首先根据partition索引号对partitions排序: P0,P1,P2,P3
+    （4）根据consumer.id排序: C0,C1
+    （5）计算倍数: M = [P0,P1,P2,P3].size / [C0,C1].size,本例值M=2(向上取整)
+    （6）然后依次分配partitions: C0 = [P0,P1],C1=[P2,P3],即Ci = [P(i * M),P((i + 1) * M -1)]
+
