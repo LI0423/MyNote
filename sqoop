@@ -1,4 +1,5 @@
 Sqoop
+学习链接：  https://www.cnblogs.com/youngchaolin/p/12253859.html
 
 1.列出mysql数据库
     sqoop list-databases \
