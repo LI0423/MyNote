@@ -1,0 +1,16 @@
+1.服务器免密登录配置：
+	scp -p ~/.ssh/id_rsa.pub root@ubuntu:/root/.ssh/id_rsa.pub    	把本机公钥推到服务器上
+	然后再试 ssh ubuntu
+2.修改文件\文件夹名字	 mv file1 file2
+3.zip文件压缩与解压		zip -q -r xxx.zip filename 
+						unzip -d /root xxx.zip
+4.修改文件所有者 
+	chown [-R] 账号名称 文件或目录
+	chown [-R] 账号名称:用户组名称 文件或目录
+5.查询进程 	ps -ef | grep nginx
+6.查看日志常用
+	实时查看		tail -f xxx.log	
+	查看指定行		tail -n xxx.log
+7.查找文件
+	find -name xxx	指定字符串作为寻找文件或目录的范本样式
+	find -ls 		假设find指令的回传值为true，就将文件或目录名称列出到标准输出
