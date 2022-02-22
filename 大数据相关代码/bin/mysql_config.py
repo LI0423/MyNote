@@ -11,7 +11,7 @@ config = config_read.get_config(job_prop_file)
 class MysqlConfig(object):
     """wallpaper的mysql配置"""
     def __init__(self):
-        super(WallPaperMysqlConfig,self).__init__()
+        super(MysqlConfig,self).__init__()
         self.mysql_host = config.get('mysql.host')
         self.mysql_port = config.get('mysql.port')
         self.mysql_user = config.get('mysql.user')
