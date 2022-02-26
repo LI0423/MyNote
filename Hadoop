@@ -24,7 +24,7 @@ Hadoop
 19. hadoop fs -rm uri [uri]         删除指定的文件，只删除非空目录和文件。
 20. hadoop fs -rmr uri [uri]        删除的递归版本。
 21. hadoop fs -setrep [-R] <path>       改变一个文件的副本系数。
-22. hadoop fs -stat uri [uri]      返回指定路径的统计信息。
+22. hadoop fs -stat uri [uri]      返回指定路径的统计信息
 23. hadoop fs -tail [-f] uri        将文件尾部1k字节的内容输出到stdout。
 24. hadoop fs -test -[ezd] uri      -e 检查文件是否存在，存在返回0；-z 检查文件是否是0字节，是返回0；-d 如果路径是个目录，返回1
 25. hadoop fs -text <src>       将源文件输出为文本格式，允许的格式是zip和TextRecordInputStream。
