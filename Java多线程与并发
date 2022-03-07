@@ -120,3 +120,8 @@ Java多线程与并发
     首先获取当前线程对象，然后从线程对象中获取到ThreadLocalMap的成员属性threadLocals。如果当前线程的threadLocals已经初始化（即不为null）并且存在以当前ThreadLocal对象
     为key的值，则直接返回当前线程要获取的对象。如果当前线程的threadLocals已经初始化（即不为null）但是不存在以当前ThreadLocal对象为key的对象，重新创建一个对象，并添加到当前
     线程threadLocals中并返回。如果当前线程的threadLocals属性还没有被初始化，则重新创建一个ThreadLocalMap对象，并且创建一个对象并添加到ThreadLocalMap对象中并返回。
+
+11.ThreadLocal造成内存泄露的问题
+    用线程池来操作ThreadLocal对象确实会造成内存泄露，因为对于线程池里面不会销毁的线程，里面总会存在着<ThreadLocal,LocalVariable> 的强引用，因为final static修饰ThreadLocal
+    并不会释放，而ThreadLocalMap对于key虽然是弱引用，但是强引用不会释放，弱引用当然也会一直有值，同时创建的LocalVariable对象也不会释放，就造成了内存泄露；如果LocalVariable
+    对象不是一个大对象的话，其实泄露的并不严重，泄露的内存=核心线程数*LocalVariable对象的大小。
