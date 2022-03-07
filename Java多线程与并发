@@ -62,12 +62,14 @@ Java多线程与并发
         }
         executorService.shutdown();
     }
+    
 5.synchronized详解
     Monitorenter和MonitorExit会让对象在执行使其锁计数器加一或者减一。每一个对象在同一时间只与一个Monitor相关联，一个monitor在同一时间只能被一个线程获取，
     一个对象在尝试获得与这个对象相关联的Monitor时，会发生三种情况之一：
     （1）monitor计数器为0时，就是目前还没有被获得，线程会立刻获得，然后计数器+1，别的线程想要获得时就要等待。
     （2）线程已经拿到这个锁的所有权，又重入这把锁，锁计数器就会累加，变为2，并随着累加的次数一直累加。
     （3）这把锁已经被别的线程获取了，等待锁释放。
+
 6.JVM锁的优化
     （1）锁粗化：减少不必要的紧连在一起的unlock，lock操作，将多个连续的锁扩展成一个范围更大的锁。
     （2）锁消除：通过运行时JIT编译器的逃逸分析来消除一些没有在当前同步块以外被其他线程贡献的数据的锁的保护，通过逃逸分析也可以在线程本地Stack上进行对象空间的
@@ -83,6 +85,7 @@ Java多线程与并发
     没有成功与该monitor关联的semaphore（互斥锁）进入到阻塞状态。
             如果在同一个锁对象上，自旋等待刚刚成功获取过锁，并且持有锁的线程正在运行中，那么JVM会认为该锁自旋获取到锁的可能性很大，会自动增加等待时间。比如增加到
         100次循环。相反，如果对于某个锁，自旋很少成功获取锁。那再以后要获取这个锁时将可能省略掉自旋过程，以避免浪费处理器资源。
+
 7.Thread.sleep()和Object.wait()的区别 
     Thread.sleep()不会释放占有的锁，Object.wait()会释放占有的锁； 
     Thread.sleep()必须传入时间，Object.wait()可传可不传，不传表示一直阻塞下去； 
@@ -90,6 +93,7 @@ Java多线程与并发
     Object.wait()不带时间的，需要另一个线程使用Object.notify()唤醒； 
     Object.wait()带时间的，假如没有被notify，到时间了会自动唤醒，这时又分好两种情况，一是立即获取到了锁，线程自然会继续执行；二是没有立即获取锁，线程进入同步队列等待获取锁； 
     其实，他们俩最大的区别就是Thread.sleep()不会释放锁资源，Object.wait()会释放锁资源。
+
 8.Thread.sleep()和LockSupport.park()的区别 
     LockSupport.park()还有几个兄弟方法——parkNanos()、parkUtil()等，我们这里说的park()方法统称这一类方法。 
     从功能上来说，Thread.sleep()和LockSupport.park()方法类似，都是阻塞当前线程的执行，且都不会释放当前线程占有的锁资源； 
@@ -99,6 +103,7 @@ Java多线程与并发
     LockSupport.park()方法不需要捕获中断异常； 
     Thread.sleep()本身就是一个native方法； 
     LockSupport.park()底层是调用的Unsafe的native方法；
+
 9.Object.wait()和LockSupport.park()的区别 
     Object.wait()方法需要在synchronized块中执行； 
     LockSupport.park()可以在任意地方执行； 
@@ -108,6 +113,7 @@ Java多线程与并发
     LockSupport.park()不带超时的，需要另一个线程执行unpark()来唤醒，一定会继续执行后续内容； 
     如果在wait()之前执行了notify()会怎样? 抛出IllegalMonitorStateException异常； 
     如果在park()之前执行了unpark()会怎样? 线程不会被阻塞，直接跳过park()，继续执行后续内容；
+
 10.ThreadLocal如何实现线程隔离
     主要是用到了Thread对象中的一个ThreadLocalMap类型的变量threadLocals，负责存储当前线程的关于Connection的对象，dbConnectionLocal这个变量为key，以新建的Connection
     对象为value，线程第一次读取的时候如果不存在就会调用ThreadLocal的initialValue方法创建一个Connection对象并且返回。
