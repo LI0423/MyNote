@@ -15,5 +15,18 @@ package Algorithm.leetcode;
 
  */
 public class IsPalindrome {
-    
+    public boolean isPalindrome(int x){
+        if (x<0 || (x%10 == 0 && x != 0)){
+            return false;
+        }
+
+        int revertNumber = 0;
+        while(x>revertNumber){
+            revertNumber = revertNumber*10 + x%10;
+            x /= 10;
+        }
+
+        //当长度为奇数时，可以通过revertNumber/10去除位于中位的数字。
+        return x==revertNumber || x == revertNumber/10;
+    }
 }
