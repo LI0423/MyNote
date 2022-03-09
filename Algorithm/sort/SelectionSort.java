@@ -10,7 +10,7 @@ public class SelectionSort {
 
     private static void selectionSort(int[] nums){
         for (int i = 0; i < nums.length - 1 ; i++) {
-            int minIndex = i;
+            int minIndex = i;   //记录最小元素的数组下标
             for(int j=i;j<nums.length;j++){
                 if(nums[j]<nums[minIndex]){
                     minIndex = j;
