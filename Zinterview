@@ -95,7 +95,7 @@
 
 24.新生代中的对象如何去到老年代中
     在新生代中，新创建的对象经历一次gc过后会进入survivor0区，存活的对象计数器会+1，当又一次进行gc，存活的对象会进入survivor1区，再经历一次gc存活的对象会进入
-    survivor0区，接下来再进入survivor1区，依次反复，知道计数器超过了15，存活的对象才会进入老年代。
+    survivor0区，接下来再进入survivor1区，依次反复，直到计数器超过了15，存活的对象才会进入老年代。
 
 25.什么样的对象会被垃圾回收，判断对象可以被回收的算法
     没有被其他对象引用的对象会被回收。
@@ -116,9 +116,9 @@
     老年代：serial old收集器，parallel Old收集器，CMS收集器，G1收集器。
     serial收集器使用的是复制算法，单线程收集，进行垃圾回收时必须暂停所有的工作线程。在client模式下默认为年轻代的收集器。
     parNew收集器使用的是复制算法，多线程收集，与serial收集器的行为特点一样。在server模式下是年轻代收集器的首选，因为除了serial外，只有它能与CMS收集器配合。
-    parallel scavenge收集器使用的是复制算法，多线程收集，比起关注线程的停顿时间，更关注吞吐量。适合后台运算，不需要太多交互的任务。
+    parallel scavenge收集器使用的是复制算法，多线程收集，比起关注线程的停顿时间，更关注吞吐量（吞吐量=用户线程时间/(用户线程时间+GC时间)）。适合后台运算，不需要太多交互的任务。
     serial old收集器使用的是标记整理算法，单线程收集，与serial收集器一样。在client模式下默认为老年代的收集器。
-    parallel ole收集器，使用的是标记整理算法，多线程收集，吞吐量优先。
+    parallel old收集器，使用的是标记整理算法，多线程收集，吞吐量优先。
     CMS收集器，使用的是标记清除算法。
         运行步骤：初始标记，暂停所有的工作线程，标记与GCroot直接相连的对象，会STW；
             并发标记，开启所有的用户线程，标记GCroot可达的对象；
@@ -502,3 +502,19 @@
     在RR级别下的某个事务的某条记录的第一次快照哭会创建一个快照及read view，将当前活跃的其他事务记录起来，此后在调用快照读的时候，还是使用的是同一个read view，所以要
     当前事务在其他事务提交更新前使用过快照读，那么之后的快照读使用的是同一个read view，所以对之后的修改不可见。
     在RC级别下的事务中，每次快照读都会新生成一个快照和read view，这就是在RC级别下的事务中可以看到别的事务提交的更新的原因。
+
+98.双重检验锁定
+    public class Singleton{
+        private Singleton(){}
+        private volatile static Singleton instance;
+        public Singleton getInstance(){
+            if (instance == null){
+                synchronized(Singleton.class){
+                    if (instance == null){
+                        instance = new Singleton();
+                    }
+                }
+            }
+            return instance;
+        } 
+    }
