@@ -180,7 +180,7 @@
 
 37.redis字典的扩容和收缩
     当字典中的键过多的时候，字典就会进行rehash，然后将键放入到新的索引位置，每次扩容的时候就会进行一次rehash，扩大的内存为原来hash表已使用的空间的一倍，收缩也是收缩一倍。
-    等所有的键迁移完成，原来hash表的空间就会被释放。、
+    等所有的键迁移完成，原来hash表的空间就会被释放。
 
 38.redis触发扩容的条件
     服务器目前没有执行bgsave命令或者bgrewriteaof命令，且负载因子大于等于1。
@@ -194,7 +194,7 @@
 
 40.skiplist和平衡树，哈希表的比较。
     skiplist和各种平衡树中的元素是有序排列的，哈希表不是有序的，所以在哈希表中不能进行范围查找，只能做单个key的查找。
-    做范围查找的时候，平衡树会比skiplist更麻烦一点，需要进行中序遍历寻找不超过大值的节点。而skiplist上的范文查找就很简单，只需要在找到小值之后，对第一层链表进行若干步的操作即可。
+    做范围查找的时候，平衡树会比skiplist更麻烦一点，需要进行中序遍历寻找不超过大值的节点。而skiplist上的范围查找就很简单，只需要在找到小值之后，对第一层链表进行若干步的操作即可。
     平衡树的插入和删除操作可能会引起子树的调整，逻辑复杂，而skiplist的插入和删除操作只需要修改相邻节点的指针。
     查找单个key，skiplist和平衡树的时间复杂度都为O（logn），而hash表在保持较低的哈希值冲突的情况下，时间复杂度为O（1）。
 
@@ -210,7 +210,7 @@
     点全量的复制数据，就会触发bgsave操作，生成的快照发送到从节点中；默认情况下执行shutdown操作，如果没有配置aof就会触发rdb。
 
 44.aof的原理
-    aof就是append only file，就是一日志的形式记录每个写操作，将redis所有指令记录下来，只许追加文件，不许改写文件，当redis重启的时候会读取该文件重新构建数据。aof保存的文件
+    aof就是append only file，就是以日志的形式记录每个写操作，将redis所有指令记录下来，只许追加文件，不许改写文件，当redis重启的时候会读取该文件重新构建数据。aof保存的文件
     是appendonly.aof。redis默认是不开启aof的，需要进行手动配置。
 
 45.如何实现aof
@@ -524,3 +524,15 @@
     自己的变量副本，从而也就没有必要对该变量进行同步了。ThreadLocal提供了线程安全的共享对象，在编写多线程代码时，可以把不安全的变量封装进ThreadLocal。
     每个线程中都有一个自己的ThreadLocalMap类对象，可以将线程自己的对象保持到其中，各管各的，线程可以正确的访问到自己的对象。将一个共用的ThreadLocal静态实例作为key，
     将不同对象的引用保存到不同线程的ThreadLocalMap中，然后在线程执行的各处通过这个静态ThreadLocal实例的get()方法取得自己线程保存的那个对象，避免了将这个对象作为参数传递的麻烦。
+
+100.SpringBean的生命周期
+    Spring启动，查找并加载需要被Spring管理的Bean，进行Bean的实例化；
+    Bean实例化后对将Bean的引入和值注入到Bean的属性中；
+    如果Bean实现了BeanNameAware接口的话，Spring将Bean的Id传递给setBeanName()方法；
+    如果Bean实现了BeanFactoryAware接口的话，Spring将调用setBeanFactory()方法，将BeanFactory容器实例传入；
+    如果Bean实现了ApplicationContextAware接口的话，Spring将调用Bean的setApplicationContext()方法，将Bean所在应用上下文传入进来；
+    如果Bean实现了BeanPostProcesser接口，Spring将调用postProcessBeforeInitialization()方法；
+    如果Bean实现了InitializingBean接口，Spring将调用他们的afterPropertiSet()方法；
+    如果Bean实现了BeanPostProcessor接口，Spring将调用它的postProcessAfterInitialization()方法；
+    此时，Bean已经准备就绪，可以被应用程序使用了，将一直驻留在应用上下文中，直到应用上下文被销毁；
+    如果bean实现了DisposableBean接口，Spring将调用它的destory()接口方法，同样，如果bean使用了desory-method声明销毁方法，该方法也会被调用。
