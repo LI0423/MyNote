@@ -536,3 +536,41 @@
     如果Bean实现了BeanPostProcessor接口，Spring将调用它的postProcessAfterInitialization()方法；
     此时，Bean已经准备就绪，可以被应用程序使用了，将一直驻留在应用上下文中，直到应用上下文被销毁；
     如果bean实现了DisposableBean接口，Spring将调用它的destory()接口方法，同样，如果bean使用了desory-method声明销毁方法，该方法也会被调用。
+
+101.IOC容器实现
+    BeanFactory是Spring框架的基础设施，面向Spring本身；ApplicationContext面向使用Spring框架的开发者，几乎所有的应用场合都直接使用ApplicationContext而不是底层的BeanFactory。
+（1）BeanDefinitionRegistry注册表
+    Spring配置文件中每一个节点元素在Spring容器里都通过一个 BeanDefinition对象表示，描述了Bean的配置信息。而BeanDefinitionRegistry接口提供了向容器手工注册BeanDefinition对象的方法。
+（2）BeanFactory顶层接口
+    最主要的方法就是getBean（String beanName），该方法从容器中返回特定名称的Bean，BeanFactory的功能是通过其他的接口得到不断扩展。
+（3）ListableBeanFactory
+    该接口定义了访问容器中Bean基本信息的若干方法，如查看Bean的个数，获取某一类型Bean的配置名、查看容器中是否包含某一Bean等方法。
+（4）HierarchicalBeanFactory父子级联
+    父子级联Ioc容器的接口，子容器可以通过接口方法访问父容器；通过该接口Spring的IOC容器可以建立父子层级关联的容器体系，子容器可以访问父容器中的Bean，但父容器不能访问子容器的Bean。Spring
+    使用父子容器实现了很多功能，比如在SpringMVC中，展现层Bean位于一个子容器中，而业务层和持久层的Bean位于父容器中，展现层就可以引用业务层和持久层的Bean，而业务层和持久层的Bean
+    则看不到展现层的Bean。
+（5）ConfigurationBeanFactory
+    增强了IOC容器的可定制性，定义了设置类装载器、属性编辑器、容器初始化后处置处理器等方法。
+（6）AutowireCapableBeanFactory自动装配
+    定义了容器中的Bean按某种规则（如按名字匹配、按类型匹配等）进行自动装配的方法。
+（7）SingletonBeanRegistry运行期间注册单例Bean
+    定义了允许在运行期间注册单例Bean的方法，对于单实例的Bean来说，BeanFactory会缓存Bean实例，第二次使用getBean（）获取Bean时将直接从IOC容器的缓存中获取Bean实例、Spring在
+    DefaultSingletonBeanRegistry类中提供了一个用于缓存单例Bean的缓存器，它是一个用HashMap实现的缓存器，单实例的Bean以beanName为键保存在hashmap中。
+（8）依赖日志框架
+    在初始化BeanFactory时，必须为其提供一种日志框架，比如使用Log4j，即在类路径下提供Log4j配置文件，这样启动Spring容器才不会报错。
+
+    ApplicationContext由BeanFactory派生而来，提供了更多面向实际应用的功能，ApplicationContext继承了HierarchicalBeanFactory和ListableBeanFactory接口。
+（1）ClassPathXmlApplicationContext：默认从类路径加载配置文件。
+（2）FileSystemXmlApplicationContext：默认从文件系统中装载配置文件。
+（3）ApplicationEventPublisher：让容器拥有发布应用上下文事件的功能，包括容器启动事件、关闭事件等。
+（4）MessageSource：为应用提供i18n国际化消息访问的功能。
+（5）ResourcePatternResolver：所有的实现类都实现了类似于PathMatchingResourcePatternResolver的功能，可以通过带前缀的Ant风格的资源文件路径装载Spring配置文件。
+（6）LifeCycle：该接口是Spring2.0加入的，提供了start()和stop()方法，主要用于控制异步处理过程。
+（7）ConfigurationApplicationContext扩展与ApplicationContext，新增了两个主要的方法，refresh（）和close（），让ApplicationContext具有启动、刷新和关闭应用上下文的能力。
+
+102.SpringBean的作用域
+    singleton：在SpringIOC容器中仅存在一个Bean实例，Bean以单例的方式存在
+    prototype：每次容器中调用Bean时都返回一个新的实例，每次调用getBean（）时，相当于执行new xxxBean（）。
+    request：每次Http请求都会创建一个新的Bean，该作用域仅适用于WebApplicationContext环境。
+    session：同一个HttpSession共享一个Bean，不同Session使用不同Bean，仅适用于WebApplicationContext环境。
+    globalSession：该作用域仅适用于WebApplicationContext环境。
