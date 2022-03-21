@@ -574,3 +574,13 @@
     request：每次Http请求都会创建一个新的Bean，该作用域仅适用于WebApplicationContext环境。
     session：同一个HttpSession共享一个Bean，不同Session使用不同Bean，仅适用于WebApplicationContext环境。
     globalSession：该作用域仅适用于WebApplicationContext环境。
+
+103.Mybatis工作原理
+（1）读取MyBatis配置文件：mybatis-config.xml为mybatis的全局配置文件，配置了Mybatis的运行环境等信息。
+（2）加载映射文件：映射文件就是SQL映射文件，该文件中配置了操作数据库的SQL语句，需要在Mybatis配置文件mybatis-config.xml中加载，可以加载多个映射文件，每个文件对应数据库中的一张表。
+（3）构造会话工厂：通过MyBatis的环境等配置信息构建会话工厂SqlSessionFactory。
+（4）创建会话对象：由会话工厂创建SqlSession对象，该对象中包含了执行SQL语句的所有方法。
+（5）Executor执行器：MyBatis底层定义了一个Executor接口来操作数据库，根据SqlSession传递的参数动态地生成需要执行的SQL语句，同时负责查询缓存的维护。
+（6）MappedStatement对象：在Executor接口的执行方法中有一个MappedStatement类型的参数，该参数是对映射信息的封装，用于存储要映射的SQL语句中的id、参数等信息。
+（7）输入参数映射：输入参数类型可以是Map，List等集合类型，也可以是基本数据类型POJO类型。输入参数映射过程类似于JDBC对preparedStatement对象设置参数的过程。
+（8）输出结果映射：输出结果类型可以是MAP，List等集合类型，也可以是基本数据类型POJO类型。输出结果映射过程类似于JDBC对结果集的解析过程。
