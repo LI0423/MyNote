@@ -474,7 +474,7 @@
     HTTP/1.1之前默认是短连接，如果需要开启长连接则使用Connection：Keep-Alive，HTTP/1.1开始默认是长连接，如果要断开连接需要由客户端提出断开，使用Connection：close；
 
 93.HTTPS 
-    HTTPS是让HTTP先和SSL（Secure Sockets Layer）通信，再由SSL和TCP通信，也就是说HTTPS使用了隧道进行通信。通过使用SSL，HTTPS具有了加密（防窃听）、认证（防伪装）和完整行保护。
+    HTTPS是让HTTP先和SSL（Secure Sockets Layer）通信，再由SSL和TCP通信，也就是说HTTPS使用了隧道进行通信。通过使用SSL，HTTPS具有了加密（防窃听）、认证（防伪装）和完整性保护。
 
 94.GET和POST比较
     GET用于获取资源，POST用于传输实体主体。
@@ -584,3 +584,10 @@
 （6）MappedStatement对象：在Executor接口的执行方法中有一个MappedStatement类型的参数，该参数是对映射信息的封装，用于存储要映射的SQL语句中的id、参数等信息。
 （7）输入参数映射：输入参数类型可以是Map，List等集合类型，也可以是基本数据类型POJO类型。输入参数映射过程类似于JDBC对preparedStatement对象设置参数的过程。
 （8）输出结果映射：输出结果类型可以是Map，List等集合类型，也可以是基本数据类型POJO类型。输出结果映射过程类似于JDBC对结果集的解析过程。
+
+104.JDK动态代理
+（1）通过实现InvocationHandler接口来自定义自己的InvocationHandler；
+（2）通过Proxy.getProxyClass获得动态代理类；
+（3）通过反射机制获得代理类的对象，方法签名为getConstructor(InvocationHandler.class)；
+（4）通过构造函数获得代理对象并将自定义的InvocationHandler实例对象传为参数传入；
+（5）通过代理对象调用目标对象。
