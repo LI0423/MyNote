@@ -184,7 +184,7 @@
 
 38.redis触发扩容的条件
     服务器目前没有执行bgsave命令或者bgrewriteaof命令，且负载因子大于等于1。
-    服务器目前正在执行gbsave命令或者bgrewriteaof命令，且负载因子大于等于5。
+    服务器目前正在执行bgsave命令或者bgrewriteaof命令，且负载因子大于等于5。
     负载因子=目前hash表已保存节点数量/哈希表大小
 
 39.什么是渐进式rehash
@@ -222,7 +222,7 @@
     no：操作系统控制的写回，每个写命令执行完，只是将日志写入到aof文件的内存缓冲区，由操作系统决定什么时候写入磁盘。
 
 47.aof重写是否会阻塞
-    aof是由bgrewriteaof后台进程来实现的。主线程for子线程之后，fork会把主线程的内存copy一份给子线程，这里面就包含了最新的数据，子线程在不影响主线程的情况下会把拷贝的数据写成操作，
+    aof是由bgrewriteaof后台进程来实现的。主线程fork子线程之后，fork会把主线程的内存copy一份给子线程，这里面就包含了最新的数据，子线程在不影响主线程的情况下会把拷贝的数据写成操作，
     然后写入aof文件中。只有在fork的过程中是会阻塞主线程的。
 
 48.aof重写日志时，有新的数据写入怎么办
@@ -237,7 +237,7 @@
     对设置了过期时间的数据中进行淘汰：volatile-random，volatile-ttl，volatile-lru，volatile-lfu
     全部数据进行淘汰：allkeys-random，allkeys-lru，random-lfu
 
-51.缓存淘汰 策略详细
+51.缓存淘汰策略详细
     noeviction，因为设置了不淘汰，当redis内存满了，有新的请求进来时redis不再提供服务并返回错误。
     volatile-random，随机删除，不能筛选出不再访问的数据。
     volatile-ttl，根据过期时间排序，越早过期的数据，越早被删除。
@@ -294,7 +294,7 @@
     内存系统的重排序。由于处理器使用了缓存和读/写缓冲区，这使得加载和存储操作看上去是在乱序执行。
 
 62.线程的状态
-    新建，创建后尚未启动的现成的状态
+    新建，创建后尚未启动的线程的状态
     可运行，可能正在运行，也可能在等待CPU时间片。包含running和ready
     无限期等待，不会被分配CPU执行时间，需要显式被唤醒。没有设置timeout参数的Objec.wait()方法和Thread.sleep()方法，LockSuppor.park()方法。
     有限期等待，不需要显式地被其他线程唤醒。Thread.sleep()方法，设置了timeout参数的Object.wait()方法和Thread.join()方法，LockSuppor.parkNanos()方法和parkUtil()方法。
@@ -398,7 +398,7 @@
 78.为什么线程池不允许使用Executors去创建？
     规避资源耗尽的风险。
         newFixedThreadPool和newSingleThreadExecutor：主要问题是堆积的请求队列可能会耗费非常大的内存，甚至OOM。
-        newCachedThreadPool和我newScheduledThreadPool：主要问题是线程数最大数是Integer.MAX_VALUE，可能会创建数量非常多的线程，甚至OOM。
+        newCachedThreadPool和newScheduledThreadPool：主要问题是线程数最大数是Integer.MAX_VALUE，可能会创建数量非常多的线程，甚至OOM。
 
 79.什么是CountDownLatch 
     将一个程序分为n个互相独立的可解决任务，并创建值为n的CountDownLatch。当每一个任务完成时，都会在这个锁存器上调用countDown，等待问题被解决的任务调用这个锁存器的await，将它们自己拦住，
@@ -427,16 +427,16 @@
     五层：物理层、数据链路层、网络层、运输层、应用层。
 
 84.TCP协议为什么建链接要3次握手，断链接需要4次挥手？
-    对于建链接的3次握手，主要是初始化Sequence Number的初始值。通信的双方要互相通知对方自己的初始化的Sequence Number，这个号要作为以后的数据通信的序号，以保证应用层接收到的
+    对于建立连接的3次握手，主要是初始化Sequence Number的初始值。通信的双方要互相通知对方自己的初始化的Sequence Number，这个号要作为以后的数据通信的序号，以保证应用层接收到的
     数据不会因为网络上的传输的问题而乱序。
-    对于4次挥手，因为TCP是全双工，所以发送方和接收方都需要Fin和Ack，
+    对于4次挥手，因为TCP是全双工，所以发送方和接收方都需要Fin和Ack。
 
 85.TCP头格式
     重要属性：Sequence Number是包的序号，用来解决网络包乱序问题。Acknowledgement Number就是ACK，用来解决不丢包的问题。Window又叫Advertised-Window，也就是著名的滑动窗口，
     用于解决流控。TCP Flag，也就是包的类型，主要是用于操控TCP的状态机。
 
 85.TCP建连接时SYN超时
-    连接会处于一个中间状态，既没成功也没失败。server端如果在一定时间内没有收到TCP的TCP会重发SYN-ACK。在Linux下，默认重试次数为5次，重试的间隔时间从1s开始每次都翻倍，5次的重试
+    连接会处于一个中间状态，既没成功也没失败。server端如果在一定时间内没有收到TCP的响应TCP会重发SYN-ACK。在Linux下，默认重试次数为5次，重试的间隔时间从1s开始每次都翻倍，5次的重试
     时间间隔为1s,2s,4s,8s,16s，总共31s。第五次发出后还需要等32s才知道超时了，因此断开连接需要31+32s，也就是63s。
 
 86.SYN Flood攻击
@@ -462,7 +462,7 @@
     UDP支持一对一、一对多、多对一和多对多的交互通信。
 
 90.cookie是什么
-    cookie是服务器发送到用户浏览器并保存在本地的一小块数据，会在浏览器之后向同一服务器再次发起请求时被鞋带上，用于告知服务器两个请求是否来自同一浏览器。
+    cookie是服务器发送到用户浏览器并保存在本地的一小块数据，会在浏览器之后向同一服务器再次发起请求时被带上，用于告知服务器两个请求是否来自同一浏览器。
 
 91.session维护用户登陆状态的过程
     用户进行登录时，将提交包含用户名和密码的表单放入HTTP请求报文中，服务器端验证该用户名和密码，如果正确则把用户信息存储到redis中，在redis中的key称为session ID，
@@ -474,7 +474,7 @@
     HTTP/1.1之前默认是短连接，如果需要开启长连接则使用Connection：Keep-Alive，HTTP/1.1开始默认是长连接，如果要断开连接需要由客户端提出断开，使用Connection：close；
 
 93.HTTPS 
-    HTTPS是让HTTP先和SSL（Secure Sockets Layer）通信，再由SSL和TCP通信，也就是说HTTPS使用了隧道进行通信。通过使用SSL，HTTPS具有了加密（防窃听）、认证（防伪装）和完整行保护。
+    HTTPS是让HTTP先和SSL（Secure Sockets Layer）通信，再由SSL和TCP通信，也就是说HTTPS使用了隧道进行通信。通过使用SSL，HTTPS具有了加密（防窃听）、认证（防伪装）和完整性保护。
 
 94.GET和POST比较
     GET用于获取资源，POST用于传输实体主体。
@@ -485,7 +485,7 @@
     等方法都是幂等的，而 POST 方法不是。
     
 95.增强for循环原理
-    增强for循环的底层使用迭代器来实现的，会定义一个临时变量，获取List的迭代器，然后判断迭代器中是否有未便利过的元素，获取第一个未遍历的元素赋值给临时变量i，
+    增强for循环的底层使用迭代器来实现的，会定义一个临时变量，获取List的迭代器，然后判断迭代器中是否有未遍历过的元素，获取第一个未遍历的元素赋值给临时变量i，
     输出临时变量i的值。
     Integer i；
     Iterator iterator = list.iterator();
@@ -499,7 +499,7 @@
     形链表。
 
 97.RC，RR级别下的InnoDB快照读有什么不同
-    在RR级别下的某个事务的某条记录的第一次快照哭会创建一个快照及read view，将当前活跃的其他事务记录起来，此后在调用快照读的时候，还是使用的是同一个read view，所以要
+    在RR级别下的某个事务的某条记录的第一次快照读会创建一个快照及read view，将当前活跃的其他事务记录起来，此后在调用快照读的时候，还是使用的是同一个read view，所以要
     当前事务在其他事务提交更新前使用过快照读，那么之后的快照读使用的是同一个read view，所以对之后的修改不可见。
     在RC级别下的事务中，每次快照读都会新生成一个快照和read view，这就是在RC级别下的事务中可以看到别的事务提交的更新的原因。
 
@@ -535,7 +535,7 @@
     如果Bean实现了InitializingBean接口，Spring将调用他们的afterPropertiSet()方法；
     如果Bean实现了BeanPostProcessor接口，Spring将调用它的postProcessAfterInitialization()方法；
     此时，Bean已经准备就绪，可以被应用程序使用了，将一直驻留在应用上下文中，直到应用上下文被销毁；
-    如果bean实现了DisposableBean接口，Spring将调用它的destory()接口方法，同样，如果bean使用了desory-method声明销毁方法，该方法也会被调用。
+    如果bean实现了DisposableBean接口，Spring将调用它的destory()接口方法，同样，如果bean使用了destroy-method声明销毁方法，该方法也会被调用。
 
 101.IOC容器实现
     BeanFactory是Spring框架的基础设施，面向Spring本身；ApplicationContext面向使用Spring框架的开发者，几乎所有的应用场合都直接使用ApplicationContext而不是底层的BeanFactory。
@@ -595,3 +595,10 @@
     一进程内不同线程之间的同步手段。
     套接字Socket：套解口也是一种进程间通信机制，与其他通信机制不同的是，它可用于不同及其间的进程通信。
     信号 ( sinal ) ： 信号是一种比较复杂的通信方式，用于通知接收进程某个事件已经发生。
+
+105.JDK动态代理
+（1）通过实现InvocationHandler接口来自定义自己的InvocationHandler；
+（2）通过Proxy.getProxyClass获得动态代理类；
+（3）通过反射机制获得代理类的对象，方法签名为getConstructor(InvocationHandler.class)；
+（4）通过构造函数获得代理对象并将自定义的InvocationHandler实例对象传为参数传入；
+（5）通过代理对象调用目标对象。
