@@ -464,7 +464,7 @@
 90.cookie是什么
     cookie是服务器发送到用户浏览器并保存在本地的一小块数据，会在浏览器之后向同一服务器再次发起请求时被带上，用于告知服务器两个请求是否来自同一浏览器。
 
-91.session维护用户登陆状态的过程
+91.session维护用户登陆状态的过程itit
     用户进行登录时，将提交包含用户名和密码的表单放入HTTP请求报文中，服务器端验证该用户名和密码，如果正确则把用户信息存储到redis中，在redis中的key称为session ID，
     服务器返回的响应报文的Set-Cookie首部字段包含了这个SessionID，客户端收到响应后会将该Cookie值存入浏览器中，客户端之后对同一个服务器进行请求时会包含该Cookie值，
     服务器收到之后提出SeesionID，从Redis中取出用户信息，继续之前的业务操作。
@@ -473,7 +473,7 @@
     当浏览器访问一个包含多张图片的HTML页面，除了请求页面资源还需要请求图片资源，如果每次进行一次HTTP通信就要新建一个TCP连接，开销就会很大。
     HTTP/1.1之前默认是短连接，如果需要开启长连接则使用Connection：Keep-Alive，HTTP/1.1开始默认是长连接，如果要断开连接需要由客户端提出断开，使用Connection：close；
 
-93.HTTPS 
+93.HTTPS
     HTTPS是让HTTP先和SSL（Secure Sockets Layer）通信，再由SSL和TCP通信，也就是说HTTPS使用了隧道进行通信。通过使用SSL，HTTPS具有了加密（防窃听）、认证（防伪装）和完整性保护。
 
 94.GET和POST比较

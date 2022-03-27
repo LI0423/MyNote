@@ -41,3 +41,6 @@
 2.AOP配置方式
 （1）XML Schema配置方式
 （2）AspectJ注解方式
+
+3.@Transaction实现原理
+    通过aop的方式进行管理，实现事务开启、提交或者回滚操作。
