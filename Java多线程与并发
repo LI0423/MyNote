@@ -127,10 +127,132 @@ Java多线程与并发
     对象不是一个大对象的话，其实泄露的并不严重，泄露的内存=核心线程数*LocalVariable对象的大小。
 
 12.手写死锁
+    public class DeadLock {
+        public static void main(String[] args){
+            Resouece res1 = new Resouece();
+            Resouece res2 = new Resouece();
 
+            res1.flag= true;
+            res2.flag = false;
+
+            new Thread(new Runnable(){
+                @Override
+                public void run(){
+                    res1.method();
+                }
+            },"A").start();
+
+            new Thread(new Runnable(){
+                @Override
+                public void run(){
+                    res2.method();
+                }
+            },"B").start();
+        }
+    }
+
+    public class Resouece{
+        boolean flag = true;
+        private static final Object obj1 = new Object();
+        private static final Object obj2 = new Object();
+
+        public void method(){
+            if(flag){
+                synchronized(obj1){
+                    System.out.println(Thread.currentThread().getName() + " " + "获取到锁1");
+                    try{
+                        Thread.sleep(50);
+                    } catch (InterruptedException e){
+                        e.printStackTrace();
+                    }
+                    synchronized(obj2){
+                        System.out.println(Thread.currentThread.getName() + " " + "获取到锁2");
+                        synchronized(obj1){
+                            System.out.println(Thread.currentThread().getName() + " " + "获取到锁1");
+                        }
+                    }
+                }
+            }else{
+                synchronized(obj2){
+                    System.out.println(Thread.currentThread.getName() + " " + "获取到锁2");
+                    synchronized(obj1){
+                        System.out.println(Thread.currentThread().getName() + " " + "获取到锁1");
+                    }
+                }
+            }
+        }
+    }
 
 13.如何避免死锁
 （1）打破互斥条件：改造独占性资源为虚拟资源，大部分资源已无法改造。
 （2）打破不可抢占条件：当一进程占有一独占性资源后又申请一独占性资源无法满足，则退出原占有的资源。
 （3）打破占有且申请条件：采用资源预先分配策略，即进程运行前申请全部资源，满足则运行，不然就等待。
 （4）打破循环等待条件：实现资源有序分配策略，对所有设备实现分类编号，所有进程只能采用按序号递增的形式申请资源。
+
+14.CountDownLatch
+    CountDownLatch能够使一个线程在等待另外一些线程完成各自工作之后再继续执行。相当于是一个计数器，计数器的初始值就是线程的数量，每当一个任务完成后，计数器的值就减1，
+    当计数器的值为0时，表示所有的线程都完成了任务。在CountDownLatch上await的线程就会被唤醒，继续执行其他任务，也可以延迟唤醒，给CountDownLatch加一个延迟时间就可以。
+（1）使用方法
+    CountDownLatch提供了一个构造方法，必须指定初始值，还制定了countDown方法，这个方法的主要作用是用来减小计数器的值，当计数器为0时，在CountDownLatch上await的线程
+    就会被唤醒。
+
+    public class TCountDownLatch {
+        public static void main(String[] args){
+            CountDownLatch latch = new CountDownLatch(5);
+            Increment increment = new Increment(latch);
+            Decrement decrement = new Decrement(latch);
+
+            new Thread(increment).start();
+            new Thread(increment).start();
+
+            try{
+                Thread.sleep(6000);
+            } catch(InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    class Decrement implements Runnable{
+        CountDownLatch countDownLatch;
+
+        public Decrement(CountDownLatch countDownLatch){
+            this.countDownLatch = countDownLatch;
+        }
+
+        @Override
+        public void run(){
+            try{
+                for(int i = countDownLatch.getCount();i>0;i--){
+                    Thread.sleep(1000);
+                    System.out.println("countDown");
+                    this.countDownLatch.countDown();
+                }
+            } catch(InterruptedException e){
+                e.printStackTrace();
+            }
+        }
+    }
+
+    class Increment implements Runnable{
+        CountDownLatch countDownLatch;
+
+        public Decrement(CountDownLatch countDownLatch){
+            this.countDownLatch = countDownLatch;
+        }
+
+        @Override
+        public void run(){
+            try{
+                System.out.println("await");
+                countDownLatch.await();
+            } catch(InterruptedException e){
+                e.printStackTrace();
+            }
+            System.out.println("Waiter Released");
+        }
+    }
+
+（2）源码分析
+    CountDownLatch的底层是由AQS支持的，AQS核心数据结构是两个队列，一个是同步队列（sync queue），一个是条件队列（condition queue）。
+    

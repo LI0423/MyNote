@@ -1,0 +1,159 @@
+//家装对象类    
+public class House {
+
+    //买家电
+    private String jiadian;
+
+    //买地板
+    private String diban;
+
+    //买油漆
+    private String youqi;
+
+    public String getJiadian(){
+        return jiadian;
+    }
+
+    public void setJiadian(String jiadian){
+        this.jiadian = jiadian;
+    }
+
+    public String getDiban(){
+        return diban;
+    }
+
+    public void setDiban(String diban){
+        this.diban = diban;
+    }
+
+    public String getYouqi(){
+        return youqi;
+    }
+
+    public void setYouqi(String youqi){
+        this.youqi = youqi;
+    }
+
+}
+
+//抽象建造者
+public interface HouseBuilder{
+    //买家电
+    void doJiadian();
+    //买地板
+    void doDiban();
+    //买油漆
+    void doYouqi();
+
+    House getHouse();
+}
+
+//具体建造者
+public class JianzhuangBuilder implements HouseBuilder{
+    private House house = new House();
+
+    @Override
+    public void doJiadian(){
+        house.setDiban("简单家电");
+    }
+
+    @Override
+    public void doDiban(){
+        house.setDiban("简单地板")
+    }
+
+    @Override
+    public void doYouqi(){
+        house.setYouqi("简单油漆");
+    }
+}
+
+//家装公司
+public class HouseDirector{
+    public House builder(HouseBuilder houseBuilder){
+        houseBuilder.doJiadian();
+        houseBuilder.doDiban();
+        houseBuilder.doYouqi();
+        return houseBuilder.getHouse();
+    }
+}
+
+public class APP{
+    public static void main(String[] args){
+        house();
+    }
+
+    public static void house(){
+        HouseDirector houseDirector = new HouseDirector();
+        JianzhuangBuilder jianzhuangBuilder = new JianzhuangBuilder();
+        houseDirector.builder(jianzhuangBuilder);
+    }
+}
+
+/**变种的Builder模式**/
+变种的Builder模式包括以下内容：
+    在要构造的类内部创建一个静态内部类Builder；
+    静态内部类的参数与构建类一致；
+    构建类的构造参数是静态内部类，使用静态内部类的变量一一赋值给构建类；
+    静态内部类提供参数的setter方法，并且返回值是当前Builder对象；
+    最终提供一个build方法构建一个构建类对象，参数是当前Builder对象。
+
+public class Student {
+    private String name;
+    private int age;
+    private String email;
+
+    //静态builder方法
+    public static Student.Builder builder(){
+        return new Student.Builder();
+    }
+
+    //外部调用builder类的属性接口进行设值
+    public static class Builder{
+        private String name;
+        private int age;
+        private String email;
+
+        public Builder name(String name){
+            this.name = name;
+            return this;
+        }
+
+        public Builder age(int age){
+            this.age = age;
+            return this;
+        }
+
+        public Builder email(String email){
+            this.email = email;
+            return this;
+        }
+
+        public Student build(){
+            //将builder对象传入到学生构造函数
+            return new Student(this);
+        }
+    }
+
+    //私有化构造器
+    private Student(Builder builder){
+        name = builder.name;
+        age = builder.age;
+        email = builder.email;
+    }
+
+    @Override
+    public String toString() {
+        return "Student{" +
+                "name='" + name + '\'' +
+                ", age=" + age +
+                ", num=" + num +
+                ", email='" + email + '\'' +
+                '}';
+    }
+
+    public static void student(){
+        Student student = Student.builder().name("平头哥").num(1).age(18).email("平头哥@163.com").build();
+        System.out.println(student);
+    }
+}
