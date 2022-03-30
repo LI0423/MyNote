@@ -619,3 +619,24 @@
 
 107.为什么JDK动态代理只能基于接口实现，不能基于继承来实现
     因为Java不支持多继承，而JDK动态代理在创建代理对象时，默认让代理对象继承Proxy类，所以JDK只能通过接口去实现动态代理。
+
+108.SpringMVC流程
+（1）浏览器发送Http请求到DispatcherServlet。
+（2）DispatcherServlet根据请求信息调用HandlerMapping，解析请求对应的Handler。
+（3）解析到对应的Handler（也就是Controller）。
+（4）Controller调用响应的模型处理业务（xxxService）。
+（5）处理器处理完成后会返回一个ModelAndView对象，Model是返回的数据对象，到DispatcherServlet。
+（6）ViewResolver会处理视图映射。
+（7）Dispatcher将模型数据传给View显示。
+（8）最后把View通过HTTP响应传给请求者。
+
+109.SpringBoot启动流程
+（1）执行@SpringBootApplication（包含@SpringBootConfiguration、@ComponentScan、@EnableAutoConfiguration）
+（2）执行静态方法SpringApplication.run()，会初始化SpringApplication对象，通过SpringFactoriesLoader收集加载资源。
+（3）通过SpringFactoriesLoader加载并获得SpringApplicationListeners遍历调用这些listener的starting方法。
+（4）初始化Environment，执行listener.environmentPrepared（）方法。
+（5）打印SpringBoot标识
+（6）创建并初始化ApplicationContext，并判断是否是WebApplicationContext。
+（7）再用SpringFactoriesLoader，查找并加载classpath中所有可用的ApplicationContextInitializer。
+（8）将之前通过@EnableAutoConfiguration获取的所有配置以及其他形式的IOC容器配置加载到已准备完毕的ApplicationContext。
+（9）refresh    ApplicationContext完成最终程序启动。
