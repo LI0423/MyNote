@@ -4,6 +4,7 @@ import java.util.Arrays;
 /**
  * 首先在未排序序列中找到最小的元素，存放到排序序列的起始位置；
  * 再从剩余未排序的序列中找到最小的元素存放到已排序序列的末尾；
+ * 时间复杂度：O(n^2)
  */
 
 public class SelectionSort {

@@ -2,6 +2,10 @@ package Algorithm.sort;
 
 import java.util.Arrays;
 
+/**
+ * 把序列按下标的一定增量分组，对每组使用直接插入排序算法排序
+ */
+
 public class ShellSort {
 
     private static void shellSort(int[] nums){

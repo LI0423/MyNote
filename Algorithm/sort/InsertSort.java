@@ -2,6 +2,11 @@ package Algorithm.sort;
 
 import java.util.Arrays;
 
+/**
+ * 将待排序序列分成两个序列，前面的序列保持有序，依次选取后面的元素，在前面的序列进行插入
+ * 时间复杂度：最好O(n)，最坏O(n^2)
+ */
+
 public class InsertSort {
 
     public static int[] insertSort(int[] nums){

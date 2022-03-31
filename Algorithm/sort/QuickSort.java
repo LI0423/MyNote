@@ -2,7 +2,11 @@ package Algorithm.sort;
 
 import java.util.Arrays;
 
-import javax.management.Query;
+/**
+ * 任取待排序序列的一个元素作为枢轴元素，将所有比枢轴元素小的放在左边，将所有比它大的放在右边，形成左右两个子表。
+ * 再对左右两个子表按照前面的算法进行排序，直到每个子表的元素只剩一个。
+ * 时间复杂度：最好O(nlogn)，最坏O(n^2)
+ */
 
 public class QuickSort {
 

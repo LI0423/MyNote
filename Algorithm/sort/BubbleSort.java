@@ -3,6 +3,7 @@ package Algorithm.sort;
 import java.util.Arrays;
 /**
  * 比较相邻的元素，如果第一个比第二个大就交换，直到最后，做完后末尾的元素是最大的。
+ * 时间复杂度：最好O(n)，最坏O(n^2)
  */
 
 public class BubbleSort{
