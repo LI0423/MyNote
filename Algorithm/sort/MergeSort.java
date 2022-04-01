@@ -1,7 +1,12 @@
 package Algorithm.sort;
 
-import java.lang.reflect.Array;
 import java.util.Arrays;
+
+/**
+ * 算法思想：把数组从中间划分为两个子数组，一直递归地把子数组划分成更小的数组，直到子数组里面只有一个元素的时候开始排序。排序的方法就是按照
+ * 大小顺序合并两个元素。接着依次按照递归的顺序返回，不断合并排好序的数组，直到整个数组排好序。
+ * 时间复杂度：O(nlogn)
+ */
 
 public class MergeSort {
 
