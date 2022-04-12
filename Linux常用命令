@@ -27,3 +27,6 @@
 		-a 全部文件系统列表
 		-h 以方便阅读的方式显示信息
 		-T 列出文件系统类型
+
+10.Ubuntu关闭卡死程序
+	gnome-system-monitor

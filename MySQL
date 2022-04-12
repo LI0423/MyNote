@@ -28,6 +28,9 @@
     sum(case when type = 1 then 1 when type = 2 then 1 ... end)
     计算某几种类型数据的总和。 
 
+3.两个查询结果计算并转换为百分比形式
+    select rate from (truncate(((select data from table where condition1 )/(select data from table where condition2))*100,2),'%') as rate
+
 三、Mysql大表优化
 
 学习链接：  https://mp.weixin.qq.com/s/BMQC2oJlhLoeBDtveXgHpw
