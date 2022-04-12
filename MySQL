@@ -24,6 +24,10 @@
         AS
             (CTE_query_definition)
 
+2.sum 和 case when 组合使用
+    sum(case when type = 1 then 1 when type = 2 then 1 ... end)
+    计算某几种类型数据的总和。 
+
 三、Mysql大表优化
 
 学习链接：  https://mp.weixin.qq.com/s/BMQC2oJlhLoeBDtveXgHpw
