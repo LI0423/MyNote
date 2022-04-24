@@ -70,6 +70,8 @@
         Impossible where：强调了where语句会导致没有符合条件的行。
         Select table optimized away：意味着仅通过使用索引，优化器可能仅从聚合函数结果中返回一行。
         
+    5.IFNULL(column,值) 
+    如果某列的查询结果为null，可以转换成指定的数值返回。
 
 三、Mysql大表优化
 
