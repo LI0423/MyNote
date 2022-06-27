@@ -1,3 +1,4 @@
+一、建造者模式
 //家装对象类    
 public class House {
 

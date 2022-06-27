@@ -1,0 +1,70 @@
+一、JDK动态代理
+    使用jdk动态代理模式实现对接口耗时的统计。
+    public class CostTimeInvocationHandler implements InvocationHandler{
+        private Object target;
+
+        public CostTimeInvocationHandler(Object target){
+            this.target = target;
+        }
+
+        @Override
+        public Object invoke(Object proxy, Method method, Object[] args) throws Throwable{
+            long startTime = System.nanoTime();
+            Object result - method.invoke(this.target, args);
+            long endTime = System.nanoTime();
+            System.out.println(this.target.getClass() + "耗时：" + (endTime-startTime));
+            return result;
+        }
+
+        public static <T> T createProxy(Object target, class<T> targetInterface){
+            if(!targetInterface.isInterface()){
+                throw new IllegalStateException("targetInterface 必须是接口类型");
+            }else if(!targetInterface .isAssignableFrom(target.getClass())){
+                throw new IllegalStateException("target 必须是targetInterface接口的实现类");
+            }
+            return (T) Proxy.newProxyInstance(target.getClass().getClassLoader(),
+                            target.getClass().getInterfaces(),new CostTimeInvocationHandler(target));
+        }
+    }
+
+    public void costTimeProxy(){
+        IService serviceA = CostTimeInvocationHandler.createProxy(new ServiceA(),IService.class);
+        serviceA.m1();
+    }
+二、cglib动态代理
+    cglib是一个强大、高性能的字节码生成库，用于在运行时扩展Java类和实现接口；本质上是通过动态的生成一个子类去覆盖所要代理的类。
+Enhancer可能是CGLIB中最常用的一个类，和jdk中的Proxy不同的是，Enhancer既能够代理普通的class，也能代理接口。Enhancer创建
+一个被代理对象的子类并且拦截所有的方法调用（包括从Object中继承的toString和hashCode方法）。
+    public class Service1 {
+        public void m1(){
+            System.out.println("我是m1方法");
+        }
+
+        public void m2(){
+            System.out.println("我是m2方法");
+        }
+    }
+
+    public class CglibTest{
+        public void test1(){
+            //1.创建Enhancer对象
+            Enhancer enhancer = new Enhancer();
+            //2.通过setSuperclass来设置父类型，即需要给哪个类创建代理类
+            enhancer.setSuperclass(Service1.class);
+            //3.设置回调，需要实现org.springframework.cglib.Callback接口
+            enhancer.setCallback(new MethodInterceptor(){
+                //代理对象方法拦截器
+                @Override
+                public void intercept(Object o, Method method,Object[] objects,MethodProxy methodProxy) throws Throwable{
+                    System.out.println("调用方法："+method);
+                    Object result = methodProxy.invokeSuper(o,objects);
+                    return result;
+                }
+            });
+            //4.获取代理对象，调用enhancer.create方法获取代理对象，这个方法返回的是Object类型的，所以需要强转
+            Service1 proxy = (Service1) enhancer.create();
+            //5.调用代理对象的方法
+            proxy.m1();
+            proxy.m2();
+        }
+    }
