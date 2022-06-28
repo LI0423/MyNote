@@ -57,3 +57,87 @@
 
 3.@Transaction实现原理
     通过aop的方式进行管理，实现事务开启、提交或者回滚操作。
+
+三、注解使用
+1.自定义定义注解
+
+    public @interface MyAnnotation {
+        [public] 参数类型 参数名称() [default 参数默认值];
+    }
+    注解有没有参数都可以。
+    访问修饰符必须为public，不写默认为public。
+    参数的类型只能是基本数据类型、String、Class、枚举类型、注解类型、注解类型以及数组。
+    参数名称一般定义为名词，如果注解只有一个元素，名字定义为value会使用更便利。
+    参数名称后面的括号只是特殊语法。
+
+（1）指定注解的使用范围：@Target
+    @Target(value={ElementType.TYPE,ElementType.METHOD})
+
+    TYPE：类、接口、枚举、注解上面
+    FIELD：字段上
+    METHOD：方法上
+    PARAMETER：方法的参数上
+    CONSTRUCTOR：构造函数上
+    LOCAL_VARIABLE：本地变量上
+    ANNOTATION_TYPE：注解上
+    PACKAGE：包上
+    TYPE_PARAMETER：类型参数上
+    TYPE：类型名称上
+
+（2）指定注解的保留策略：@Retention
+    @Retention(RetentionPolicy.SOURCE)
+
+    SOURCE：注解只保留在源码中，编译为字节码之后就丢失了，也就是class文件中就不存在了。
+    CLASS：注解只保留在源码和字节码中，运行阶段会丢失。
+    RUNTIME：源码、字节码、运行期间都存在。
+
+（3）综合示例：
+    @Target(value={
+        ElementType.TYPE,
+        ElementType.METHOD,
+        ElementType.FIELD,
+        ElementType.PARAMETER,
+        ElementType.CONSTRUCTOR,
+        ElementType.LOCAL_VARIABLE
+    })
+    @Retention(RetentionPolicy.RUNTIME)
+    public @interface Ann {
+        String value();
+
+        ElementType elementType();
+    }
+
+    @Ann(value="用在类上",elementType = ElementType.TYPE)
+    public class UseAnn {
+        @Ann(value="用在属性上",elementType = ElementType.FIELD)
+        private String a;
+
+        @Ann(value="用在构造方法上",elementType = ElementType.CONSTRUCTOR)
+        public UseAnn(@Ann(value = "用在参数上",elementType = ElementType.PARAMETER)String a){
+            this.a = a;
+        }
+
+        @Ann(value="用在普通方法上",elementType = ElementType.METHOD)
+        public void method(){
+            @Ann(value="用在本地变量上",elementType = ElementType.LOCAL_VARIABLE)
+            String arg;
+        }
+    }
+
+2.@Configuration 和 @Bean
+（1）@Configuration
+    加在类上让这个类的功能等同于一个bean.xml配置文件
+（2）@Bean
+    用在方法上表示通过方法来定义一个bean，默认将方法名称作为bean名称，将方法返回值作为bean对象，注册到spring容器中。
+（3）@Configuration加不加的区别
+    有没有@Configuration注解，@Bean都会生效，都会将修饰的方法作为bean注册到容器中。
+    被@Configuration修饰的类，spring容器中会通过cglib给这个类创建一个代理，代理会拦截所有被@Bean修饰的方法，默认情况下
+保证这些方法只被调用一次，确保是单例的。
+
+3.@ComponentScan 和 @ComponentScans
+（1）@ComponentScan
+    会让spring去扫描某些包及其子包中所有的类，然后将满足一定条件的类作为bean注册到spring容器中。
+    通过value、basePackages、basePackageClasses这3个参数来扫描指定的包，并且会递归下面子包，得到一批类的数组。
+    通过useDefaultFilters、includeFilters、excludeFilters来控制过滤器，剩下的类会被注册到容器中。
+    指定包名的方式配置扫描范围存在的隐患，包名被重命名之后会导致扫描失效，所以我们在需要扫描的包中可以创建一个标记的接口或者类，
+作为basePackageClasses的值，通过这个来控制包的扫描范围。

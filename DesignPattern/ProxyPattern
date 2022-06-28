@@ -68,3 +68,85 @@ Enhancer可能是CGLIB中最常用的一个类，和jdk中的Proxy不同的是�
             proxy.m2();
         }
     }
+
+实现示例：
+    @Component
+    public class Service1 {
+        public void m1(){
+            System.out.println(this.getClass() + ".m1()");
+        }
+    }
+
+    @Component
+    public class Service2 {
+        public void m2() {
+            System.out.println(this.getClass() + ".m2()")
+        }
+    }
+
+    public class CostTimeProxy implements MethodInterceptor{
+        private Object target;
+
+        public CostTimeProxy(Object target){
+            this.target = target;
+        }
+
+        @Override
+        public Object intercept(Object o, Method method, Object[] objects,
+        MethodProxy methodProxy)throws Throwable{
+            long startTime = System.nanoTime();
+            //调用被代理对象（即target）的方法获取结果
+            Object result = method.invoke(target,objects);
+            long endTime = System.nanoTime();
+            System.out.println(method + "，耗时：" + (endTime - startTime));
+            return result;
+        }
+
+        public static <T> T createProxy(T target){
+            CostTimeProxy costTimeProxy = new CostTimeProxy();
+            Enhancer enhancer = new Enhancer();
+            enhancer.setCallback(costTimeProxy);
+            enhancer.setSuperclass(target.getClass());
+            return (T) enhancer.create();
+        }
+
+    }
+
+    public class MethodCostTimeProxyBeanPostProcessor implements BeanPostProcessor {
+        @Nullable
+        @Override
+        public Object postProcessorAfterInitialization(Object bean,String beanName) throws BeansException {
+            if(bean.getClass().getName().toLowerCase().contains("service")){
+                return CostTimeProxy.createProxy(bean);
+            }else{
+                return bean;
+            }
+        }
+    }
+
+    public class MethodCostTimeImportSelector implements ImportSelector {
+        @Override
+        public String[] selectImports(AnnotationMetadata importingClassMeta){
+            return new String[]{MethodCostTimeProxyBeanPostProcessor.class.getName()};
+        }
+    }
+
+    @Target(ElementType.TYPE)
+    @Retention(RetentionPolicy.RUNTIME)
+    @Import(MethodCostTimeImportSelector.class)
+    public @interface EnableMethodCostTime{
+    }
+
+    @ComponentScan
+    @EnableMethodCostTime
+    public class MainConfig{
+    }
+
+    @Test
+    public void test(){
+        AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(MainConfig.class);
+        Service1 service1 = context.getBean(Service1.class);
+        Service2 service2 = context.getBean(Service2.class);
+        service1.m1();
+        service2.m1();
+    }
