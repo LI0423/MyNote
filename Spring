@@ -59,7 +59,7 @@
     通过aop的方式进行管理，实现事务开启、提交或者回滚操作。
 
 三、注解使用
-1.自定义定义注解
+1.自定义注解
 
     public @interface MyAnnotation {
         [public] 参数类型 参数名称() [default 参数默认值];
