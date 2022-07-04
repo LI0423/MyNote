@@ -58,6 +58,146 @@
 3.@Transaction实现原理
     通过aop的方式进行管理，实现事务开启、提交或者回滚操作。
 
+4.@Pointcut的12种用法
+（1）execution
+    格式：execution(modifiers-pattern? ret-type-pattern declaring-type-pattern? name-pattern(param-pattern) throws-pattern?)
+    带‘?’的是可选项，ret-type-pattern,name-pattern,parameters-pattern是必选项。
+    modifer-pattern? 修饰符匹配，public表示匹配公有方法；
+    ret-type-pattern 返回值匹配，*表示任何返回值，全路径的类名等；
+    declaring-type-pattern? 类路径匹配；
+    name-pattern 方法名匹配，*代表所有，set* 代表所有以set开头的方法；
+    (param-pattern) 参数匹配，指定方法参数（声明的类型），(..)代表所有参数，(*,String)代表第一个参数为任何值，第二个参数为String类型，
+(..,String)代表最后一个参数是String类型；
+    throws-pattern? 异常类型匹配
+
+    ‘*’：匹配任何数量字符；
+    ‘..’：匹配任何数量字符的重复，如在类型模式中匹配任何数量子包，在方法参数模式中匹配任何数量参数
+    ‘+’：匹配指定类型及其子类型，仅能作为后缀放在类型模式后边
+（2）within
+    格式：within(类型表达式),目标对象target的类型是否和within中指定的类型匹配
+    within(com.test..*) test包以及子包下的任何方法执行。
+    within(com.test..Service+) test包或所有子包下Service类型及子类型的任何方法。
+    within(com.test.service.Service1) Service1中定义的所有方法，不包含其子类中的方法。
+（3）this
+    格式：this(类型全限定名)，通过aop创建的代理对象的类型是否和this中指定的类型匹配；判断的目标是代理对象；this中使用的表达式必须是类型全限定名，
+    不支持通配符。
+（4）target
+    格式：target(类型全限定名)，判断目标对象的类型是否和指定类型匹配；判断的是目标对象的类型；表达式必须是类型全限定名，不支持通配符。
+（5）args
+    格式：args(参数类型列表)，匹配当前执行的方法传入的参数是否为args中指定的类型；匹配传入的参数类型，不是匹配方法签名的参数类型；
+    参数类型列表中的参数必须是类型全限定名，不支持通配符；args属于动态切入点，也就是执行方法的时候进行判断，开销大，非特殊情况不要使用。
+    args(String)匹配只有一个参数且传入的参数类型是String类型的方法。
+    args(*,String)匹配只有2个参数的且第2个参数是String的方法。
+    args(..,String)匹配最后1个参数是String的方法。
+（6）@within
+    格式：@within(注解类型)，匹配指定的注解内定义的方法。
+    调用目标方法的时候，通过Java中Method.getDeclaringClass()获取当前的方法是哪个类中定义的，然后看这个类上是否有指定的注解。
+    目标对象上有@within中指定的注解，这种情况下目标对象的所有方法都会被拦截。
+    定义注解时未使用@Inherited说明子类无法继承父类上的注解。
+（7）@target
+    格式：@target(注解类型)，判断目标对象target类型上是否有指定的注解，@target中注解类型也必须是全限定类型名。
+    注解直接标注在目标类上；注解标注在父类上，注解上没有@Inherited这种情况下目标类无法匹配到。
+（8）@args
+    格式：@args(注解类型)：方法参数所属的类上有指定的注解；不是参数上有指定的注解而是参数类型的类上有指定的注解。
+（9）@annotation
+    格式：@annotation(注解类型)：匹配被调用的方法上有指定的注解。
+（10）@bean
+    格式：bean(bean名称)，用在spring环境中，匹配容器中指定名称的bean。
+（11）reference pointcut
+    表示引用其他命名切入点。可以将切入专门放在一个类中集中定义，其他地方可以通过引用的方式引入其他类中定义的切入点。
+    
+    public class AspectPcDefine {
+        @Pointcut("bean(bean1)")
+        public void pc1(){
+        }
+
+        @Pointcut("bean(bean2)")
+        public void pc2(){
+        }
+    }
+
+    @Aspect
+    public class AspectTest{
+        @Pointcut("com.test.AspectPcDefine.pc1()")
+        public void pointcut1(){
+        }
+    }
+（12）组合型的pointcut
+    &&：多个匹配都需要满足
+    ||：多个匹配中只需满足一个
+    ！：匹配不满足的情况下
+    @Pointcut("bean(bean1) || bean(bean2)") //匹配bean1或者bean2
+    @Pointcut("@target(Ann1) && @target(Ann2)") //匹配目标类上有Ann1注解以及Ann2注解
+    @Pointcut("@target(Ann1) && !@target(Ann2)") //匹配目标类上有Ann1注解但是没有Ann2注解
+
+5.@Aspect中的5种通知
+（1）@Before：前置通知，在方法执行之前执行
+    被@Before标注的方法参数可以为空，或者为JoinPoint类型，当为JoinPoint类型时，必须为第一个参数。
+    通知中获取被调用方法信息：
+        非环绕通知，可以将org.aspectj.lang.JoinPoint作为通知方法的第一个参数，通过该参数获取被调用方法的信息。
+        环绕通知，将org.aspectj.lang.ProceedingJoinPoint作为方法的第一个参数，通过该参数获取信息。
+（2）@Around：环绕通知
+（3）@Afte：后置通知
+    不管目标方法是否有异常，后置通知都会执行。
+（4）@AfterReturning：返回通知
+    可以获取到方法的返回值，当目标方法返回异常的时候，这个方法不会被调用。
+    该注解用到了两个参数：
+        value：用来指定切入点
+        returning：用来指定返回值对应方法的参数名称，返回值对应方法的第二个参数。
+（5）@AfterThrowing：异常通知
+    被标注的方法可以指定异常的类型，当被调用的方法触发该异常及其子类型的异常之后，会触发异常的回调，
+    也可以不指定异常类型，此时会匹配所有异常。
+    
+
+
+4.综合示例
+    public class Service1{
+        public void m1(){
+            System.out.println("m1方法");
+        }
+
+        public void m2(){
+            System.out.println("m2方法");
+        }
+    }
+
+    //这个类使用@Aspect进行标注
+    @Aspect
+    public class Aspect1{
+
+        //定义一个切点，可以匹配Service1中所有方法
+        @Pointcut("execution(*com.test.service.Service1.*(..))")
+        public void pointcut(){
+        }
+
+        //定义一个前置通知，这个通知对上面定义的切入点中的所有方法奏效
+        @Before(value="pointcut()")
+        public void before(JoinPoint joinPoint){
+            System.out.println("前置通知");
+        }
+
+        //定义了一个异常通知，这个通知对上面定义的切点所有方法奏效
+        @AfterThrowing(value="pointcut()",throwing="e")
+        public void after(JoinPoint joinPoint,Exception e){
+            System.out.println("异常通知"+e.getMessage());
+        }
+    }
+
+    public class Test{
+        @Test
+        public void test(){
+            try{
+                Service1 target = new Service1();
+                AspectJProxyFactory proxyFactory = new AspectJProxyFactory();
+                proxyFactory.setTarget(target);
+                proxyFactory.addAspect(Aspect1.class);
+                Service1 proxy = proxyFactory.getProxy();
+                proxy.m1();
+            }catch(Exception e){
+            }
+        }
+    }
+
 三、注解使用
 1.自定义注解
 
