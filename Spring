@@ -147,10 +147,8 @@
 （5）@AfterThrowing：异常通知
     被标注的方法可以指定异常的类型，当被调用的方法触发该异常及其子类型的异常之后，会触发异常的回调，
     也可以不指定异常类型，此时会匹配所有异常。
-    
 
-
-4.综合示例
+6.综合示例
     public class Service1{
         public void m1(){
             System.out.println("m1方法");
