@@ -408,3 +408,49 @@ getAsyncUncaughtExceptionHandler方法，返回自定义的异常处理器，当
         }
 
     }
+
+5.@Scheduled 和 @EnableScheduling
+@Scheduled配置定时规则
+（1）cron
+    秒 分 时 日 月 周 年(非必填)
+    * 表示所有值，例如在分上设置表示每一分钟都会触发。
+    ? 表示不指定值
+    - 表示区间，例如在小时上设置 10-12 ，表示10，11，12都会触发。
+    , 表示指定多个值，例如在周字段上设置“MON,WED,FRI”表示周一、三、五触发。
+    / 表示递增触发，例如在秒上设置 5/15 表示从5秒开始，每增15秒触发（5，20，35，50），在日字段上设置 1/3 表示每月1号开始，每隔三天触发一次。
+    L 表示最后的意思，例如在日字段上设置表示当月的最后一天。在周字段上设置表示星期六，相当于7或者SAT，在L前加数字表示该数据的最后一个，周上设置6L表示本月最后一个周五。
+    W 表示离指定日期最近的工作日
+    # 表示每月的第几个周几，例如周字段上设置 6#3 表示每月的第三个周六。
+
+    示例
+    每隔5秒执行一次： */5 * * * * ?
+    每隔1分钟执行一次： 0 */1 * * * ?
+    每天23点执行一次： 0 0 23 * * ?
+    每天凌晨1点执行一次： 0 0 1 * * ?
+    每月1号凌晨1点执行一次： 0 0 1 1 * ?
+    每月最后一天23点执行一次： 0 0 23 L * ?
+    每周星期六凌晨1点执行一次： 0 0 1 ? * L
+    在26分、29分、33分执行一次： 0 26,29,33 * * * ?
+（2）fixedDelay
+    上一次执行完毕时间点之后多长时间再执行。
+    @Scheduled(fixedDelay = 5000)   上一次执行完毕时间点之后5秒再执行
+（3）fixedDelayString
+    与fixedDelay意思相同，只是使用字符串的形式，支持占位符。
+    @Scheduled(fixedDelayString = "5000")   上一次执行完毕时间点之后5秒再执行
+    @Scheduled(fixedDelayString = "${time.fixedDelay}")
+（4）fixedRate
+    上一次开始执行时间点之后多长时间再执行。
+    @Scheduled(fixedRate = 5000)    上一次开始执行时间点之后5秒再执行
+（5）fixedRateString
+    与fixedRate意思相同，只是使用字符串的形式，支持占位符。
+（6）initialDelay
+    第一次延迟多长时间再执行。
+    @Scheduled(initialDelay = 1000, fixedRate = 5000)   第一次延迟1秒后执行，之后按fixedRate的规则每5秒执行一次
+（7）initialDelayString
+    与initialDelay意思相同，只是使用字符串的形式，支持占位符。
+为定时器定义线程池
+    @Bean
+    public ScheduledExecutorService taskExecutor(){
+        int corePoolSize = 20;
+        return new ScheduledThreadPoolExecutor(corePoolSize);
+    }
