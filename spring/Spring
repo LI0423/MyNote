@@ -28,16 +28,119 @@
     byType：查找所有的set方法，将符合参数类型的bean注入。
 
 2.SpringBean的生命周期
-    Spring启动，查找并加载需要被Spring管理的Bean，进行Bean的实例化；
+    Spring启动，查找并加载需要被Spring管理的Bean，将Bean解析成Spring内部的BeanDefinition结构，进行Bean的实例化；
     Bean实例化后对将Bean的引入和值注入到Bean的属性中；
     如果Bean实现了BeanNameAware接口的话，Spring将Bean的Id传递给setBeanName()方法；
     如果Bean实现了BeanFactoryAware接口的话，Spring将调用setBeanFactory()方法，将BeanFactory容器实例传入；
     如果Bean实现了ApplicationContextAware接口的话，Spring将调用Bean的setApplicationContext()方法，将Bean所在应用上下文传入进来；
-    如果Bean实现了BeanPostProcesser接口，Spring将调用postProcessBeforeInitialization()方法；
+    如果Bean实现了BeanPostProcessor接口，Spring将调用postProcessBeforeInitialization()方法；
     如果Bean实现了InitializingBean接口，Spring将调用他们的afterPropertiSet()方法；
     如果Bean实现了BeanPostProcessor接口，Spring将调用它的postProcessAfterInitialization()方法；
     此时，Bean已经准备就绪，可以被应用程序使用了，将一直驻留在应用上下文中，直到应用上下文被销毁；
     如果bean实现了DisposableBean接口，Spring将调用它的destory()接口方法，同样，如果bean使用了destroy-method声明销毁方法，该方法也会被调用。
+
+（1）springbean元信息配置阶段
+            spring容器启动的过程中会将bean解析成spring内部的beanDefinition结构，里面包含了bean定义的各种信息，如bean对应的class、scope、lazy信息、
+        dependson信息、autowireCandidate（是否是候选对象）、primary（是否是主要的候选者）等信息。
+        public class ApiBeanMetaDataConfigDemo{
+            public static class void main(String[] args){
+                //创建注解相关的上下文
+                AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();
+                //创建GenericBeanDefinition
+                GenericBeanDefinition beanDefinition = new GenericBeanDefinition();
+                //设置BeanClass
+                beanDefinition.setBeanClass(User.class);
+                //设置属性
+                MutablePropertyValues propertyValues = new MutablePropertyValues();
+                propertyValues.addPropertyValue("name","小明");
+                propertyValues.addPropertyValue("age",18);
+                propertyValues.setPropertyValues(propertyValues);
+                //注册BeanDefinition
+                context.registerBeanDefinition("user",beanDefinition);
+                //刷新IOC容器
+                context.refresh();
+                //获取Bean
+                User user = context.getBean("user",User.class);
+                context.close();
+            }
+        } 
+（2）springbean元信息解析阶段
+        将各种方式定义的bean配置信息解析为BeanDefinition对象。
+（3）springbean注册阶段
+        需要用到一个非常重要的接口：BeanDefinitionRegistry。将BeanDefin配置元信息保存到BeanDefinitionRegistry的ConcurrentHashMap中。
+        public class BeanDefinitionRegistryTest{
+            public void test(){
+                //创建一个bean工厂，这个默认实现了BeanDefinitionRegisty接口，所以是一个bean注册器
+                DefaultListableBeanFactory factory = new DefaultListableBeanFactory();
+                //定义一个bean
+                GenericBeanDefinition nameBdf = new GenericBeanDefinition();
+                nameBdf.setBeanClass(String.class);
+                nameBdf.getConstructorArgumentValues().addIndexedArgumentValue(0,"小明");
+                //将bean注册到容器中
+                factory.registerBeanDefinition("name",nameBdf);
+                //别名相关方法
+                factory.registerAlias("name","alias-name-1");
+            }
+        }
+（4）spring BeanDefinition合并阶段
+    定义的Bean可能存在层次性关系，需要将它们进行合并，合并的时候进行递归合并，存在相同配置则覆盖父属性，最终生成一个RootBeanDefinition。
+（5）Bean Class加载阶段
+    将bean的class名称转换为Class类型的对象。
+（6）Bean实例化前阶段，org.springframework.beans.factory.config.InstantiationAwareBeanPostProcessor.postProcessBeforeInstantiation
+    applyBeanPostProcessorsBeforeInstantiation()这个方法是在bean实例化之前可以创建一个对象作为bean实例，而跳过spring内部实例化bean的过程。
+（7）Bean实例化阶段：调用构造方法创建对象
+    通过反射来调用bean的构造器来创建bean的实例，具体要使用哪个构造器，spring为开发者提供了一个接口，允许开发者自己来判断用哪个构造器。
+    public class MySmartInstantiationAwareBeanPostProcessor implements MySmartInstantiationAwareBeanPostProcessor{
+        @Nullable
+        @Override
+        public Constructor<?>[] determineCandidateConstructors(Class<?> beanClass,String beanName) throws BeanException{
+            Constructor<?>[] declareConstructors = beanClass.getDeclaredConstructors();
+            if(declareConstructors != null){
+                //获取有指定注解的构造器列表
+                List<Constructor<?>> collect = Arrays.stream(declareConstructors).
+                        .filter(constructor -> constructor.isAnnotationPresent(MyAnnotation.class))
+                        .collect(Collectors.toList);
+                Constructor[] constructors = collect.toArray(new Constructor[collect.size()]);
+                return constructors.length != 0 ? constructors : null;
+            } else {
+                return null;
+            }
+        }
+    }
+（8）对合并后的RootBeanDefinition进行处理，org.springframework.beans.factory.support.MergedBeanDefinitionPostProcessor.postProcessMergedBeanDefinition
+    postProcessMergedBeanDefinition有两个实现类：
+        org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor在postProcessMergedBeanDefinition方法中对@Autowired、@Value标注的方法、字段进行缓存。
+        org.springframework.context.annotation.CommonAnnotationBeanPostProcessor在postProcessMergedBeanDefinition方法中对@Resource标注的字段、方法、@PostConstruct标注的字段、
+    @PreDestroy标注的方法进行缓存。
+（9）Bean属性赋值阶段
+    在Spring实例化后，需要对其相关属性进行赋值，注入依赖的对象。首先获取该对象所有属性与属性值的映射，可能已定义，也可能需要注入，在这里都会进行赋值（反射机制）。依赖注入的实现是
+    通过CommonAnnotationBeanPostProcessor（@Resource、@PostConstruct、@PreDestroy）和AutowiredAnnotationBeanPostProcessor（@Autowired、@Value）两个处理器实现
+（10）Aware接口回调阶段
+    依次调用9个Aware接口
+        BeanNameAware       //将bean的名称注入进去
+        BeanClassLoaderAware        //将BeanClassLoader注入进去
+        BeanFactoryAware        //将BeanFactory注入进去
+        EnvironmentAware
+        EmbeddedValueResolverAware
+        ResourceLoaderAware
+        ApplicationEventPublisherAware
+        MessageSourceAware
+        ApplicationContextAware
+（11）SpringBean初始化阶段
+    调用SpringBean配置的初始化方法，执行顺序：
+        调用BeanPostProcessor接口的postProcessBeforeInitialization方法
+        调用@PostConstruct标注的所有方法
+        调用InitializingBean接口的afterPropertiesSet方法
+        调用bean自定义的初始化方法
+（12）SpringBean初始化完成阶段
+    在所有的Bean（不是抽象、单例模式、不是懒加载方式）初始化后，Spring会再次遍历所有初始化好的单例Bean对象，如果是SmartInitializingSingleton类型则调用afterSingletonInstantiated()方法。
+（13）SpringBean销毁阶段
+    当Spring应用上下文关闭或者主动销毁某个bean时进入bean销毁阶段，依次执行以下操作
+        调用org.springframework.beans.factory.config.DestructionAwareBeanPostProcessor接口的postProcessBeforeDestruction方法
+        调用@PreDestroy标注的所有方法
+        调用DisposalBean接口的destroy方法
+        调用自定义的销毁方法
+（14）Spring垃圾回收阶段（GC）
     
 二、AOP
 1.相关术语
@@ -47,7 +150,7 @@
         环绕通知（Around）、异常通知（After-throwing）、返回通知（After-returning），在spring中通过代理模式实现AOP，并通过拦截器模式以环绕连接点的拦截器链织入通知。
     切面（Aspect）：横切关注点的模块化，可以认为是通知、引入和切入点的组合，在spring中可以使用Schema和@AspectJ方式进行组织实现。
     引入（inter-type）：也称内部类型声明，为已有的类添加额外新的字段或方法，Spring允许引入新的接口到所有被代理对象。
-    目标对象（Target Object）：需要被织入横切关注点的对象，，由于spring AOP通过代理模式实现，而这个对象永远是被代理对象。
+    目标对象（Target Object）：需要被织入横切关注点的对象，由于spring AOP通过代理模式实现，而这个对象永远是被代理对象。
     织入（Weaving）：把切面连接到其他的应用程序类型或者对象上，并创建一个被通知的对象。可以在编译时，类加载时和运行时完成。spring在运行时完成织入。
     AOP代理（AOP Proxy）：AOP框架使用代理模式创建对象，从而实现在连接点处插入通知，在spring中AOP代理可以用JDK动态代理或CGLIB代理实现，而通过拦截器模型应用切面。
 
@@ -420,7 +523,7 @@ getAsyncUncaughtExceptionHandler方法，返回自定义的异常处理器，当
     / 表示递增触发，例如在秒上设置 5/15 表示从5秒开始，每增15秒触发（5，20，35，50），在日字段上设置 1/3 表示每月1号开始，每隔三天触发一次。
     L 表示最后的意思，例如在日字段上设置表示当月的最后一天。在周字段上设置表示星期六，相当于7或者SAT，在L前加数字表示该数据的最后一个，周上设置6L表示本月最后一个周五。
     W 表示离指定日期最近的工作日
-    # 表示每月的第几个周几，例如周字段上设置 6#3 表示每月的第三个周六。
+    '#' 表示每月的第几个周几，例如周字段上设置 '6#3' 表示每月的第三个周六。
 
     示例
     每隔5秒执行一次： */5 * * * * ?
@@ -454,3 +557,65 @@ getAsyncUncaughtExceptionHandler方法，返回自定义的异常处理器，当
         int corePoolSize = 20;
         return new ScheduledThreadPoolExecutor(corePoolSize);
     }
+
+6.@Qualifier
+    在依赖注入查找候选者的过程中对候选者进行过滤。
+（1）用在类上
+    限定符为tag时，进行bean注入的时候只会将类上限定符为tag的bean注入进来。
+    @Component
+    @Qualifier("tag")
+    public class Service implements IService{
+    }
+
+    @Component
+    public class test{
+        @Autowired
+        @Qualifier("tag")
+        private Map<String,IService> service;
+    }
+（2）@Autowired接合@Qualifier指定注入的bean
+    如果类上没有使用@Qualifier注解，在注入的时候也bean的名称就是限定符的值。
+    @Component
+    public class test{
+        @Autowired
+        @Qualifier("service1")
+        private Map<String,IService> service;
+    }
+（3）用在方法参数上
+    public class test{
+        private IService s1;
+        private IService s2;
+
+        @Autowired
+        public void testInject(@Qualifier("service1") IService s1,@Qualifier("service2") IService s2){
+        }
+    }
+7.@Primary
+    注入依赖的过程中，如果有多个候选者，可以指定哪个候选者为主要的候选者。
+（1）用在类上
+    @Component
+    @Primary
+    public class Service implements IService{
+    }
+（2）用在方法上，接合@Bean使用
+    public class Service2 implements IService{
+    }
+
+    @Configuration
+    public class MainConfig{
+        @Bean
+        public IService service1(){
+            return new Service1();
+        }
+        @Bean
+        @Primary
+        public IService service2(){
+            return new Service2();
+        }
+    }
+
+    public class InjectTest(){
+        @Autowired
+        private IService service1;
+    }
+
