@@ -1,0 +1,134 @@
+动态规划
+动态规划应用于子问题重叠的情况，不同的子问题具有公共的子子问题（子问题的求解是递归进行的，将其划分为更小的子问题）。
+动态规划对于每一个子子问题只求解一次，将其保存在一个表格里面，无需每次求解一个子子问题都重新计算。
+应用场景：
+    动态规划方法一般用来求解最优化问题，这类问题可以有很多可行解，每个解都有一个值，希望找到具有最优值的解，称这样
+    的解为问题的一个最优解，而不是最优解，因为可能有多个解都达到最优值。
+动态规划步骤：
+    定义一个状态，这是一个最优解的结构特征。
+    进行状态递推，得到递推公式。
+    进行初始化。
+    返回结果。
+
+示例一：斐波那契数列
+动规分析：
+    状态：f(i)表示第i个斐波那契数列
+    初始化：f(0)=0;
+           f(1)=1;
+           f(2)=1;
+    状态递推：f(i)=f(i-1)+f(i-2)
+    返回结果：f(n)
+代码：
+    class Solution{
+        public int Fibonacci(int n){
+            int[] dp = new int[n];
+            dp[0] = 0;
+            if(n<=0){
+                return dp[0];
+            }
+            dp[1] = 1;
+            if(n==1){
+                return dp[1];
+            }
+            dp[2] = 1;
+            for(int i = 0;i <= n;i++){
+                dp[i] = dp[i-1] + dp[i-2];
+            }
+            return dp[n];
+        }
+    }
+
+示例二：变态青蛙跳台阶
+    一只青蛙一次可以跳上1级台阶，也可以跳上2级...也可以跳n级，求该青蛙跳上一个n级台阶总共有多少种跳法。
+动规分析：
+    状态：f(i)表示一共i阶台阶青蛙跳的方法
+    状态递推：
+        假设两步跳完：
+            第一步跳1，2，...，n阶
+            第二步跳f(i-1)，f(i-2)，...，f(0)
+            f(i)=f(i-1)+f(i-2)+...f(0)
+            f(i-1)=f(i-2)+f(i-3)+...+f(0)
+            f(i)=2f(i-1);
+    初始化：f(1)=1
+    返回结果：f(n)
+代码：
+    class Solution{
+        public int jumpFloorII(int num){
+            if(num < 0){
+                return 0;
+            }
+            int total = 1;
+            for(int i = 0; i < num; i++){
+                total = 2 * total;
+            }
+            return total;
+        }
+    }
+
+示例三：矩形覆盖
+    可以用2*1的小矩形横着或者竖着去覆盖更大的矩形，请问用n个2*1的小矩形无重叠的覆盖一个2*n的大矩形总共有多少种方法。
+动态分析：
+    状态：f(i)表示覆盖一个2*i的矩形的方法数
+    状态递推：
+        第一步竖着放一个f(i-1)
+        第一步横着放一个f(i-2)
+        f(i) = f(i-1)+f(i-2)
+    初始化：f(0)=0
+           f(1)=1
+           f(2)=2
+    返回结果：f(n)
+代码：
+    class Solution{
+        public int rectCover(int num){
+            if(num <= num){
+                return 0;
+            }
+            if(num == 1){
+                return 1;
+            }
+            if(num == 2){
+                return 2;
+            }
+            int[] dp = new int[num+1];
+            int[0] = 0;
+            int[1] = 1;
+            int[2] = 2;
+            for(int i = 0;i <= num; i++){
+                dp[i] = dp[i-1] + dp[i-2];
+            }
+            return dp[num];
+        }
+    }
+
+示例四：最大连续数列和
+    对于一个有正有负的整数数组，请找出总和最大的连续数列。给定一个int数组A和数组大小n，请返回最大的连续数列的和。
+    数组：{6,-3,7,-15,1,22}
+动规分析：
+    状态：f(i)表示以array[i]结尾的连续子序列的最大和。
+    状态递推：
+        前1个元素构成的子序列 {6}
+        前2个元素构成的子序列 {6,-3},{-3}
+        前3个元素构成的子序列 {6,-3,7},{-3,7}{7}
+        f(i)=f(i-1)+array[i]
+        f(i)=max(f(i-1)+array[i],array[i])
+    初始化：f(0)=array[0]
+    返回结果：max(f(i),result)
+代码：
+    class Solution{
+        public void getMaxSum(int[] nums,int n){
+            if(nums.length <= 0){
+                return 0
+            }
+            int[] dp = new int[nums.length];
+            dp[0] = nums[0];
+            for(int i = 1; i < nums.length;i++){
+                dp[i] = max(dp[i-1]+nums[i],nums[i]);
+            }
+            int result = nums[0];
+            for(int i = 0; i < nums.length; i++){
+                result = max(dp[i],result);
+            }
+            return result;
+        }
+    }
+
