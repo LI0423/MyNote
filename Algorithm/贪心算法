@@ -1,0 +1,71 @@
+贪心算法
+示例一：部分背包问题
+    假设商店中有3种商品，各自的重量和收益是：
+    商品1：重量10斤，收益60元。
+    商品2：重量20斤，收益100元。
+    商品3：重量30斤，收益120元。
+    对于每件商品，顾客可以购买商品的一部分（可再分）。背包最多只能装50斤的商品，如何才能收货最大的收益。
+代码：
+    public class Solution{
+        public static void sort(float[] w, float[] p){
+            int length = w.length;
+            float [] v =new float[length];
+            for(int i = 0 ; i < length; i++){
+                v[i] = p[i]/w[i];
+            }
+            //根据v数组记录的各个商品收益率的大小，同时对w和p数组进行排序
+            for(int i = 0; i < length; i++){
+                for(int j = i + 1; j < length; j++){
+                    if(v[i] < v[j]){
+                        float temp = v[i];
+                        v[i] = v[j];
+                        v[j] = temp;
+                        temp = w[i];
+                        w[i] = w[j];
+                        w[j] = temp;
+                        temp = p[i];
+                        p[i] = p[j];
+                        p[j] = temp;
+                    }
+                }
+            }
+        }
+
+        //w:记录各个商品的总重量
+        //p:记录各个商品的总价值
+        //result:记录各个商品装入背包的比例
+        //W:背包的容量
+        public static void fractionalKnapsack(float[] w, float[] p, float[] result,float W){
+            //根据收益率，重新对商品进行排序
+            sort(w,p);
+            int i = 0;
+            //从收益率最高的商品开始装入背包，直至背包装满为止
+            while(W>0){
+                float temp = W > w[i]?w[i]:W;
+                result[i] = temp / w[i];
+                W -= temp;
+                i++;
+            }
+        }
+
+        public static void main(String[] args){
+            float W = 50;
+            float[] w = {10,30,20};
+            float[] p = {60,100,120};
+            float[] result = {0,0,0};
+            fractionalKnapsack(w,p,result,W);
+            float values = 0;
+            for(int i = 0; i < w.length; i++){
+                if(result[i] == 1){
+                    System.out.println("总重量为"+w[i]+",总价值为"+p[i]+"的商品全部装入");
+                    values += p[i];   
+                } else if(result[i] == 0){
+                    System.out.println("总重量为"+w[i]+",总价值为"+p[i]+"的商品不装");
+                } else {
+                    System.out.println("总重量为"+w[i]+",总价值为"+p[i]+"的商品全部装入"+result[i]*100+"%");
+                    values += p[i] * result[i];
+                }
+            }
+            System.out.println("最终收货的商品价值为"+values);
+        }
+    }
