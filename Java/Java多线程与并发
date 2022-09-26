@@ -255,4 +255,44 @@ Java多线程与并发
 
 （2）源码分析
     CountDownLatch的底层是由AQS支持的，AQS核心数据结构是两个队列，一个是同步队列（sync queue），一个是条件队列（condition queue）。
-    
+
+15.线程池
+（1）线程池的三种类型
+    newFixedThreadPool：线程池中的线程数量达到corePoolSize，即使当前没有可执行任务，也不会释放空闲线程。由于使用的无界阻塞队列LinkedBlockingQueue，线程池里的数量不超过
+        corePoolSize时，MaximumPoolSize和KeepAliveTime就会是个无用参数。由于是无界队列，那么饱和策略就会失效。
+    newSingleThreadPool：初始化的线程池中只有一个线程，由于使用的是无界队列，则饱和策略就会失效。如果该线程因为异常失效，那么就会重新创建一个线程，单个线程保证了提交的任务顺序执行。
+    newCachedThreadPool：内部使用SynchronousQueue作为阻塞队列，与newFixedThreadPool不同的是，当线程空闲时间超过keepAliveTime时会释放空闲的线程，提交任务没有空闲线程时则会
+        自动创建，会给程序带来一定的开销。
+（2）线程池重要参数
+    corePoolSize：线程池中的核心任务数，当提交一个任务，线程池就会创建一个任务，直到线程池中的线程数量达到corePoolSize，即使线程池中有空闲线程也会去创建新的线程。
+        一般设置为cpu核数：cpuNum = Runtime.getRuntime().avaliableProcessors();
+        IO密集型任务：对IO占用高，对CPU的需求较少，最大线程数可以多开点，这样可以更充分地利用CPU资源，tomcat的默认线程数就是200.核心线程数=CPU核数/（1-阻塞系数）或CPU核数*2。
+        计算密集型任务：对CPU需求较高，最大线程数就不需要开太多，CPU核心数就那么多，开太多反而会增加线程上下文切换的时间。核心线程数=CPU核数+1或为CPU核数*2.
+    maximumPoolSize：线程中允许的最大线程数，当阻塞队列满了，且有任务继续提交时就会继续创建线程，前提是线程池中的线程数小于maximumPoolSize。如果是无限阻塞队列maximumPoolSize
+        就会失效，提交的任务会不断的被放入队列中。一般设置为cpu核数的两倍。
+    workQueue：用来保存等待被执行的任务的阻塞队列。
+        ArrayBlockingQueue：基于数组结构的有界阻塞队列，按FIFO排序任务。
+        LinkedBlockingQueue：基于链表结构的阻塞队列，按FIFO排序任务，吞吐量要高于ArrayBlockingQueue。
+        SynchronousQueue：一个不存储元素的阻塞队列，每个插入操作必须等到另一个线程移除，否则一直处于阻塞状态，吞吐量要高于LinkedBlockingQueue。
+        PriorityBlockingQueue：具有优先级别的无界阻塞队列。
+            LinkedBlockingQueue比ArrayBlockingQueue在插入方面性能更优，但是两者在put()和take()操作时都需要加锁，SynchronousQueue根据任务的状态判断执行，不需要加锁。
+    keepAliveTime：线程空闲时的存活时间，默认情况下，这个参数在线程数大于corePoolSize的情况下才会生效，超过这个时间的空闲线程将会被终止。
+    unit：keepAliveTime的单位。
+    threadFactory：自定义的线程仓库，可以给生成的线程设置一个具有识别度的线程名，默认为DefaultThreadFactory。
+    Handler：线程池的饱和策略，当阻塞队列满了且没有空闲线程，必须采用一种饱和策略处理该任务。
+        Abortpolicy：直接抛出异常，默认策略。
+        CallerRunspolicy：用线程调用者来执行这个任务。
+        DiscardOldestPolicy：丢弃阻塞队列中最靠前的任务，并执行当前任务。
+        DiscardPolicy：直接丢弃任务。
+（3）线程池任务的提交
+    submit任务，等待线程池execute；执行FutureTask类的get方法时，会把主线程封装成WaitNode节点并保存在waiters链表中，并阻塞等待运行结果；FutureTask任务执行完成后，通过UNSAFE设置
+    相应的waitNode为NULL，并通过LockSupport类unpark方法唤醒主线程。
+（4）线程池任务的执行
+    线程池的工作线程通过Worker类来实现，在ReentrantLock的锁的保证下，将worker实例加入hashset，并启动Worker中的线程。线程工厂在创建线程thread时，将Woker实例本身this作为参数传入，
+    当执行start方法启动线程thread时，本质是执行了Worker的runWorker方法。firstTask执行完成之后，通过getTask方法从阻塞队列中获取等待的任务，如果队列中没有任务，getTask方法会被阻塞
+    并挂起，不会占用cpu资源。
+（5）关闭线程池
+    遍历线程池中的所有线程，然后逐个调用线程的interrupt()方法。
+    shutdown：将线程池中的线程状态设置为SHUTDOWN，然后关闭所有没有在执行任务的线程。
+    shutdownnow：将线程的状态设置为STOP，然后停止所有正在执行或者暂停执行任务的线程，只要调用这两个关闭方法中的任意一个，isShutDown()返回true。当所有任务都成功关闭了，
+        isTerminated()返回true。
