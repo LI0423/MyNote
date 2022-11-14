@@ -30,3 +30,7 @@
 
 10.Ubuntu关闭卡死程序
 	gnome-system-monitor
+
+11.查找文件位置
+	which xxx 
+	whereis xxx 
