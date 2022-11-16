@@ -853,6 +853,24 @@
             System.out.println("抽象方法2的实现被调用");
         }
     }
+
+    class ConcreteClass2 {
+        AbstractClass abstractClass = new AbstractClass(){
+            @Override
+            public void abstractMethod1(){
+                System.out.println("抽象方法1的实现");
+            }
+
+            @Override
+            public void abstractMethod2(){
+                System.out.println("抽象方法2的实现");
+            }
+        };
+        
+        abstractClass.abstractMethod1();
+        abstractClass.abstractMethod2();
+    }
+
 十五、策略模式
     1.定义
         该模式定义了一系列算法，并将每个算法封装起来，使它们可以相互替换，且算法的变化不会影响使用算法的客户。
