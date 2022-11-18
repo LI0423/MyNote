@@ -70,6 +70,16 @@
 二、例子
     public abstract Bank {
 
+        AService aservice;
+        
+        BService bservice;
+
+        //如果要使用service接口，可以通过构造方法来注入
+        public Bank(AService aservice, BService bservice){
+            this.aservice = aservice;
+            this.bservice = bservice;
+        }
+
         public void service(){
             getNum();
             doWait();
