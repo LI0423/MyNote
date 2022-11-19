@@ -265,6 +265,20 @@ B+树找到一个记录所需的比较次数比B-树多，但是一次磁盘访�
 
 3、Binlog写入机制
     常见的log event有：Query event、Row event、Xid event等。binlog 文件的内容就是各种Log event的集合。
+    在事务执行过程中，先把日志写到binlog cache，事务提交的时候再把binlog cache写到binlog文件中。
+    binlog cache在每个线程内空间独立的，如果启用了binlog日志，mysql会为每个session分配一个二进制日志缓存，如果经常使用大型事务，则可以增加此缓存大小来获得更好的性能，可以通过
+    binlog_cache_size配置其大小，默认为32768bytes。如果binlog cache空间足够，在事务提交的时候，cache中的内容会被清空，同时这些数据会被写入到binlog files中。因为binlog
+    内容无论多大在事务提交时都需要一次性写入，所以当binlog cache放不下的时候，就需要暂存到磁盘，然后提交被写入到binlog files。
+    写入到binlog中又拆分为两部分：
+        write：首先会写入page cache中的binlog files中，page cache就是一块内存。（不占用磁盘IOPS）
+        fsync：然后操作系统执行fsync时binlog才会从page cache中真正持久化到磁盘。（占用磁盘IOPS）
+    write和fsync时机：
+        sync_binlog=0：表示innodb不会主动控制将binlog落盘，innodb仅仅会将binlog写入到page cache中，至于什么时间将binlog刷入磁盘中完全依赖于操作系统，选这种策略，一旦操作系统宕机，
+        page cache中的binlog就会丢失。每次提交事务只是write，不执行fsync，也就是binlog不做持久化。
+        sync_binlog=1：表示事务commit时将binlog落盘，哪怕机器宕机了也能确保binlog会被写入到磁盘中。每次提交事务都要发生fsync。
+        sync_binlog=N：表示每次事务都会write，但是N次事务提交会执行fsync进行持久化。比如N=5，mysql就会收集5个binlog后再将这5个binlog一口气同步到磁盘上，好处是一次IO可以往磁盘上刷入
+        N个binlog，IO效率会有所提升，坏处是如果mysql收集了4个binlog时，服务器宕机，这4个binlog就会丢失。
+
 （1）根据记录模式和操作触发event事件生成log event（事件触发执行机制）
 （2）将事务执行过程中产生log event写入缓冲区，每个事务线程都有一个缓冲区。
     log event保存在一个binlog_cache_mngr数据结构中，在该结构中有两个缓冲区，一个是stmt_cache，用与存放不支持事务的信息；另一个是trx_cache，用于存放支持事务的信息。
