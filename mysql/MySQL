@@ -305,6 +305,33 @@ B+树找到一个记录所需的比较次数比B-树多，但是一次磁盘访�
 2.为什么要先写日志
     事务采用日志先行来保证数据是持久的，当一个事务提交时，其产生的所有日志必须先写到磁盘中，这样一来，如果在日志写入磁盘后，内存中的数据持久化前数据库发生了宕机，
     那么数据库重启时可以通过日志来保证数据的完整性。    
+3.二阶段提交原理
+    第一阶段（prepare阶段）：写redolog并将其标记为prepare状态。
+    第二阶段（commit阶段）：写binlog并将其标记为commit状态。
+4.采用二阶段提交的原因
+    主要是为了保证redolog和binlog数据的安全一致性。只有这两个日志文件逻辑上高度一致，才能放心使用redolog将数据库中的状态恢复成crash之前的状态，使用binlog实现数据备份、恢复以及主从复制。
+（1）先写redolog再写binlog
+    如果在一条语句写入redolog之后崩溃了，binlog则没有记录这条语句。系统在crash recovery时重新执行了一遍binlog便会少了这一次的修改。恢复的数据库少了这条更新。
+（2）先写binlog再写redolog
+    如果在一条语句写入binlog之后崩溃了，redolog则没有记录这条语句（数据库物理层面并没有执行这条语句）。系统在crash recovery时重新执行了一遍binlog便会多了这一次的修改。恢复
+    的数据库便多了这条更新。
+5.Crash Recovery
+    在做crash recovery时分为三种情况：
+        binlog有记录，redolog状态commit：正常完成的事务，不需要恢复；
+        binlog有记录，redolog状态prepare：在binlog写完提交事务之前的crash，恢复操作：提交事务（因为之前没有提交）。
+        binlog无记录，redolog状态prepare：在binlog写完之前的crash，恢复操作：回滚事务（因为crash时并没有成功写入数据库）。
+6.组提交
+    为了提高并发性能，mysql引入了binlog的组提交功能，prepare阶段不变，只针对commit阶段，将commit阶段拆分为三个过程：
+        flush stage：多个线程进入顺序将binlog从cache写入文件（不刷盘）；
+        sync stage：对binlog文件做fsync操作（多个线程的binlog合并一次刷盘）；
+        commit stage：各个线程按顺序做InnoDB commit操作。
+    每个阶段都有lock保护，因此保证了事务写入的顺序。
+    在每个stage设置一个队列，第一个进入该队列的线程会成为leader，后续进入的会阻塞支持完成提交。leader线程会领导队列中的所有线程执行该stage的任务，并带领所有follower进入到下一个stage去执行，
+    当遇到下一个stage为非空队列时，leader会变成follower注册到该队列中。
+    5.7版本中修改了组提交的flush阶段，在prepare阶段不再让线程各自执行flush redolog操作，而是推迟到组提交的flush阶段，flush stage修改如下逻辑：
+        收集组提交队列，得到leader线程，其余follower线程进入阻塞；
+        leader调用ha_flush_logs做一次redo write/sync，一次将所有线程的redolog刷盘；
+        将队列中的线程的所有binlog cache写到binlog文件中。
 
 九、mysql索引建立原则
 1、选择唯一性索引
