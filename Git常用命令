@@ -29,18 +29,17 @@ Git 我常用命令
 
 6.git暂存修改的代码
 	git stash		存储在本地，并将项目本次操作还原
-	git stash pop 		使用上一次暂存，并将这个暂存删除，使用该命令后，如果有冲突，终端会显示，如果有冲突需要先解决冲突（这就避			免了冲突提交服务器，将冲突留在本地，然后解决）
-	git stash list 		查看所有的暂存
-	git stash clear 	清空所有的暂存
-	git stash drop [-q|--quiet] [<stash>] 		删除某一个暂存，在中括号里面放置需要删除的暂存ID
-	git stash apply 		使用某个暂存，但是不会删除这个暂存
+	git stash pop 		使用上一次暂存，并将这个暂存删除，使用该命令后，如果有冲突，终端会显示，如果有冲突需要先解决冲突（这就避			免了冲突提交服务器，将冲突留在本地，然后解决）
+	git stash list 		查看所有的暂存
+	git stash clear 	清空所有的暂存
+	git stash drop [-q|--quiet] [<stash>] 		删除某一个暂存，在中括号里面放置需要删除的暂存ID
+	git stash apply 		使用某个暂存，但是不会删除这个暂存
 
 7.查看commit提交记录详情
 	git log		查看所有的commit提交记录
 	git show			查看提交的详情
 	git show commitId			查看指定commit的所有修改
 	git show commitId fileName			查看某次commit中具体文件的修改
-
 
 
 
