@@ -66,18 +66,39 @@
 1、insert
     #单条插入
     db.collection.insertOne({
-        {item:"canvas",qty:100,tags:["cotton"],size:{h: 28, w: 35.5, uom: "cm"}}
+        {"name":{"firstName": "Alice", "lastName": "Wang"}, "balance": 100, "currency":["CNY", "USD"], "gender": 1}
+    })
+    db.accounts.insertOne({
+        "name": {
+            "firstName": "Alice",
+            "lastName": "wang"
+        },
+        "balance": 50,
+        "currency": [
+            "CNY",
+            "USD"
+        ],
+        "gender": 2
     })
     #批量插入
-    db.collection.insertMany([
-        {item: "journal", qty: 25, tags: ["blank", "red"], size: {h: 14, w: 21, uom: "cm"}},
-        {item: "mat", qty: 85, tags: ["gray"], size: {h: 27.9, w: 35.5, uom: "cm"}}
+    db.transactions.insertMany([
+        {"name":{"firstName":"Alice","lastName":"Wang"}, "balance": 50, "currency":["CNY", "USD"], "gender": 2},
+        {"name":{"firstName":"Mike","lastName":"Zhang"}, "balance": 80, "currency":"GBP", "gender": 1},
+        {"name":{"firstName":"Jack","lastName":"Ma"}, "balance": 100, "currency":"CNY", "gender": 1},
+        {"name":{"firstName":"Jane","lastName":"May"}, "balance": 200, "currency":["CNY", "GBP"], "gender": 2},
+        {"name":{"firstName":"Lucy","lastName":"Liu"}, "balance": 150, "currency":["CNY", "USD"], "gender": 2}
+    ])
+    db.transactions.insertMany([
+        {"symbol": "600519", "qty": 100, "price": 567.4, "currency": "CNY"},
+        {"symbol": "AMZN", "qty": 1, "price": 1377.5, "currency": "USD"},
+        {"symbol": "AAPL", "qty": 2, "price": 150.7, "currency": "USD"}
     ])
     #批量插入用try{} catch(){}，如果某条数据插入失败将会终止插入，但已经插入的数据不会回滚掉
     try {
         db.collection.insertMany([
-        {item: "journal", qty: 25, tags: ["blank", "red"], size: {h: 14, w: 21, uom: "cm"}},
-        {item: "mat", qty: 85, tags: ["gray"], size: {h: 27.9, w: 35.5, uom: "cm"}}])
+        {"name":{"firstName":"Alice","lastName":"Wang"}, "balance": 50, "currency":["CNY", "USD"], "gender": 2},
+        {"name":{"firstName":"Mike","lastName":"Zhang"}, "balance": 80, "currency":"GBP", "gender": 1},
+        {"name":{"firstName":"Jack","lastName":"Ma"}, "balance": 100, "currency":"CNY", "gender": 1}])
     } catch(e) {
         print(e)
     }
@@ -86,29 +107,62 @@
     #查询，{}中可以添加筛选条件，例如：qty: 25 或qty: {$in: [25, 85]}  $gt $lt $or /^p/ 以p开头
     db.collection.find({})
     #查询并显示指定字段，1-显示，0-显示，例如：tags: 0
-    db.collection.find({qty: 25}, {tags: 1})
+    db.collection.find({"balance": 100}, {currency: 1})
     #查询一条，{}中可以添加筛选条件
     db.collection.findOne({})
     #分页查询，每页两条，查询第二页
     db.collection.find({}).limit(2).skip(2)
     #排序查询，默认是按照id升序，1-升序，-1降序
-    db.collection.find({"size.w","size.h"}).sort({"size.w": -1, "size.h": 1})
+    db.collection.find({"name.firstName","name.lastName"}).sort({"balance": -1, "gender": 1})
     #统计数据
-    db.collection.count({})
+    db.collection.countDocuments({})
+    db.accounts.countDocuments({"gender":2})
     #复杂查询
     db.collection.find({$and:[{}, {}]})     $or:[{},{}]
+    db.accounts.find({$and:[{"balance":{$gt:{100}}}, {"name.firstName":"Lucy"}]})
+    db.accounts.find({$or:[{"balance":{$gt:{100}}}, {"name.firstName":"Lucy"}]})
+    #数组查询
+    db.collection.find([{
+        array:{
+            $elemMatch:{
+                field:{
+                    $exists: true
+                }
+            }
+        }
+    }])
+    db.accounts.find({
+        "currency":{
+            $elemMatch:{
+                $in:["USD"]
+            }
+        }
+    })
+
+    db.teachingPlanTemplate_copy.find({
+	"_id": "63a5258dfbc32e3646057ead",
+	"contentList": {
+		$elemMatch: {
+			"contentTemplateList": {
+				$elemMatch: {
+					"title.content": "教学内容"
+				}
+			}
+		}
+	}
+})
+
 
 3、update
     格式：db.collection.update(query, update, options)
     #覆盖的更新，把所有字段直接替换为指定的内容
-    db.collection.update({item: "paper"}, {tags: ["gray"]})
-    db.collection.update({item: "paper"}, {$set: {tags: ["gray"]}}, {multi: true})
+    db.collection.update({"_id": ObjectId('63b57d57b7a04855a1a98efa')}, {$set: {"currency": ["CNY"]}})
+    db.collection.update({"_id": ObjectId('63b57d57b7a04855a1a98efa')}, {$set: {"currency": ["CNY"]}}, {multi: true})
     #单条更新
     db.collection.updateOne(
-        {item: "paper"},
-        {
-            $set: {"size.uom": "cm", status: "P"},
-            $currentDate: {lastModified: true}
+        "_id": ObjectId('63b57d57b7a04855a1a98efa')}, 
+        {$set: {
+            "currency": ["CNY", "USD"]
         }
     )
     #单条更新，$是占位符，只会占用一个位置，也就是说只会更新数组中第一个被匹配的元素。如果是数组嵌套数组，
@@ -135,9 +189,9 @@
         })
     #批量更新
     db.collection.updateMany(
-        {"qty": {$lt: 50}},
+        {"balance": {$lt: 100}},
         {
-            $set: {"size.uom": "in", status: "P"},
+            $set: {"currency": ["CNY", "GBP"], gender: 1},
             $currentDate: {lastModified: true}
         }
     )
@@ -150,14 +204,17 @@
     #删除所有数据
     db.collection.remove({})
     #单条删除
-    db.collection.deleteOne({status: "D"})
+    db.collection.deleteOne({"name.firstName": "Alice"})
     #批量删除，{}里面不加条件就是全部删除
-    db.collection.deleteMany({status: "A"})
+    db.collection.deleteMany({gender: 2})
 五、索引和聚合
 1、聚合
     主要用于处理数据（统计平均值，求和等），并返回计算后的数据结果。
-    db.collection.aggregate(AGGREGATE_OPERTION)，基于数据处理的聚合管道，每个文档通过一个由多个阶段（stage）组成的管道，可以对每个阶段的管道进行分组、过滤等功能，
+    db.collection.aggregate(<pipeline>, <options>)，基于数据处理的聚合管道，每个文档通过一个由多个阶段（stage）组成的管道，可以对每个阶段的管道进行分组、过滤等功能，
     然后经过一系列的处理，输出相应的结果。
+    allowDiskUse: <boolean> 每个聚合管道阶段使用的内存不能超过100MB，如果数据量较大，为了防止聚合管道阶段内存上限并抛出错误，可以启用allowDiskUse，启用之后，聚合阶段的
+        可以在内存容量不足时，将操作数据写入临时文件中，会写入dbPath下的_tmp文件夹，dbPath的默认值为/data/db。
+        db.collection.aggregate([{}],{allowDiskUse: true})
     $project：可以从文档中选择想要的字段和不想要的字段，也可以通过管道表达式进行一些复杂的操作，例如数学操作，日期操作，字符串操作，逻辑操作。相当于SQL中的as。
         { $project: {<specification>}}
             $project 管道符的作用是选择字段（指定字段，添加字段，不显示字段，排除字段等），重命名字段，派生字段。
@@ -205,18 +262,47 @@
         ])
     $group：将集合中的文档分组，可用于统计结果。注意分组统计后的结果是一个文档对象还是一个数组。
         {$group: {_id: <expression>, <field>: {<accumulator1> : <expression>}, ...}}
-        _id字段必填，表示以什么分组，但是可以指定_id值为null来统计整个集合。
-        剩余的字段是可选的，并使用<accumulator>运算符进行计算。
+        _id必填字段，表示以什么分组，但是可以指定_id值为null来统计整个集合。剩余的字段是可选的，并使用<accumulator>运算符进行计算。
         _id和<accumulator>表达式可以接受任何有效的表达式
+        不使用聚合操作符的情况下，$group可以返回管道文档中某一字段的所有（不重复的）值。
         常用操作符：
             $sum({"$sum":1} 表示统计结果，{"$sum":"$key"}对那个key求和)，$avg，$min，$max
             $push，在结果文档中插入值到一个数组中
             $addToSet，在结果文档中插入值到一个集合中
             $first，根据资源文档的排序获取第一个文档数据
             $last，根据资源文档的排序获取最后一个文档数据
+        🌰例子：
+        db.transactions.aggregate([
+            {
+                $group: {
+                    _id: "$currency"
+                }
+            }
+        ])
+        db.transactions.aggregate([
+            {
+                $group: {
+                    _id: "$currency",
+                    totalQty: {$sum: "$qty"},
+                    totalNotional: {$sum: {$multiply: ["$price", "$qty"]}},
+                    avgPrice: {$avg: "$price"},
+                    count: {$sum: 1},
+                    maxNotional: {$max: {$multiply: ["$price", "$qty"]}},
+                    minNotional: {$min: {$multiply: ["$price", "$qty"]}}
+                }
+            }
+        ])
+        db.transactions.aggregate([
+            {
+                $group:{
+                    _id: "$currency",
+                    symbols: {$push: "$symbol"}
+                }
+            }
+        ])
     $limit：限制传递到管道中下一阶段的文档数。
         🌰例子：
-        $db.collection.aggregate([
+        db.collection.aggregate([
             { $limit: 1 }
         ])
     $skip：在聚合管道中跳过指定数量的文档，并返回余下的文档。
@@ -238,10 +324,10 @@
         includeArrayIndex，分配一个存该数组索引的字段，可不写，如果该字段为非数组则返回结果为null
         preserveNullAndEmptyArrays，是否输出空内容，可不写，true为输出
         🌰例子：
-        $db.collection.aggregate([
+        db.collection.aggregate([
             {
                 $unwind: {
-                    path: "$path"
+                    path: "$currency"
                 }
             }
         ])
@@ -254,13 +340,23 @@
                 foreignField: <field from the documents of the "from" collection>,
                 as: <output array field>
             }
+
+        #适用于不相关查询
+        $lookup:
+            {
+                from: <collection to join>,
+                let: {<var_1>: <expression>, ..., <var_n>: <expression> },
+                pipeline: [<pipeline to execute on the collection to join>],
+                as: <output array field>
+            }
     }
         from：同一个数据库下等待被join的集合
         localField：当前集合中的key，如果输入的集合中，文档没有localField这个key（Field），在处理过程中，会默认为此文档含有localField：null的键值对
         foreignField：待join集合的key，如果待join的集合中，文档没有foreignField值，在处理过程中，会默认为此文档含有foreignField：null的键值对
         as：为输出文档的新增key命名。如果输入的集合中存在，则会覆盖掉
+        let：对查询集合中的文档使用聚合阶段进行处理时，如果需要参考管道文档中的字段，则必须使用let参数对字段进行声明。
         🌰例子：
-        $db.collection.aggregate([
+        db.collection.aggregate([
             {
                 $lookup: {
                     from: "otherDB",
@@ -273,7 +369,7 @@
     $count：在前面的聚合操作之后统计结果数
         ${ $count: <string>}
         🌰例子：
-        $db.collection.aggregate([
+        db.collection.aggregate([
             {
                 $group: {""},
                 $count: {
@@ -283,12 +379,37 @@
         ])
     $bucket：对集合中的某个字段做分区间统计
     $facet：对集合中的多个字段做分区间统计，就是包含多个$bucket的操作
+    $out: 将聚合管道中的文档写入一个新的集合
+        🌰例子：
+        db.transactions.aggregate([
+            {
+                $group:{
+                    _id: "$currency",
+                    symbols: {$push: "$symbol"}
+                }
+            },
+            {
+                $out: "output"
+            }
+        ])
+        #如果把管道中的数据输入到一个已经存在的集合中时，会覆盖掉已存在的数据，存入新的数据，如果聚合管道操作遇到错误，管道阶段不会创建新集合或是覆盖已存在的集合内容。
+        db.transactions.aggregate([
+            {
+                $group: {
+                    _id: "$symbol",
+                    totalNotional: {$sum: {$multiply: ["$price", "$qty"]}}
+                }
+            }, 
+            {
+                $out: "output"
+            }
+        ])
 
     #sort对应的条件，1是升序，-1是降序
-    db.collection.aggregate([
-        {$match: {status: "A"}},
-        {$group: {_id: "$cust_id", total: {"$sum": "$amount"}}},
-        {$sort: {total: -1}}
+    db.accounts.aggregate([
+        {$match: {"gender": 2}},
+        {$group: {_id: "$_id", total: {"$sum": "$balance"}}},
+        {$sort: {balance: -1}}
     ])
 
     #集合统计查询
@@ -407,8 +528,170 @@
     ])
     相当于SQL：select count(*) from (select cust_id, ord_date from collection group by cust_id, ord_date) as DerivedTable
 
+    db.accounts.aggregate([{
+        $lookup: {
+            from: "collection",
+            localField: "currency",
+            foreignField: "ccy",
+            as: "forexData"
+        }
+    }])
 
+    db.accounts.aggregate([{
+        $lookup: {
+            from: "collection",
+            pipeline: [{
+                $match: {
+                    "ccy": "USD"
+                }
+            }],
+            as: "forexData"
+        }
+    }])
+
+    db.accounts.aggregate([{
+        $lookup: {
+            from: "collection",
+            let: {
+                bal: "$balance"
+            },
+            pipeline: [{
+                $match: {
+                    $expr: {
+                        $and: [
+                            {$eq: ["$ccy", "USD"]}, 
+                            {$gt: ["$$bal",100]
+                        }]
+                    }
+                }
+            }],
+            as: "forexData"
+        }
+    }])
+
+聚合操作的优化：
+顺序优化：
+    1、$project + $match，$match阶段会在$project阶段之前运行
+    优化前：
+        db.transactions.aggregate([
+            {
+                $project: {
+                    _id: 0, symbol: 1, currency: 1,
+                    notional: {$multiply: ["$price", "$qty"]}
+                }
+            },
+            {
+                $match: {
+                    currency: "USD",
+                    notional: { $gt: 1000}
+                }
+            }
+        ])
+    优化后：
+        db.transactions.aggregate([
+            {
+                $match: {
+                    currency: "USD"
+                }
+            },
+            {
+                $project: {
+                    _id: 0, symbol: 1, currency: 1,
+                    notional: {$multiply: ["$price", "$qty"]}
+                }
+            },
+            {
+                $match: {
+                    notional: { $gt: 1000}
+                }
+            }
+        ])
+    2、$sort + $match，$match阶段会在$sort阶段之前运行
+        db.transactions.aggregate([
+            {
+                $match: {
+                    currency: "USD"
+                }
+            },
+            {
+                $sort: {
+                    price: 1
+                }
+            }
+        ])
+    3、$project + $skip，$skip会在$project阶段之前运行
+    优化前：
+        db.transactions.aggregate([
+            {
+                $project: {
+                    _id: 0, symbol: 1, currency: 1,
+                    notional: {$multiply: ["$price", "$qty"]}
+                }
+            },
+            {
+                $skip: 2
+            }
+        ])
+    优化后：
+        db.transactions.aggregate([
+            {
+                $skip: 2
+            },
+            {
+                $project: {
+                    _id: 0, symbol: 1, currency: 1,
+                    notional: {$multiply: ["$price", "$qty"]}
+                }
+            }
+        ])
+合并优化：
+    1、$sort + $limit如果两者之间没有夹杂着会改变文档数量的聚合阶段，$sort和$limit阶段可以合并。
+        db.transactions.aggregate([
+            {
+                $sort: {price: 1}
+            },
+            {
+                $project: {
+                    _id: 0, symbol: 1, currency: 1,
+                    notional: {$multiply: ["$price", "$qty"]}
+                }
+            },
+            {
+                $limit: 2
+            }
+        ])
+    2、$limit + $limit, $skip + $skip, $match + $match  连续的$limit，$skip或$match阶段排列在一起时，可以合并为一个阶段。
+        {$limit: 10}, {$limit: 5}       {$limit: 5}
+    3、$lookup + $unwind，连续排列在一起的$lookup和$unwind阶段，如果$unwind应用在$lookup阶段创建的as字段上，则两者可以合并
+    优化前：
+        db.accounts.aggregate([
+            {
+                $lookup:{
+                    from: "collection",
+                    localField: "currency",
+                    foreignField: "ccy",
+                    as: "forexData"
+                }
+            },
+            {
+                $unwind: "$forexData"
+            }
+        ])
+    优化后：
+        db.accounts.aggregate([
+            {
+                $lookup:{
+                    from: "collection",
+                    localField: "currency",
+                    foreignField: "ccy",
+                    as: "forexData"
+                }
+                +
+                {$unwind: "$forexData"}
+            }  
+        ])
 2、索引
+    对指定字段进行排序的数据结构。B-tree
     如果没有索引的话就是全集合的扫描。
     #单一索引，1代表升序，-1代表降序
     db.collection.createIndex({score: 1})
