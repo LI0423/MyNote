@@ -366,6 +366,17 @@
                 }
             }
         ])
+        db.accounts.aggregate([{
+            $lookup: {
+                from: "collection",
+                pipeline: [{
+                    $match: {
+                        "ccy": "USD"
+                    }
+                }],
+                as: "forexData"
+            }
+        }])
     $count：在前面的聚合操作之后统计结果数
         ${ $count: <string>}
         🌰例子：
