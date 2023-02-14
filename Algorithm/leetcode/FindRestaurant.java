@@ -46,7 +46,7 @@ public class FindRestaurant {
     }
 }
 
-// GO
+// Golang
 
 // func findRestaurant(list1 []string, list2 []string) (ans []string) {
 //     index := make(map[string]int, len(list1))

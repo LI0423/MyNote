@@ -28,6 +28,18 @@
     byType：查找所有的set方法，将符合参数类型的bean注入。
 
 2.SpringBean的生命周期
+    SpringBean的作用域
+        singleton：唯一bean实力，Spring中的bean默认都是单例的。
+        prototype：每次请求都会创建一个新的bean实例。
+        request：每一次HTTP请求都会产生一个新的bean，该bean仅在当前HTTP request内有效。
+        session：每一次HTTP请求都会产生一个新的bean，该bean仅在当前HTTP session内有效。
+        global-session：全局session作用域，仅仅在基于Portlet的web应用中才有意义。
+    
+    实例化 Instantiation
+    属性赋值 Populate
+    初始化 Initialization
+    销毁 Destruction
+
     Spring启动，查找并加载需要被Spring管理的Bean，将Bean解析成Spring内部的BeanDefinition结构，进行Bean的实例化；
     Bean实例化后对将Bean的引入和值注入到Bean的属性中；
     如果Bean实现了BeanNameAware接口的话，Spring将Bean的Id传递给setBeanName()方法；
