@@ -125,6 +125,26 @@
         单独创建
             create index idx_name on table_name(column_name1,column_name2);
 
+8.自定义列
+    生成列表序号
+    select -1 into @curClassId;     给自定义字段赋值，如果没有这条语句，在某些情况下，后面的SQL运行会出现排名全部为1的情况。
+    select -1 into @rank;
+
+    筛选出每个班级的前十名：
+    select id, name, gender, age, class_id, score, newRank
+    from (
+        select *,
+                @rank := if(@curClassId = class_id, @rank + 1, 1) as newRank,
+                @curClassId := class_id
+        from student, (select @curClassId := -1) t1, (select @rank := -1) t2
+        where class_id in ('','')
+        order by class_id, score desc
+    ) tmp 
+    where newRank <= 10
+    order by class_id, newRank
+
+    自定义字段有两种声明方式，一种是在查询语句前进行声明，第二种是在查询语句中将声明当作临时表进行查询。
+
 三、MySQL索引
     索引是在存储引擎层实现的，而不是在服务器层实现的。
 1、B+树
