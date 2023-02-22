@@ -3,7 +3,7 @@ package Algorithm.leetcode;
 import java.util.ArrayDeque;
 import java.util.Deque;
 
-public class reversePrint {
+public class ReversePrint {
 
     private static class ListNode{
         int val;

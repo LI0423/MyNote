@@ -28,6 +28,17 @@
     byType：查找所有的set方法，将符合参数类型的bean注入。
 
 2.SpringBean的生命周期          https://segmentfault.com/a/1190000040365130
+
+    springbean的生命周期会经过四个阶段，实例化，属性赋值，销毁。在进行bean实例化之前会执行InstantiationAwareBeanPostProcessor.postProcessBeforeInstantiation()方法，
+    然后进行实例化，之后执行postProcessAfterInstantiation()，接下来调用执行postProcessPropertyValues()，然后再给bean设置属性值。如果bean实现了beanNameAware接口，
+    spring将bean的id传给setBeanName()方法，用来获取bean的id或者name。如果bean实现了beanfactoryaware接口的话，spring将调用setBeanFactory()方法将beanfactory容器实例
+    传入，用来获取当前环境中的beanfactory。如果bean实现了ApplicationContext接口的话，spring将调用setApplicationContext()方法，将bean所在的上下文传进来，用来获取当前
+    环境中的applicationContext，获取到ioc容器后可以对bean进行修改操作。如果bean实现了beanPostProccessor接口，spring将调用postProcessBeforeInitialization()方法，
+    可以通过beanName来筛选出我们需要进行个性化定制的bean。如果bean实现了initializingBean接口，spring将调用afterPropertiSet()方法，在属性注入完成后调用。接下来
+    bean进行初始化操作，然后spring将调用postProcessAfterInitialization()方法。在此之后bean已经准备就绪，如果bean的作用域是singleton，spring将返回bean给用户并存入缓存池。
+    如果是prototype将返回bean给用户，剩下的生命周期由用户控制。如果bean实现了DisposableBean接口，Spring将调用它的destory()接口方法，同样，如果bean使用了destroy-method声
+    明销毁方法，该方法也会被调用，最后进行销毁操作。
+
     SpringBean的作用域
         singleton：唯一bean实例，Spring中的bean默认都是单例的。
         prototype：每次请求都会创建一个新的bean实例。
@@ -45,9 +56,9 @@
     如果Bean实现了BeanNameAware接口的话，Spring将Bean的Id传递给setBeanName()方法，用来获取bean的id或者name；
     如果Bean实现了BeanFactoryAware接口的话，Spring将调用setBeanFactory()方法，将BeanFactory容器实例传入，用来获取当前环境中的BeanFactory；
     如果Bean实现了ApplicationContextAware接口的话，Spring将调用Bean的setApplicationContext()方法，将Bean所在应用上下文传入进来，用来获取当前环境中的ApplicationContext，获取到IOC容器之后，可以对beans进行修改操作；
-    如果Bean实现了BeanPostProcessor接口，Spring将调用postProcessBeforeInitialization()方法；
+    如果Bean实现了BeanPostProcessor接口，Spring将调用postProcessBeforeInitialization()方法，我们可以通过 beanName 来筛选出我们需要进行个性化定制的 bean。；
     如果Bean实现了InitializingBean接口，Spring将调用他们的afterPropertiSet()方法，在属性注入完成后调用；
-    如果Bean实现了BeanPostProcessor接口，Spring将调用它的postProcessAfterInitialization()方法；
+    如果Bean实现了BeanPostProcessor接口，Spring将调用它的postProcessAfterInitialization()方法，我们可以通过 beanName 来筛选出我们需要进行个性化定制的 bean。；
     此时，Bean已经准备就绪，可以被应用程序使用了，将一直驻留在应用上下文中，直到应用上下文被销毁；
     如果bean实现了DisposableBean接口，Spring将调用它的destory()接口方法，同样，如果bean使用了destroy-method声明销毁方法，该方法也会被调用。
 
