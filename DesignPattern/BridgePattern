@@ -35,11 +35,9 @@
     //抽象化角色
     abstract class Abstraction{
         protected Implementor imple;
-
         protected Abstraction(Implementor imple){
             this.imple = imple;
         }
-
         public abstract void Operation();
     }
     
@@ -48,7 +46,6 @@
         protected RefinedAbstraction(Implementor imple){
             super(imple);
         }
-
         public void Operation(){
             System.out.println("扩展抽象化角色被访问")
         }
