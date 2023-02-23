@@ -29,7 +29,7 @@
 
 2.SpringBean的生命周期          https://segmentfault.com/a/1190000040365130
 
-    springbean的生命周期会经过四个阶段，实例化，属性赋值，销毁。在进行bean实例化之前会执行InstantiationAwareBeanPostProcessor.postProcessBeforeInstantiation()方法，
+    springbean的生命周期会经过四个阶段，实例化，属性赋值，初始化，销毁。在进行bean实例化之前会执行InstantiationAwareBeanPostProcessor.postProcessBeforeInstantiation()方法，
     然后进行实例化，之后执行postProcessAfterInstantiation()，接下来调用执行postProcessPropertyValues()，然后再给bean设置属性值。如果bean实现了beanNameAware接口，
     spring将bean的id传给setBeanName()方法，用来获取bean的id或者name。如果bean实现了beanfactoryaware接口的话，spring将调用setBeanFactory()方法将beanfactory容器实例
     传入，用来获取当前环境中的beanfactory。如果bean实现了ApplicationContext接口的话，spring将调用setApplicationContext()方法，将bean所在的上下文传进来，用来获取当前
