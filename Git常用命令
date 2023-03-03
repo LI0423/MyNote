@@ -133,7 +133,7 @@ $ git reset --hard commit_id 退到/进到 指定commit的sha码
          
 
 git log  查看最近日志
-git reset 77a8951ad2f2af6ccdbea07e7f809d772c410419  还原到制定版本（后面一串为版本号）
+git reset 77a8951ad2f2af6ccdbea07e7f809d772c410419  还原到指定版本（后面一串为版本号）
 
 
 
