@@ -40,7 +40,7 @@
         容器的命令后，一个实际的 Docker 容器就处于运行状态，该容器拥有独立的文件系统，独立并且安全的运行环境等。
 
     （1）docker client
-        docker client是docker架构中用户用来喝docker daemon建立通信的客户端，用户使用的可执行文件为docker，通过docker命令行工具可以发起众多
+        docker client是docker架构中用户用来和docker daemon建立通信的客户端，用户使用的可执行文件为docker，通过docker命令行工具可以发起众多
         管理container的请求。可以使用三种方式和docker daemon建立通信：
             tcp://host:port
             unix:path_to_socket
