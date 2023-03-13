@@ -120,6 +120,7 @@ class Person {
     Map<String, List<Person>> group = personList.stream().collect(Collectors.groupingBy(Person::getSex));
     // 将员工先按性别分组，再按地区分组
     Map<String, Map<String, List<Person>>> group2 = personList.stream().collect(Collectors.groupingBy(Person::getSex, Collectors.groupingBy(Person::getArea)));
+    allGradeClassList.stream().collect(Collectors.groupingBy(GradeClassSearchInfoDTO::getCampusId, TreeMap::new, Collectors.groupingBy(GradeClassSearchInfoDTO::getGrade, TreeMap::new, Collectors.toList())));
 
 9.接合(joining)
     String names = personList.stream().map(p -> p.getName()).collect(Collectors.joining(","));
