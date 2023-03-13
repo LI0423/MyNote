@@ -1,0 +1,71 @@
+一、服务
+    查看dokcer版本信息
+        docker version
+    查看docker简要信息
+        docker -v
+    启动docker
+        systemctl start docker
+    关闭docker
+        systemctl stop docker
+    设置开机启动
+        systemctl enable docker
+    重启docker服务
+        service docker restart
+    关闭docker服务
+        service docker stop
+二、镜像
+    检索镜像
+        docker search 关键字
+    拉取镜像
+        docker pull [选项] [Docker Registry 地址[:端口号]/] 仓库名[:标签]
+    列出镜像
+        docker image ls
+        docker images
+    删除镜像
+        docker rmi <镜像id>
+    将镜像保存为归档文件
+        docker save
+    导入镜像
+        docker load
+三、容器
+    新建并启动
+        docker run -it -d --name 别名 -p 宿主机端口:容器端口 --restart=always -v 宿主机文件存储位置:容器内文件位置 [镜像名/镜像id] /bin/bash
+            -it 表示与容器进行交互式启动 
+            -d 后台运行容器 
+            --name 要给运行的容器起的名字 
+            /bin/bash 交互路径 
+            -p 端口映射，使得宿主机可以通过本机端口访问容器端口
+            --restart=always 使容器随docker服务启动而自动启动
+            -v 数据挂载，将容器内指定文件挂载到宿主机对应位置，-v可以多次使用，即一个容器可以同时挂载多个文件
+    启动已终止容器
+        docker start [容器id]
+    列出本机运行的容器
+        docker ps
+    列出本机所有的容器
+        docker ps -a
+    停止运行的容器
+        docker stop [容器id]
+    杀死容器
+        docker kill [容器id]
+    重启容器
+        docker restart [容器id]
+    删除容器
+        docker rm -f [容器id]   删除一个容器
+        docker rm -f [容器id] [容器id] [容器id]     删除多个容器
+        docker rm -f $(docker ps -aq)   删除全部容器
+    更换容器名
+        docker rename [容器id] 新容器名
+    进入容器
+        docker attach [容器id]  如果从这个stdin中exit，会导致容器的停止
+    交互式进入容器
+        docker exec [容器id]    -d, --detach 在容器中后台执行命令； -i, --interactive=true/false 打开标准输入接受用户输入命令
+    导出一个已经创建的容器到一个文件
+        docker export [容器id]
+    导出的容器快照文件可以再导入为镜像
+        docker import [路径]
+    查看日志
+        docker logs [容器id]    -f 跟踪日志输出； --since 显示某个开始时间的所有日志； -t 显示时间戳； --tail 仅列出最新n条容器日志
+    从主机复制到容器
+        sudo docker cp host_path containerID:container_path
+    从容器复制到主机
+        sudo docker cp containerID:container_path host_path
