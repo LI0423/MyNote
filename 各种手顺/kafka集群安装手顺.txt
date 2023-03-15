@@ -1,0 +1,23 @@
+1.按照zookeeper安装手顺部署zookeeper
+2.解压缩kafka_2.8.0-0.8.0.tar.gz 并修改名称为kafka
+3.配置kafka的环境变量KAFKA_HOME、PATH
+4.修改 conf/server.properties
+zookeeper.connect=kafka01:2181,kafka02:2181,kafka03:2181
+broker.id=1(其他两个机器是2，3)
+host.name=kafka01
+log.dirs=/home/hadoop/kafka-logs(文件夹权限为755)
+将配置分发到其他机器上
+5.启动Kafka
+kafka-server-start.sh ./kafka/config/server.properties &
+6.验证kafka
+kafka-create-topic.sh --zookeeper 192.168.137.8:2181 --partition 3 --topic leo-test
+kafka-list-topic.sh --zookeeper 192.168.137.8:2181
+说明：
+{
+partiton： partion id
+leader：当前负责读写的lead broker id
+relicas：当前partition的所有replication broker list
+isr：relicas的子集，只包含出于活动状态的broker
+}
+7.关闭kafka
+pkill -9 -f server.properties

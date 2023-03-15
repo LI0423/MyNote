@@ -1,0 +1,42 @@
+1、解压apache-storm-1.0.0.tar.gz：
+tar -zxvf apache-storm-1.0.0.tar.gz
+重命名（非必需）
+将解压后的目录命名为storm
+mv apache-storm-1.0.0 storm
+2、启动zookeeper
+3、配置storm.yaml
+进入storm/conf目录，修改storm.yaml配置文件为如下内容：
+# zookeeper ip
+ storm.zookeeper.servers:
+     - "slave1"
+     - "slave2"
+     - "slave3"
+ storm.zookeeper.port: 2181
+ storm.zookeeper.root: "/storm"
+#Nimbus H/A
+ nimbus.seeds: ["slave1","slave2"]
+#Nimbus dir
+ storm.local.dir: "/home/hadoop/storm/wkdir"
+#supervisor worker port, 4 workers example
+ supervisor.slots.ports:
+    - 6700
+    - 6701
+    - 6702
+    - 6703
+4、进程启动
+在192.168.137.70、192.168.137.71、192.168.137.72完成前面4步之后，按nimbus、supervisor的分布情况启动storm进程：
+192.168.137.70启动nimbus、supervisor、ui
+storm nimbus &
+storm supervisor &
+storm ui &
+
+192.168.137.71启动nimbus、supervisor、ui
+storm nimbus &
+storm supervisor &
+storm ui &
+
+192.168.137.72启动supervisor
+storm supervisor &
+ 
+5、验证
+http://192.168.137.70:8080

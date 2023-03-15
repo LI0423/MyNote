@@ -1,0 +1,44 @@
+1.解压缩hbase-0.94.6.tar.gz
+2.修改hbase/conf/的配置文件：
+hbase-env.sh
+export JAVA_HOME=/opt/soft/jdk1.6.0_41
+export HBASE_CLASSPATH=$HBASE_CLASSPATH:/home/hadoop/hbase/conf
+export HBASE_MANAGES_ZK=false              
+#如果使用独立安装的zookeeper这个地方就是false
+hbase-site.xml
+<configuration>
+<property>
+<name>hbase.master</name>
+<value>master:60000</value>
+</property>
+<property>
+<name>hbase.master.maxclockskew</name>
+<value>180000</value>
+</property>
+<property>
+<name>hbase.rootdir</name>
+<value>hdfs://master:9000/hbase</value>
+</property>
+<property>
+<name>hbase.cluster.distributed</name>
+<value>true</value>
+</property>
+<property>
+<name>hbase.zookeeper.quorum</name>
+<value>slave1,slave2,slave3</value>
+</property>
+</configuration>
+regionservers
+slave1
+slave2
+slave3
+3.分发到3个从节点
+scp -r ~/hbase hadoop@slave1:~/
+scp -r ~/hbase hadoop@slave2:~/
+scp -r ~/hbase hadoop@slave3:~/
+4.环境变量加入HBASE_HOME和PATH
+5.启动hbase：start-hbase.sh
+6.命令行以及界面验证hbase安装：
+hbase shell
+>list
+http://master:60010/

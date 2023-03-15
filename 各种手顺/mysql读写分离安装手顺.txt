@@ -1,0 +1,7 @@
+1.首先根据主从复制配置文档搭建mysql主从
+2.解压缩amoeba.zip 首先建立文件夹amoeba 然后解压缩unzip amoeba.zip到文件夹中
+3.配置环境变量AMOEBA_HOME、PATH
+4.修改配置文件/conf/amoeba.xml
+5.启动amoeba
+amoeba &
+6.使用客户端连接mysql -uxxx -pxxx -h xxx.xxx.xxx.xxx -P 8066

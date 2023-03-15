@@ -1,0 +1,128 @@
+1、三台机器创建用户组
+groupadd elasticsearch
+useradd elasticsearch -g elasticsearch
+passwd elasticsearch
+su - elasticsearch
+2、解压缩并重命名为：elasticsearch-7.8.0，并配置环境变量
+3、创建数据文件夹和日志文件夹
+cd elasticsearch-7.8.0
+mkdir data
+mkdir logs
+4、修改配置文件
+cd config
+vim jvm.options
+------------------------------------
+-Xms2g
+-Xmx2g #不要超过32G
+------------------------------------
+vim elasticsearch.yml
+------------------------------------
+cluster.name: mycluster
+node.name: node-1 #其余2台分别叫node-2 node-3
+path.data: /opt/path/to/data
+path.logs: /opt/path/to/logs
+network.host: 192.168.137.1 #本机的host
+http.port: 9200
+discovery.seed_hosts: ["192.168.137.1", "192.168.137.2","192.168.137.3"] #所有的节点
+cluster.initial_master_nodes: ["192.168.137.1", "192.168.137.2"] #2/3备份原则，一般是自己和safegroup的下一个节点 
+http.cors.enabled: true
+http.cors.allow-origin: "*"
+------------------------------------
+5、拷贝给其他机器并修改配置文件中不同的部分
+scp -r ./elasticsearch-7.8.0 elasticsearch@192.168.137.2:~
+scp -r ./elasticsearch-7.8.0 elasticsearch@192.168.137.3:~
+5、三台机器修改linux基本配置
+sysctl -w vm.max_map_count=262144
+6、三台机器启动服务
+nohup elasticsearch &
+7、查看状态
+http://192.168.137.1:9200/_cat/health?v
+=============================================安装head插件===================================================
+8、安装node
+wget https://npm.taobao.org/mirrors/node/latest/node-v12.4.0-linux-x64.tar.gz
+tar zxvf node-v12.4.0-linux-x64.tar.gz
+mv node-v12.4.0-linux-x64 node-v12.4
+9、配置环境变量
+export NODE_NAME=/home/elasticsearch/node-v12.4
+export PATH=$NODE_NAME/bin:$PATH
+10、查看版本
+# npm -v
+--------------
+6.9.0
+--------------
+# node -v
+--------------
+v12.4.0
+--------------
+11、下载并解压缩插件
+wget https://github.com/mobz/elasticsearch-head/archive/master.zip
+unzip master.zip
+12、使用npm安装grunt设置npm的代理镜像
+#由于国外的下载较慢，所以设置为国内的，进入到elasticsearch-head-master内执行以下命令
+mv elasticsearch-head-master /opt/elasticsearch-7.8.0/
+cd /opt/elasticsearch-7.8.0/elasticsearch-head-master/
+npm config set registry https://registry.npm.taobao.org
+npm install -g grunt
+npm install
+npm install grunt --save-dev
+13、修改Head源码
+由于head的代码直接执行有很多限制，比如无法跨机器访问。因此需要用户修改两个地方：
+1）vim elasticsearch-head-master/Gruntfile.js
+--------------------------------------------------------------------------------------
+connect: {
+        server: {
+                options: {
+                         hostname: '0.0.0.0',
+                         port: 9100,
+                         base: '.',
+                         keepalive: true
+                }
+        }
+}
+---------------------------------------------------------------------------------------
+14、重启es并启动grunt
+nohup elasticsearch &
+grunt server &
+15、使用head插件
+http://192.168.137.1:9400/
+
+=============================================安装kibana===================================================
+16、在一个节点上解压缩kibana
+17、修改配置文件
+vim kibana.yml
+---------------------------------------------------------------------------------------
+server.host: "0.0.0.0"
+elasticsearch.hosts: ["http://192.168.137.111:9200","http://192.168.137.112:9200","http://192.168.137.113:9200"]
+---------------------------------------------------------------------------------------
+18、运行并测试
+./kibana
+
+http://http://192.168.137.111:5601
+
+=============================================安装ik分词器===================================================
+19、下载ik分词器
+https://github.com/medcl/elasticsearch-analysis-ik/releases
+
+20、解压缩分词器到es的3个节点plugins目录
+mkdir ~/es/plugins/ik-analyzer
+mv elasticsearch-analysis-ik-7.8.0.zip ~/es/plugins/ik-analyzer
+cd ~/es/plugins/ik-analyzer
+unzip elasticsearch-analysis-ik-7.8.0.zip
+rm -rf elasticsearch-analysis-ik-7.8.0.zip
+
+21、测试
+POST _analyze
+{
+ "analyzer": "ik_max_word",
+ "text": "天生我才必有用"
+}
+
+
+
+
+
+
+
+
+
+

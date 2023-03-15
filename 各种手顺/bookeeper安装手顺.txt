@@ -1,0 +1,38 @@
+安装bookkeeper
+1.准备环境
+安装好zookeeper
+2.在bookeeper01上解压缩bookkeeper-server-4.3.0-bin.tar.gz并重命名为bookkeeper
+3.配置环境变量BOOKEEPER_HOME、PATH
+4.mkdir bk-data
+mkdir bk-txn
+并且设置权限为755
+5.进入conf/bk_server.conf
+配置文件如下：
+bookiePort=3181
+journalDirectory=/home/hadoop/bookkeeper/bk-txn (write ahead log目录)  
+ledgerDirectories=/home/hadoop/bookkeeper/bk-data (data 目录)  
+zkLedgersRootPath=/ledgers (zookeeper上的根结点)  
+flushInterval=100 (数据刷新到磁盘的间隔)  
+zkServers=bookkeeper01:2181,bookkeeper02:2181,bookkeeper03:2181  
+serverTcpNoDelay=true (tcp参数，如果都是几十字节以下的小请求且tps很高，可以设为false)  
+6.将配置好的bookeeper分发下去
+7.启动服务
+格式化：
+在bookeeper01上运行：
+bookkeeper shell metaformat
+启动：
+在三台机器上分别运行：
+bookkeeper bookie 启动
+8.检测启动是否成功
+bookkeeper shell listbookies -readwrite -hostnames
+
+安装hedwig
+1、在bookeeper01上解压缩hedwig-server-4.3.0-bin.tar.gz并重命名为hedwig
+2、配置环境变量HEDWIG_HOME、PATH
+3、修改配置文件/conf/hw_server.conf
+zk_host=bookeeper01:2181,bookeeper02:2181,bookeeper03:2181
+zk_prefix=/hedwig
+4、启动服务端
+hedwig server
+5、启动客户端
+hedwig console

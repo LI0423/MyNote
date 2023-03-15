@@ -1,0 +1,370 @@
+整个环境使用root安装：
+一、配置安装环境
+1.解压缩libevent-1.4.14b-stable.tar.gz 并且重命名为libevent
+./configure --prefix=/usr/local/libevent
+make
+make install
+ln -s /usr/local/libevent/lib/libevent-2.0.so.5 /usr/lib64/libevent-2.0.so.5
+
+2.解压缩pcre-8.20.tar.gz 并重命名为pcre
+./configure
+make
+make install
+
+3.安装zlib和openssl
+yum install zlib*
+解压缩openssl-1.0.0d.tar.gz 并且重命名为openssl
+./config --prefix=/usr/local/openssl
+make
+make install
+
+4.解压缩yamdi-1.4.tar.gz并且重命名为yamdi（拖动模块）
+make
+make install
+
+5.mkdir -p /usr/local/nginx/html/flv_file
+
+
+
+二、安装nginx
+1.解压缩nginx-1.0.10.tar.gz 并且重命名为nginx                                                  
+./configure --user=root --group=root --prefix=/usr/local/nginx --with-http_realip_module  --with-http_stub_status_module --with-http_ssl_module --with-openssl=/root/openssl --with-http_sub_module --with-md5=/usr/lib --with-sha1=/usr/lib --with-http_gzip_static_module --with-http_flv_module --with-cc=gcc --with-cc-opt='-O3'
+make
+make install
+
+cd /usr/local/nginx/conf/
+vi nginx.conf
+
+===================================================================================
+user  root root;#修改过
+worker_processes  8;#修改过
+
+#error_log  logs/error.log;
+#error_log  logs/error.log  notice;
+#error_log  logs/error.log  info;
+
+pid        logs/nginx.pid;#去掉注释
+
+
+events {
+    use epoll;#添加
+    worker_connections  8;#修改过
+}
+
+
+http {
+    include       mime.types;
+    default_type  application/octet-stream;
+
+    log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
+                      '$status $body_bytes_sent "$http_referer" '
+                      '"$http_user_agent" "$http_x_forwarded_for"';#去掉注释
+
+    access_log  logs/access.log  main;#去掉注释
+
+    sendfile        on;
+    tcp_nopush     on;#去掉注释
+
+    #keepalive_timeout  0;
+    keepalive_timeout  65;
+
+    gzip  on;#去掉注释
+    server {
+        listen       80;
+        server_name  192.168.137.41;
+
+        charset utf-8;#修改过
+        limit_rate_after 5m;#添加
+        limit_rate 512k;#添加
+        access_log  logs/host.access.log  main;#去掉注释
+        
+        #加入视频支持『
+        location / {#静态分离
+               root    /usr/local/nginx/html/flv_file/;#修改
+               index  index.html index.htm;
+               
+        }#』
+        error_page   500 502 503 504  /50x.html;
+        location = /50x.html {
+            root   html;
+        }
+    }
+}
+=========================================================================================
+2.启动测试视频模块
+将视频和播放器放入/usr/local/nginx/html/flv_file
+yamdi -i a.flv -o b.flv
+
+./nginx -t
+./nginx -s stop
+./nginx
+
+测试防盗链
+http://192.168.137.41/jw.swf?type=http&file=b.flv?key=xxx
+其中xxx本例中是123和客户端ip的md5码
+
+cd /usr/local/nginx/conf/
+vi nginx.conf（本次加入tomcat负载均衡配置,为了保证之前的配置，顺便配置了动静分离）
+
+==================================================================================
+user  root root;#修改过
+worker_processes  8;#修改过
+
+#error_log  logs/error.log;
+#error_log  logs/error.log  notice;
+#error_log  logs/error.log  info;
+
+pid        logs/nginx.pid;#去掉注释
+
+
+events {
+    use epoll;#添加
+    worker_connections  102480;#修改过
+}
+
+
+http {
+    include       mime.types;
+    default_type  application/octet-stream;
+
+    log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
+                      '$status $body_bytes_sent "$http_referer" '
+                      '"$http_user_agent" "$http_x_forwarded_for"';#去掉注释
+
+    access_log  logs/access.log  main;#去掉注释
+
+    sendfile        on;
+    tcp_nopush     on;#去掉注释
+
+    #keepalive_timeout  0;
+    keepalive_timeout  65;
+
+    gzip  on;#去掉注释
+    #[
+        upstream 192.168.137.41   {  
+              server   192.168.137.42:8080;  
+              server   192.168.137.43:8080; 
+		rr 
+
+        } #]
+    server {
+        listen       80;
+        server_name  0.0.0.0;
+
+        charset utf-8;#修改过
+        limit_rate_after 5m;#添加
+        limit_rate 512k;#添加
+        access_log  logs/host.access.log  main;#去掉注释
+        
+	#加入视频支持『
+        location ~ .*.(gif|jpg|jpeg|png|bmp|swf|flv|html|htm|css|js|xml)$ {#静态分离
+               root    /usr/local/nginx/html/flv_file/;#修改
+               index  index.html index.htm;
+        }#』
+        location ~ .*.(jsp|do)$ {#动态分离
+            root    html;#修改
+            index  index.html index.htm;
+            proxy_pass        http://192.168.137.41;  
+            proxy_set_header  X-Real-IP  $remote_addr;  
+        }
+        location / {#动态分离
+            root    html;#修改
+            index  index.html index.htm;
+            proxy_pass        http://192.168.137.41;  
+            proxy_set_header  X-Real-IP  $remote_addr;  
+        }
+        
+        error_page   500 502 503 504  /50x.html;
+        location = /50x.html {
+            root   html;
+        }
+    }
+}
+====================================================================================================
+
+二、安装varnish（另一个独立的服务器）
+1.解压缩pcre-8.20.tar.gz 并重命名为pcre
+./configure --prefix=/usr/local/pcre
+make
+make install
+
+2.解压缩varnish-3.0.2.tar.gz并重命名为varnish
+配置环境变量PKG_CONFIG_PATH=/usr/local/pcre/lib/pkgconfig/
+./configure --prefix=/usr/local/varnish
+make
+make install
+
+3.vi /usr/local/varnish/etc/varnish/default.vcl
+
+======================================================================================================
+backend default {#nginx的链接代理
+     .host = "192.168.137.41";
+     .port = "80";
+     .connect_timeout=20s;
+ }
+acl purge {#允许三个来源IP通过PURGE方法清除缓存
+     "localhost";
+     "127.0.0.1";
+     "192.168.137.41"/24;
+}
+sub vcl_recv {
+     if (req.request == "PURGE") {
+          if (!client.ip ~ purge) {
+               error 405 "Not allowed.";
+          }
+          return (lookup);
+     }
+     if (req.http.host ~ "^192.168.137.47") {#Varnish对域名为192.168.137.47的请求进行处理，非192.168.137.47域名的请求则返回"caoqing Cache Server"
+	  set req.backend = default;
+          if (req.request != "GET" && req.request != "HEAD") {#Varnish对HTTP协议中的GET、HEAD请求进行缓存，对POST请求透过，让其直接访问后端Web服务器
+               return (pipe);
+          }else{
+               return (lookup);
+          }
+      }else{
+          error 404 "caoqing Cache Server";
+          return (lookup);
+      }
+}
+sub vcl_hit {
+      if (req.request == "PURGE") {
+          set obj.ttl = 0s;
+          error 200 "Purged.";
+      }
+}
+sub vcl_miss {
+      if (req.request == "PURGE") {
+          error 404 "Not in cache.";
+      }
+}
+======================================================================================================
+4.启动varnish
+cd /usr/local/varnish/sbin/
+./varnishd -f /usr/local/varnish/etc/varnish/default.vcl -s file,/var/varnish_cache,1G -T 192.168.137.47:2000 -a 0.0.0.0:80
+
+5.写入日志
+varnishncsa -w /usr/local/varnish/logs/varnish.log &
+
+6.验证
+访问192.168.137.47(varnish的服务器)会得到nginx访问tomcat负载后的数据
+
+三、安装rsync服务端（独立机器作为服务器，一般是hadoop可以访问到的服务器）
+1.yum install rsync*
+yum install xinetd
+
+2.配置rsync服务
+//rsync服务需要三个文件
+//rsyncd.conf rsync服务的配置文件
+//rsyncd.secrets rsync服务的用户密码保存文件 用户必须为服务器上存在的用户
+//rsyncd.motd rsync服务的登陆提示信息
+cd /etc
+touch rsyncd.conf
+touch rsyncd.secrets
+touch rsyncd.motd
+chmod 600 rsyncd.secrets
+vi /etc/rsyncd.conf
+=======================================================================
+pid file=/var/run/rsyncd.pid #rsync服务的pid存放文件位置
+port=873 #端口号
+address=192.168.137.48 #rsync服务所在地址
+uid=root #用户
+gid=root #用户组
+usechroot=yes #chroot设定
+read only=no #是否只读
+hosts allow=* #允许访问的ip
+hosts deny=192.168.137.1 #禁止访问的ip
+max connections=5 #最大连接数
+motd file=/etc/rsyncd.motd #提示信息文件所在位置
+log file=/var/log/rsyncd.log #日志文件所在位置
+log format=%t %a %m %f%b #日志文件格式
+syslog facility=local3
+timeout=300 #连接超时时间
+secrets file = /etc/rsyncd.secrets #密码所在文件
+[backup]
+path = /test
+auth users=root
+lsit=true
+ignore errors
+secrets file=/etc/rsyncd.secrets
+===========================================================================
+//为rsync用户指定密码
+vi /etc/rsyncd.secrets
+
+root:111111
+
+vi /etc/xinetd.d/rsync 
+
+//disable = yes 改成 disable = no 
+
+vi /etc/ld.so.conf
+
+mkdir -p backup
+
+3.启动rsync服务
+
+service xinetd start
+rsync --daemon --config=/etc/rsyncd.conf
+
+
+四.安装rsync客户端(在nginx机器上配置即可，最好配置上ssh免密码登录)
+1.yum install rsync
+
+2.rsync --list-only root@192.168.137.48:backup #查看rsync设置的backup目录中的文件信息 
+
+3.同步文件
+
+rsync -azuvP /usr/local/nginx/logs root@192.168.137.48:backup
+
+如果想要定期执行
+crontab -e
+20 00 * * * rsync -azuvP /usr/local/nginx/logs root@192.168.137.48:backup > o.txt 2>&1 
+
+
+1.轮询策略：
+所有的节点地位均等，一个一个轮询分发，配置如下：
+upstream  linkrmb.com {   
+     server  127.0.0.1:8083;   
+     server  127.0.0.1:8082;  
+}   
+应用范围：
+节点地位均等，应用操作开销均等，不存在的session问题
+2.least_conn
+连接少的有些接受分发处理，配置如下：
+upstream  linkrmb.com {   
+     least_conn;  
+     server  127.0.0.1:8083;   
+     server  127.0.0.1:8082;  
+}   
+应用范围：
+应用开销不同，不存在session问题，与节点地位无关
+3.权重
+基于权重，权重高的优先接受分发，配置如下：
+upstream  linkrmb.com {   
+     server  127.0.0.1:8083 weight=1;   
+     server  127.0.0.1:8082 weight=5;  
+}   
+权重值越高优先级越高，
+应用范围：
+节点地位有关，不存在session问题
+4.ip_hash
+基于request的ip进行hash映射，配置如下：
+upstream  linkrmb.com {   
+     ip_hash;  
+     server  127.0.0.1:8083;   
+     server  127.0.0.1:8082;  
+}   
+应用范围：
+session一致
+上述几种可以配合使用，也可以使用三方的其他分发策略，如基于权重和ip_hash配置如下：
+upstream  linkrmb.com {   
+     ip_hash;  
+     server  127.0.0.1:8083 weight=3;   
+     server  127.0.0.1:8082;  
+}   
+节点区分了权重，同时又解决了session问题，也可以online上线升级，那么可以让某个节点down了，配置如下：
+upstream  linkrmb.com {   
+     ip_hash;  
+     server  127.0.0.1:8083 weight=3 down;   
+     server  127.0.0.1:8082;  
+}   
+第一个节点权重高，但是已经下线，不参与分发。

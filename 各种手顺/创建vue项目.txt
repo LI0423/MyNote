@@ -1,0 +1,12 @@
+命令行新建vue工程
+1.通过   vue init webpack projectName  创建项目，创建之后会蹦出一下内容
+
+? project name 项目名称
+? project description A Vue.js project (这是默认的，直接回车就可以)
+? Author 自己
+? Vue build standalone (默认)
+? Use ESLint to lint your code? No (选择的时候输入n即可)
+? Setup unit tests with Karma + Mocha? No (选择的时候输入n即可)
+? Setup e2e tests with Nightwatch? No (选择的时候输入n即可)
+
+2. cd 到项目目录下，运行项目 npm run dev

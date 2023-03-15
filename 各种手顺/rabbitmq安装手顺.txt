@@ -1,0 +1,47 @@
+一、安装环境
+1、gcc和zlib安装
+yum install gcc gcc-c++
+yum install zlib zlib-devel
+
+2、解压缩Python-2.7.6.tgz并重命名为python
+./configure --prefix=/usr/local/python27
+make && make install
+
+3、废弃旧python
+mv /usr/bin/python /usr/bin/python2.6.6.old
+建立新版本python链接
+ln -s /usr/local/python27/bin/python /usr/bin/python
+于是现在python -V:
+Python 2.7.6
+
+4、修改yum脚本的声明头: /usr/bin/yum
+/usr/bin/python ----> /usr/bin/python2.6
+yum install make gcc gcc-c++ kernel-devel m4 ncurses-devel openssl-devel
+
+5、Erlang 安装
+解压缩erlang_otp_src_R16B02.tar.gz并重命名为erlang
+./configure --prefix=/usr/local/erlang --with-ssl -enable-threads -enable-smmp-support -enable-kernel-poll --enable-hipe --without-javac
+make && make install
+置环境变量, vim /etc/profile, 添加:
+export ERLANG_HOME=/usr/local/erlang
+export PATH=$PATH:$ERLANG_HOME/bin
+输入命令erl检验是否安装成功
+yum install xmlto
+
+二、安装rabbitmq
+1、解压缩rabbitmq-server-3.1.5.tar.gz并重命名为rabbitmq
+make
+make install TARGET_DIR=/opt/rabbitmq SBIN_DIR=/opt/rabbitmq/sbin MAN_DIR=/opt/rabbitmq/man
+配置环境变量
+export RABBITMQ_HOME=/opt/rabbitmq
+export PATH=$PATH:$RABBITMQ_HOME/sbin
+
+2、安装web插件管理界面
+mkdir /etc/rabbitmq
+rabbitmq-plugins enable rabbitmq_management
+ls /etc/rabbitmq
+
+3、启动rabbitmq
+rabbitmq-server start
+
+guest/guest 登录localhost:15672

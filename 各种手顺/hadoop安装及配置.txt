@@ -1,0 +1,15 @@
+1、下载hadoop  http://archive.apache.org/dist/hadoop/core/hadoop-2.2.0/  选择的是2.2.0的版本
+2、配置环境变量  提取时跟jdk放在同一路径下 /home/hadoop/Desktop/hadoop-2.2.0
+               su -   切换到超级管理员模式下，  vim /etc/profile   然后按 i 进行插入
+               export HADOOP_HOME=/home/hadoop/Desktop/hadoop-2.2.0
+               export PATH=$PATH:$HADOOP_HOME/bin:$HADOOP_HOME/sbin
+               插入以上语句之后，按  Esc  退出编辑模式，然后按  :wq  保存并退出 
+3、在hadoop目录下，创建以下目录 权限设置为755（mkdir -m 755 xxx）
+
+mkdir -m 755 datadir
+mkdir -m 755 tmp
+mkdir -m 755 hadoopmrsys
+mkdir -m 755 hadoopmrlocal
+mkdir -m 755 nodemanagerlocal
+mkdir -m 755 nodemanagerlogs
+mkdir -m 755 nodemanagerremote

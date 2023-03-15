@@ -1,0 +1,50 @@
+1. 拷贝$HIVE_HOME/conf/hive-site.xml和hive-log4j.properties到 $SPARK_HOME/conf/
+2. 在$SPARK_HOME/conf/目录中，修改spark-env.sh，添加
+export HIVE_HOME=/home/hadoop/hive
+export CLASSPATH=$CLASSPATH:/home/hadoop/hive/lib
+export HADOOP_CONF_DIR=/home/hadoop/hadoop/etc/hadoop
+export HIVE_CONF_DIR=/home/hadoop/hive/conf
+配置完后，重启Spark slave和master.
+从hdfs导入数据
+1、创建数据库
+create database test;
+2、vim test.txt 并放到hadoop上去
+1       hello
+2       world
+3       test
+4       case
+字段之间以'\t'分割
+3、CREATE TABLE MYTEST3(num INT, name STRING)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t'
+STORED AS TEXTFILE;
+4、LOAD DATA INPATH '/test11' INTO TABLE MYTEST3;
+5、修改hive-site配置
+修改的配置的内容如下
+<property>
+<name>datanucleus.readOnlyDatastore</name>
+<value>false</value>
+</property>
+<property> 
+<name>datanucleus.fixedDatastore</name>
+<value>false</value> 
+</property>
+<property>
+<name>datanucleus.autoCreateTables</name>
+<value>true</value>
+</property>
+<property>
+<name>datanucleus.autoCreateColumns</name>
+<value>true</value>
+</property>
+运行metastore
+在hive的bin目录下
+~/hive/bin/schematool -dbType derby -initSchema
+6、运行thriftserver
+在spark的bin目录下，也就是metastore的目录同层位置
+～/spark1/sbin/start-thriftserver.sh  --hiveconf hive.server2.thrift.port=10000  --hiveconf hive.server2.thrift.bind.host=master --master spark://master:7077 &
+原因是我自己建立了一个metastore文件夹 所以必须进去操作
+7、测试jdbc
+./bin/beeline
+!connect jdbc:hive2://192.168.137.69:10000 hadoop hadoop
+
+//注意是hadoop用户 以及必须用真实ip 不能用localhost

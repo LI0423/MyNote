@@ -1,0 +1,271 @@
+一、环境准备，参看hadoop安装手顺（一到四章节）
+二、找三台机器安装zookeeper，本例中三台服务器为masterha1、masterha2和master2
+三、安装hadoop2
+1.解压缩hadoop-2.2.0.tar.gz 并改名为hadoop2 添加环境变量HADOOP_HOME、PATH（注意除了bin目录外还有sbin目录）
+2.cd ~
+创建以下目录 权限设置为755（mkdir -m 755 xxx）
+mkdir -m 755 namedir
+mkdir -m 755 datadir
+mkdir -m 755 jndir
+mkdir -m 755 temp
+mkdir -m 755 hadoopmrsys
+mkdir -m 755 hadoopmrlocal
+mkdir -m 755 nodemanagerlocal
+mkdir -m 755 nodemanagerlogs
+mkdir -m 755 nodemanagerremote
+
+cd /home/hadoop/hadoop2/etc/hadoop
+
+修改hdfs-site.xml
+<configuration>
+   <property>
+      <name>dfs.nameservices</name>
+     <value>nnha</value>
+   </property>
+   <property>
+      <name>dfs.ha.namenodes.nnha</name>
+      <value>nn1,nn2</value>
+   </property>
+   <property>
+      <name>dfs.namenode.rpc-address.nnha.nn1</name>
+      <value>master1:9000</value>
+   </property>
+   <property>
+      <name>dfs.namenode.rpc-address.nnha.nn2</name>
+      <value>masterha1:9000</value>
+   </property>
+   <property>
+      <name>dfs.namenode.http-address.nnha.nn1</name>
+      <value>master1:50070</value>
+   </property>
+   <property>
+      <name>dfs.namenode.http-address.nnha.nn2</name>
+      <value>masterha1:50070</value>
+   </property>
+   <property>
+      <name>dfs.namenode.secondary.http-address.nnha.nn1</name>
+      <value>master1:9001</value>
+   </property>
+   <property>
+      <name>dfs.namenode.secondary.http-address.nnha.nn2</name>
+      <value>masterha1:9001</value>
+   </property>
+   <property>
+      <name>dfs.client.failover.proxy.provider.hadoop-cluster1</name>
+      <value>org.apache.hadoop.hdfs.server.namenode.ha.ConfiguredFailoverProxyProvider</value>
+   </property>
+   <property>
+      <name>dfs.namenode.name.dir</name>
+      <value>/home/hadoop/namedir</value>
+   </property>
+   <property>
+      <name>dfs.namenode.shared.edits.dir.nnha.nn1</name>
+      <value>qjournal://xxx:8485;xxx:8485;xxx:8485/nnha1</value>
+   </property>
+   <property>
+      <name>dfs.namenode.shared.edits.dir.nnha.nn2</name>
+      <value>qjournal://xxx:8485;mastxxxer2:8485;xxx:8485/nnha1</value>
+   </property>
+   <property>
+      <name>dfs.datanode.data.dir</name>
+      <value>/home/hadoop/datadir</value>
+   </property>
+   <property>
+     <name>ha.zookeeper.quorum</name>
+     <value>xxx:2181,xxx:2181,xxx:2181,</value>
+   </property>
+   <property>
+    <name>dfs.ha.fencing.methods</name>
+    <value>sshfence</value>
+   </property>
+   <property>
+     <name>ha.zookeeper.session-timeout.ms</name>
+     <value>5000</value>
+   </property>
+   <property>
+      <name>dfs.ha.automatic-failover.enabled</name>
+      <value>true</value>
+   </property>
+   <property>
+      <name>dfs.journalnode.edits.dir</name>
+      <value>/home/hadoop/jndir</value>
+   </property>
+   <property>
+      <name>dfs.replication</name>
+      <value>2</value>
+   </property>
+   <property>
+      <name>dfs.permission</name>
+      <value>false</value>
+   </property>
+   <property>
+      <name>dfs.webhdfs.enabled</name>
+      <value>true</value>
+   </property>
+   <property>
+      <name>dfs.support.append</name>
+      <value>true</value>
+   </property>
+   <property>
+      <name>hadoop.tmp.dir</name>
+      <value>/home/hadoop/temp</value>
+   </property>
+   <property>
+      <name>hadoop.proxyuser.hduser.hosts</name>
+      <value>*</value>
+   </property> 
+   <property>
+      <name>hadoop.proxyuser.hduser.groups</name>
+      <value>*</value>
+   </property>
+   <property>
+      <name>dfs.ha.fencing.methods</name>
+      <value>sshfence</value>
+   </property>
+   <property>
+      <name>dfs.ha.fencing.ssh.private-key-files</name>
+      <value>/home/hadoop/.ssh/id_rsa</value>
+  </property>
+</configuration>
+
+cp mapred-site.xml.template mapred-site.xml
+修改mapred-site.xml
+<configuration>
+    <property>
+       <name>mapreduce.framework.name</name>
+       <value>yarn</value>
+    </property>
+    <property>
+       <name>mapreduce.job.tracker</name>
+       <value>master1:54311</value>
+    </property>
+    <property>
+       <name>mapreduce.jobhistory.address</name>
+       <value>master1:10020</value>
+    </property>
+    <property>
+       <name>mapreduce.jobhistory.webapp.address</name>
+       <value>master1:19888</value>
+    </property>
+    <property>
+       <name>mapred.system.dir</name>
+       <value>/home/hadoop/hadoopmrsys</value>
+       <final>true</final>
+    </property>
+    <property>
+       <name>mapred.local.dir</name>
+       <value>/home/hadoop/hadoopmrlocal</value>
+       <final>true</final>
+    </property>
+</configuration>
+
+修改yarn-site.xml
+<configuration>
+    <property>
+       <name>yarn.nodemanager.aux-services</name>
+       <value>mapreduce_shuffle</value>
+    </property>
+    <property>
+       <name>yarn.nodemanager.aux-services.mapreduce.shuffle.class</name>
+       <value>org.apache.hadoop.mapred.ShuffleHandler</value>
+    </property>
+    <property>
+       <name>yarn.nodemanager.local-dirs</name>
+       <value>/home/hadoop/nodemanagerlocal</value>
+    </property>
+    <property>
+       <name>yarn.nodemanager.log-dirs</name>
+       <value>/home/hadoop/nodemanagerlogs</value>
+    </property>
+    <property>  
+       <name>yarn.nodemanager.remote-app-log-dir</name>  
+       <value>/home/hadoop/nodemanagerremote</value>  	
+    </property>
+    <property>
+       <name>yarn.resourcemanager.address</name>
+       <value>master1:18032</value>
+    </property>
+    <property>
+       <name>yarn.resourcemanager.scheduler.address</name>
+       <value>master1:18030</value>
+    </property>
+    <property>
+       <name>yarn.resourcemanager.resource-tracker.address</name>
+       <value>master1:18031</value>
+    </property>
+    <property>
+       <name>yarn.resourcemanager.admin.address</name>
+       <value>master1:18033</value>
+    </property>
+    <property>
+       <name>yarn.resourcemanager.webapp.address</name>
+       <value>master1:18088</value>
+    </property>
+</configuration>
+
+修改slaves
+slave1
+slave2
+slave3
+
+修改hadoop-env.sh
+export JAVA_HOME=/opt/jdk1.6.0_32
+
+修改yarn-env.sh
+export JAVA_HOME=/opt/jdk1.6.0_32
+
+
+四、将配置好的hadoop分发到其余服务器上。
+
+五、启动hdfs
+启动3个节点上的zookeeper
+
+在master1上执行：
+./bin/hdfs zkfc -formatZK
+
+在jn节点上执行：
+$sbin/hadoop-daemons.sh start journalnode
+
+在master1节点上执行：
+$bin/hdfs namenode -format –clusterId hadoop-cluster-new
+scp -r namedir hadoop@masterha1:~
+$sbin/hadoop-daemon.sh start namenode
+
+在masterha1节点上执行：
+$bin/hdfs namenode -bootstrapStandby
+$sbin/hadoop-daemon.sh start namenode
+
+在master1,masterha1节点上执行：（将master1置成active状态）
+./sbin/hadoop-daemon.sh start zkfc
+
+在slave1、slave2、slave3节点上执行：（启动datanode）
+$sbin/hadoop-daemons.sh start datanode
+
+验证hdfs：
+http://master1:50070
+
+六、启动mapreduce和yarn
+在master1节点上执行：
+start-yarn.sh
+
+验证yarn：
+http://master1:18088
+
+七、关闭服务
+在master1节点上执行：
+stop-yarn.sh
+
+在slave1、slave2、slave3节点上执行：
+$sbin/hadoop-daemons.sh stop datanode
+
+在master1，masterha1上执行：
+$sbin/hadoop-daemons.sh stop namenode
+
+在jn上执行：
+$sbin/hadoop-daemons.sh stop journalnode
+
+在master1上执行：
+$sbin/hadoop-daemons.sh stop zkfc
+
+在masterha1上执行：
+zkServer.sh stop

@@ -1,0 +1,20 @@
+8. 如何配置HMater主备
+   8.1 修改配置文件
+修改/conf/hbase-site.xml文件
+将
+  <name>hbase.master</name>
+  <value>master:60000</value>
+修改为
+    <name>hbase.master.port</name>
+    <value>60000</value>
+只记录端口号即可，然后将此文件复制到其他HBASE节点上
+   8.2 /conf下添加backup-masters 文件
+     内容如下：slave2
+     表示记录从HMaster的主机
+然后在配置backup-masters的机器上，启动HBase即可：start-hbase.sh
+ps：单独启动master备份服务 hbase-daemon.sh start master --backup
+
+
+9.添加HBase节点
+ 9.1 复制原子节点到新节点上
+92. hbase-daemon.sh start regionserver

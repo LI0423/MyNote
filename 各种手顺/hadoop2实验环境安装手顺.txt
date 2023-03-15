@@ -1,0 +1,339 @@
+安装hadoop2
+一、环境准备，参看hadoop安装手顺（一到四章节）
+二、安装hadoop2
+1.解压缩hadoop-2.2.0.tar.gz 并改名为hadoop2 添加环境变量HADOOP_HOME、PATH（注意除了bin目录外还有sbin目录）
+2.cd ~
+在hadoop目录下，创建以下目录 权限设置为755（mkdir -m 755 xxx）
+
+mkdir -m 755 datadir
+mkdir -m 755 tmp
+mkdir -m 755 hadoopmrsys
+mkdir -m 755 hadoopmrlocal
+mkdir -m 755 nodemanagerlocal
+mkdir -m 755 nodemanagerlogs
+mkdir -m 755 nodemanagerremote
+
+cd /home/hadoop/hadoop2/etc/hadoop
+修改core-site.xml
+<configuration>
+   <property>
+      <name>fs.defaultFS</name>
+      <value>hdfs://master:9000</value>
+   </property>
+   <property>
+      <name>fs.default.name</name>
+      <value>hdfs://master:9000</value>
+   </property>
+</configuration>
+
+修改hdfs-site.xml
+<configuration>
+   <property>
+      <name>dfs.namenode.secondary.http-address</name>
+      <value>master:9001</value>
+   </property>
+   <property>
+      <name>dfs.namenode.name.dir</name>
+      <value>/home/hadoop/hadoop/namedir</value>
+   </property>
+   <property>
+      <name>dfs.datanode.data.dir</name>
+      <value>/home/hadoop/hadoop/datadir</value>
+   </property>
+   <property>
+      <name>hadoop.tmp.dir</name>
+      <value>/home/hadoop/hadoop/tmp</value>
+   </property>
+   <property>
+      <name>dfs.replication</name>
+      <value>2</value>
+   </property>
+   <property>
+      <name>dfs.permissions</name>
+      <value>false</value>
+   </property>
+   <property>
+      <name>dfs.webhdfs.enabled</name>
+      <value>true</value>
+   </property>
+   <property>
+      <name>dfs.support.append</name>
+      <value>true</value>
+   </property>
+   <property>
+      <name>hadoop.proxyuser.hadoop.hosts</name>
+      <value>*</value>
+   </property> 
+   <property>
+      <name>hadoop.proxyuser.hadoop.groups</name>
+      <value>*</value>
+   </property>
+   <property>
+      <name>dfs.ha.fencing.methods</name>
+      <value>sshfence</value>
+   </property>
+   <property>
+      <name>dfs.ha.fencing.ssh.private-key-files</name>
+      <value>/home/hadoop/.ssh/id_rsa</value>
+  </property>
+</configuration>
+
+cp mapred-site.xml.template mapred-site.xml
+修改mapred-site.xml
+<configuration>
+    <property>
+       <name>mapreduce.framework.name</name>
+       <value>yarn</value>
+    </property>
+    <property>
+       <name>mapreduce.jobhistory.address</name>
+       <value>master:10020</value>
+    </property>
+    <property>
+       <name>mapred.job.tracker</name>
+       <value>master:54311</value>
+    </property>
+    <property>
+       <name>mapreduce.jobhistory.webapp.address</name>
+       <value>master:19888</value>
+    </property>
+    <property>
+       <name>mapred.system.dir</name>
+       <value>/home/hadoop/hadoop/hadoopmrsys</value>
+       <final>true</final>
+    </property>
+    <property>
+       <name>mapred.local.dir</name>
+       <value>/home/hadoop/hadoop/hadoopmrlocal</value>
+       <final>true</final>
+    </property>
+</configuration>
+
+修改yarn-site.xml
+<configuration>
+    <property>
+       <name>yarn.nodemanager.aux-services</name>
+       <value>mapreduce_shuffle</value>
+    </property>
+    <property>
+       <name>yarn.nodemanager.aux-services.mapreduce.shuffle.class</name>
+       <value>org.apache.hadoop.mapred.ShuffleHandler</value>
+    </property>
+    <property>
+       <name>yarn.nodemanager.local-dirs</name>
+       <value>/home/hadoop/hadoop/nodemanagerlocal</value>
+    </property>
+    <property>
+       <name>yarn.nodemanager.log-dirs</name>
+       <value>/home/hadoop/hadoop/nodemanagerlogs</value>
+    </property>
+    <property>  
+       <name>yarn.nodemanager.remote-app-log-dir</name>  
+       <value>/home/hadoop/hadoop/nodemanagerremote</value>  	
+    </property>
+    <property>
+       <name>yarn.resourcemanager.address</name>
+       <value>master:8032</value>
+    </property>
+    <property>
+       <name>yarn.resourcemanager.scheduler.address</name>
+       <value>master:8030</value>
+    </property>
+    <property>
+       <name>yarn.resourcemanager.resource-tracker.address</name>
+       <value>master:8031</value>
+    </property>
+    <property>
+       <name>yarn.resourcemanager.admin.address</name>
+       <value>master:8033</value>
+    </property>
+    <property>
+       <name>yarn.resourcemanager.webapp.address</name>
+       <value>master:18088</value>
+    </property>
+    <property>
+       <name>yarn.nodemanager.resource.memory-mb</name>   
+       <value>2048</value>
+    </property>
+</configuration>
+
+不可以配置：
+<property>
+       <name>yarn.nodemanager.address</name>
+       <value>master:18994</value>
+    </property>
+修改slaves
+slave1
+slave2
+slave3
+
+修改hadoop-env.sh
+export HADOOP_COMMON_LIB_NATIVE_DIR=$HADOOP_HOME/lib/native
+export JAVA_HOME=/opt/jdk1.6.0_32
+
+修改yarn-env.sh
+export JAVA_HOME=/opt/jdk1.6.0_32
+
+
+四、将配置好的hadoop分发到其余服务器上。
+五、启动hdfs
+1、格式化：
+hdfs namenode -format
+2、启动dfs：
+start-dfs.sh
+3、检验dfs：
+hdfs dfsadmin -report
+或者用web检测：
+http://master:50070
+4、启动yarn
+start-yarn.sh
+检验yarn：
+http://master:18088
+六、关闭hadoop
+stop-yarn.sh
+stop-dfs.sh
+
+安装spark
+spark standalone部署
+1、解压缩scala-2.9.3.tgz，并且添加环境变量SCALA_HOME、PATH
+在hadoop的master上解压缩spark-1.0.0-bin-hadoop2.tgz（与tar.gz解压缩方法一样），由于spark的命令工具和hadoop名字一样，我们就不配置环境变量了
+2、将spark/conf/spark-env.sh.template复制为spark-env.sh,并修改spark-env.sh中的JAVA_HOME、SCALA_HOME：
+export JAVA_HOME=/opt/jdk1.6.0_32
+export SCALA_HOME=/home/hadoop/scala
+export SPARK_MASTER_IP=master
+export SPARK_MASTER_PORT=7077
+export SPARK_WORKER_CORES=1
+export SPARK_WORKER_INSTANCES=1
+export SPARK_WORKER_MEMORY=1g
+3、修改spark/conf/slaves:
+去掉localhost，添加Spark worker的hostname, 一行一个如下：
+slave1
+slave2
+slave3
+4、将配置好的spark分发到slave机器上
+scp -r ~/spark hadoop@slave1:~
+scp -r ~/spark hadoop@slave2:~
+scp -r ~/spark hadoop@slave3:~
+5、启动hadoop
+start-dfs.sh
+
+6.启动spark
+/home/hadoop/spark/sbin/start-all.sh
+
+7.检查是否安装成功：
+master上jps：
+显示Master进程
+
+slave上jps：
+显示Worker进程
+
+浏览master的web UI：http://master:8080
+
+8、运行spark-shell
+在根目录下：/home/hadoop/spark/bin/spark-shell
+scala> val data = sc.textFile("hdfs://master:9000/x")
+
+//this is an apple
+//this is a pen
+
+//["this is an apple","this is a pen"]
+//[("this",2),("is",2),("an",1),("apple",1),("a",1),("pen",1)]
+
+scala> val res=data.flatMap(_.split("")).map((_,1)).reduceByKey(_+_).map(x=>(x._2,x._1)).sortByKey().map(x=>(x._2,x._1))
+
+scala> res.collect;
+scala> res.saveAsTextFile("hdfs://master:9000/out")
+
+9、standalone提交任务
+/home/hadoop/spark/bin/spark-submit \
+    --class org.apache.spark.examples.SparkPi \
+    --master spark://master:7077,slave1:7077 \
+    --num-executors 3 \
+    --driver-memory 1g \
+    --executor-memory 1g \
+    --executor-cores 1 \
+    /home/hadoop/spark/lib/spark-examples*.jar \
+    /xxx/lib/xxx.jar,/xxx/lib/xxxx.jar
+    10
+
+安装spark
+spark standalone解决单点的HA部署
+1、启动zookeeper
+2、修改spark-env.sh：
+首先注释掉单节点主的配置
+#export SPARK_MASTER_IP=master
+#export SPARK_MASTER_PORT=7077
+然后加入
+export SPARK_DAEMON_JAVA_OPTS="-Dspark.deploy.recoveryMode=ZOOKEEPER -Ds
+park.deploy.zookeeper.url=slave1:2181,slave2:2181,slave3:2181 -Dspar
+k.deploy.zookeeper.dir=/spark"
+
+【spark.deploy.recoveryMode 设置成ZOOKEEPER】
+【park.deploy.zookeeper.url ZooKeeper URL】
+【spark.deploy.zookeeper.dir ZooKeeper保存恢复状态的目录，缺省为zookeeper里面的/spark】
+3、启动spark，并且在找台机器启动一个主，则两个主互为failover
+/home/hadoop/spark/sbin/start-master.sh
+4、MASTER=spark://master:7077,slave1:7077 /home/hadoop/spark/bin/spark-shell
+
+spark on yarn提交任务
+1、启动yarn
+start-yarn.sh
+2、修改spark-env.sh
+加入hadoop路径
+export HADOOP_CONF_DIR=/home/hadoop/hadoop
+3、启动spark
+4、yarn-client模式
+/home/hadoop/spark/bin/spark-submit \
+    --class org.apache.spark.examples.SparkPi \
+    --master yarn-client \
+    --num-executors 3 \
+    --driver-memory 1g \
+    --executor-memory 1g \
+    --executor-cores 1 \
+    /home/hadoop/spark/lib/spark-examples*.jar \
+    10
+5、yarn-cluster模式
+/home/hadoop/spark/bin/spark-submit \
+    --class org.apache.spark.examples.SparkPi \
+    --master yarn-cluster \
+    --num-executors 3 \
+    --driver-memory 1g \
+    --executor-memory 1g \
+    --executor-cores 1 \
+    /home/hadoop/spark/lib/spark-examples*.jar \
+    10
+
+6、解决问题，由于我们的测试平台没有足够资源，所以业务会死在yarn的accept阶段，
+我们可以kill掉这个job
+但是我们的job名字在页面中是application_1415434163031_0001
+使用命令hadoop job -kill application_1415434163031_0001死活有kill不到，报错说
+Exception in thread "main" java.lang.IllegalArgumentException: JobId string : application_1415434163031_0002 is not properly formed
+at org.apache.hadoop.mapreduce.JobID.forName(JobID.java:156)
+	at org.apache.hadoop.mapreduce.tools.CLI.run(CLI.java:288)
+	at org.apache.hadoop.util.ToolRunner.run(ToolRunner.java:70)
+	at org.apache.hadoop.util.ToolRunner.run(ToolRunner.java:84)
+	at org.apache.hadoop.mapred.JobClient.main(JobClient.java:1237)
+遇到这种问题不要惊慌，网上的帖子肯定指望不上了，所以我们可以锻炼代码排错的方法
+打开源代码找到JobID类的forName方法：
+/** Construct a JobId object from given string 
+   * @return constructed JobId object or null if the given String is null
+   * @throws IllegalArgumentException if the given string is malformed
+   */
+  public static JobID forName(String str) throws IllegalArgumentException {
+    if(str == null)
+      return null;
+    try {
+      String[] parts = str.split("_");//application_1415434163031_0001
+      if(parts.length == 3) {
+        if(parts[0].equals(JOB)) {//"job"
+          return new org.apache.hadoop.mapred.JobID(parts[1], 
+                                                    Integer.parseInt(parts[2]));
+        }
+      }
+    }catch (Exception ex) {//fall below
+    }
+    throw new IllegalArgumentException("JobId string : " + str 
+        + " is not properly formed");
+  }
+此处看完就知道了吧，job名字格式有问题，job被改为了application，看，这才是真的坑爹！！！
+hadoop job -kill job_1415434163031_0001一下子就搞定了，了解看源码的作用了吧！！
