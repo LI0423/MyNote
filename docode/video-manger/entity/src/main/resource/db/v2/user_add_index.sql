@@ -1,3 +1,0 @@
-ALTER TABLE USER ADD KEY `INVITATION_CODE_INDEX` (`invitation_code`);
-
-ALTER TABLE USER ADD KEY `INVITED_INVIT_UID_INDEX` (`invited`, `invitation_user_id`);

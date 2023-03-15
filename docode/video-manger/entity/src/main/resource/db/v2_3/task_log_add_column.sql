@@ -1,1 +1,0 @@
-ALTER TABLE task_log ADD `token` varchar(63) COMMENT '请求时携带的token';

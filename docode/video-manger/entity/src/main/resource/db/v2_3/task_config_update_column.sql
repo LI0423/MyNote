@@ -1,1 +1,0 @@
-ALTER TABLE task_config MODIFY COLUMN `value` varchar(1023) not null;

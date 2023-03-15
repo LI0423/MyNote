@@ -1,2 +1,0 @@
-ALTER TABLE TASK_LOG ADD KEY `USER_ID_TASK_CODE_NUMBER_CREATE_TIME` (`user_id`, `task_code`, `number`, `create_time`);
-ALTER TABLE TASK_LOG ADD KEY `USER_ID_CREATE_TIME_INDEX` (`user_id`, `create_time`);

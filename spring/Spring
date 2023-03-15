@@ -34,8 +34,8 @@
     spring将bean的id传给setBeanName()方法，用来获取bean的id或者name。如果bean实现了beanfactoryaware接口的话，spring将调用setBeanFactory()方法将beanfactory容器实例
     传入，用来获取当前环境中的beanfactory。如果bean实现了ApplicationContext接口的话，spring将调用setApplicationContext()方法，将bean所在的上下文传进来，用来获取当前
     环境中的applicationContext，获取到ioc容器后可以对bean进行修改操作。如果bean实现了beanPostProccessor接口，spring将调用postProcessBeforeInitialization()方法，
-    可以通过beanName来筛选出我们需要进行个性化定制的bean。如果bean实现了initializingBean接口，spring将调用afterPropertiSet()方法，在属性注入完成后调用。接下来
-    bean进行初始化操作，然后spring将调用postProcessAfterInitialization()方法。在此之后bean已经准备就绪，如果bean的作用域是singleton，spring将返回bean给用户并存入缓存池。
+    可以通过beanName来筛选出我们需要进行个性化定制的bean。如果bean实现了initializingBean接口，spring将调用afterPropertiSet()方法，在属性注入完成后调用。接下来bean进行初始化操作，
+    然后spring将调用postProcessAfterInitialization()方法。在此之后bean已经准备就绪，如果bean的作用域是singleton，spring将返回bean给用户并存入缓存池。
     如果是prototype将返回bean给用户，剩下的生命周期由用户控制。如果bean实现了DisposableBean接口，Spring将调用它的destory()接口方法，同样，如果bean使用了destroy-method声
     明销毁方法，该方法也会被调用，最后进行销毁操作。
 

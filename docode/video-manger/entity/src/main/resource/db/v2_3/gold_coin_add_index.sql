@@ -1,1 +1,0 @@
-ALTER TABLE GOLD_COIN ADD KEY `USER_ID_CREAsTE_TIME_TOKEN_INDEX` (`user_id`, `create_time`, `token`);

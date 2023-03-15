@@ -1,1 +1,0 @@
-ALTER TABLE task ADD COLUMN `support_app_min_version` varchar(63) NOT NULL COMMENT '任务下发支持的app最低版本';

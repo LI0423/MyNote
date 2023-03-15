@@ -1,1 +1,0 @@
-ALTER TABLE pay_order ADD COLUMN short_desc varchar(255) COMMENT '支付订单描述';

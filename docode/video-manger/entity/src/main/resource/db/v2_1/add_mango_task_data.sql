@@ -1,6 +1,0 @@
-INSERT INTO `task` VALUES
-(1329289236935864321,'N00006','芒果视频','下载后打开应用，简单2步，轻松赚钱',10000,10000,'立即赚钱','领取奖励',6,0,1,'2020-11-19 13:03:46',NULL,'2020-11-19 13:03:46',NULL,1309019058491539458,'1.0.0');
-
-INSERT INTO `task_config` VALUES
-(1329687610805690369,'attach_url','http://mv-res.xdplt.com/app/app-promotion-mango-debug.apk',NULL,NULL,NULL,NULL,1329289236935864321),
-(1329687612265308162,'attach_pkg','com.fun.mango.video',NULL,NULL,NULL,NULL,1329289236935864321);
