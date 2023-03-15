@@ -1,0 +1,1 @@
+ALTER TABLE withdrawal ADD COLUMN `type` int COMMENT '提现项类型';

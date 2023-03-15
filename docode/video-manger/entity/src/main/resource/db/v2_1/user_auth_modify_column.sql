@@ -1,0 +1,1 @@
+ALTER TABLE user_auth MODIFY `open_id` varchar(127);

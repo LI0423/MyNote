@@ -1,0 +1,21 @@
+create table `google_subscription` (
+                                    `id` bigint not null,
+                                    `user_id` bigint not null,
+                                    `order_id` varchar(127) not null comment 'google的订单id',
+                                    `third_out_trade_no` varchar(127) not null comment '自己生成的三方id',
+                                    `payment_status` int(3) not null comment '订单交易状态',
+                                    `pkg` varchar(127) not null comment '包名',
+                                    `subscription_id` varchar(127) not null comment '订阅id',
+                                    `purchase_token` varchar(255) not null comment '交易token',
+                                    `expiry_time_millis` bigint(20) not null comment '过期时间',
+                                    `cancel_reason` int(11) comment '取消原因',
+                                    `user_cancellation_time_millis` bigint(20) comment '订阅取消时间',
+                                    `amount` bigint(20) comment '交易金额',
+                                    `currency` varchar(127) comment '汇率',
+                                    `country` varchar(127) comment '国家码',
+                                    `extra` varchar(1000) comment '订单详情',
+                                    `access_token` varchar(127),
+                                    `create_time` datetime not null DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+                                    `modify_time` datetime not null DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+                                    primary key (`id`)
+) ENGINE=InnoDB CHARSET=utf8;

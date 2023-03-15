@@ -1,0 +1,227 @@
+server:
+  port: 8080
+  tomcat:
+    accesslog:
+      enabled: true
+      renameOnRotate: true
+      prefix: access
+      fileDateFormat: .yyyy-MM-dd-HH
+      pattern: '%{X-Forwarded-For}i %l %u %t "%r" %s %b %D "%{Referer}i" "%{User-Agent}i"'
+      directory: logs/
+    accept-count: 1024
+  servlet:
+    session:
+      timeout: 0s
+      persistent: false
+  error:
+    include-stacktrace: never
+    whitelabel:
+      enabled: true
+  compression:
+    enabled: true
+    min-response-size: 100
+mybatis-plus:
+  typeEnumsPackage: com.video.manager.domain.common,com.video.entity
+
+
+spring:
+  profiles:
+    active: dev
+  aop:
+    # 增加@EnableAspectJAutoProxy
+    auto: true
+    # 开启CGLIB代理
+    proxy-target-class: true
+  datasource:
+    dynamic:
+      primary: mysql_1 #设置默认的数据源或者数据源组,默认值即为master
+      strict: false #设置严格模式,默认false不启动. 启动后在未匹配到指定数据源时候会抛出异常,不启动则使用默认数据源.
+      datasource:
+        mysql_1:
+          url: jdbc:mysql://10.48.1.125:3306/video_task?autoReconnect=true&useUnicode=true&characterEncoding=utf-8
+          username: root
+          password: Hua_xxx_111
+          driver-class-name: com.mysql.cj.jdbc.Driver
+        mysql_2:
+          url: jdbc:mysql://10.48.1.125:3306/material_crawl?autoReconnect=true&useUnicode=true&characterEncoding=utf-8
+          username: root
+          password: Hua_xxx_111
+          driver-class-name: com.mysql.cj.jdbc.Driver
+#        mysql_3:
+#          url: jdbc:mysql://10.52.9.15:3306/risk_control?autoReconnect=true&useUnicode=true&characterEncoding=utf-8
+#          username: risk_control_w
+#          password: rIskCon#wR
+#          driver-class-name: com.mysql.cj.jdbc.Driver
+        mysql_ssp:
+          url: jdbc:mysql://172.23.34.150:3306/internal_ssp_sandbox?characterEncoding=utf8&useSSL=false
+          username: root
+          password: Q9^Kkv8eW*wu
+          driver-class-name: com.mysql.cj.jdbc.Driver
+        redis:
+          host: localhost
+          port: 6379
+          database: 0
+management:
+  endpoints:
+    web:
+      exposure:
+        include:
+          - health
+          - refresh
+          - info
+          - beans
+
+logging:
+  file:
+    path: logs
+
+config:
+  cas:
+    serverUrl: http://127.0.0.1:8080
+    mainPage: ${config.cas.serverUrl}
+    appLogout: ${config.cas.serverUrl}/user/logout
+    casServer: https://uuap.do-global.com/cas
+    casServerLogin: ${config.cas.casServer}/login
+    casServerLogout: ${config.cas.casServer}/logout
+    loginUrl: ${config.cas.casServer}/login?service=${config.cas.serverUrl}/cas
+  juwin:
+      scheme: http
+      host: 124.71.106.38
+      port: 8088
+
+okhttp:
+  timeout: 7000 #超时时间
+  maxConnection: 200 #最大连接数
+  coreConnection: 10 #核心连接数
+  resetConnection: false #是否重试
+  maxHostConnection: 30 #单域名最大线程数
+
+url:
+  materialFeed: http://mv-jk.xdplt.com/v1/materials
+
+---
+
+spring:
+  profiles: prod
+  datasource:
+    dynamic:
+      primary: mysql_1 #设置默认的数据源或者数据源组,默认值即为master
+      strict: false #设置严格模式,默认false不启动. 启动后在未匹配到指定数据源时候会抛出异常,不启动则使用默认数据源.
+      datasource:
+        mysql_1:
+          url: jdbc:mysql://10.52.5.45:3306/video_task?autoReconnect=true&useUnicode=true&characterEncoding=utf-8
+          username: root
+          password: TUlTpy9w7!2
+          driver-class-name: com.mysql.cj.jdbc.Driver
+        mysql_2:
+          url: jdbc:mysql://10.52.5.45:3306/material_crawl?autoReconnect=true&useUnicode=true&characterEncoding=utf-8
+          username: root
+          password: TUlTpy9w7!2
+          driver-class-name: com.mysql.cj.jdbc.Driver
+        mysql_ssp:
+          url: jdbc:mysql://121.37.242.76:3306/internal_ssp?autoReconnect=true&useUnicode=true&characterEncoding=utf-8
+          username: internal_ssp_w
+          password: ssp_w_qgC@
+          driver-class-name: com.mysql.cj.jdbc.Driver
+  redis:
+    host: 10.52.5.52
+    port: 8635
+    password: MV-task-redis01
+    database: 0
+
+server:
+  port: 8080
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include:
+          - health
+
+config:
+  cas:
+    serverUrl: http://mv-manager.doglobal.cn
+    mainPage: ${config.cas.serverUrl}
+    appLogout: ${config.cas.serverUrl}/user/logout
+    casServer: https://uuap.do-global.com/cas
+    casServerLogin: ${config.cas.casServer}/login
+    casServerLogout: ${config.cas.casServer}/logout
+    loginUrl: ${config.cas.casServer}/login?service=${config.cas.serverUrl}/cas
+  juwin:
+    scheme: http
+    host: 124.71.106.38
+    port: 8088
+
+
+okhttp:
+  timeout: 7000 #超时时间
+  maxConnection: 200 #最大连接数
+  coreConnection: 10 #核心连接数
+  resetConnection: false #是否重试
+  maxHostConnection: 30 #单域名最大线程数
+---
+spring:
+  profiles: sandbox
+  jpa:
+    hibernate:
+      ddl-auto: update
+  datasource:
+    dynamic:
+      primary: mysql_1 #设置默认的数据源或者数据源组,默认值即为master
+      strict: false #设置严格模式,默认false不启动. 启动后在未匹配到指定数据源时候会抛出异常,不启动则使用默认数据源.
+      datasource:
+        mysql_1:
+          url: jdbc:mysql://10.48.1.125:3306/video_task?autoReconnect=true&useUnicode=true&characterEncoding=utf-8
+          username: root
+          password: Hua_xxx_111
+          driver-class-name: com.mysql.cj.jdbc.Driver
+        mysql_2:
+          url: jdbc:mysql://10.48.1.125:3306/material_crawl?autoReconnect=true&useUnicode=true&characterEncoding=utf-8
+          username: root
+          password: Hua_xxx_111
+          driver-class-name: com.mysql.cj.jdbc.Driver
+        mysql_ssp:
+          url: jdbc:mysql://172.23.34.150:3306/internal_ssp_sandbox?characterEncoding=utf8&useSSL=false
+          username: root
+          password: Q9^Kkv8eW*wu
+          driver-class-name: com.mysql.cj.jdbc.Driver
+        redis:
+          host: 10.48.0.82
+          port: 6379
+          database: 0
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include:
+          - health
+          - refresh
+          - info
+          - beans
+
+server:
+  port: 8081
+  tomcat:
+    basedir: "/home/work/video-manager/manager/"
+config:
+  cas:
+    serverUrl: http://10.48.0.82:8081
+    mainPage: ${config.cas.serverUrl}
+    appLogout: ${config.cas.serverUrl}/user/logout
+    casServer: https://uuap.do-global.com/cas
+    casServerLogin: ${config.cas.casServer}/login
+    casServerLogout: ${config.cas.casServer}/logout
+    loginUrl: ${config.cas.casServer}/login?service=${config.cas.serverUrl}/cas
+  juwin:
+    scheme: http
+    host: 124.71.106.38
+    port: 8088
+
+okhttp:
+  timeout: 7000 #超时时间
+  maxConnection: 200 #最大连接数
+  coreConnection: 10 #核心连接数
+  resetConnection: false #是否重试
+  maxHostConnection: 30 #单域名最大线程数

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.video.manager.mapper.RCRewardConfigMapper">
+
+    <select id="queryTokenList" resultType="string">
+        select token
+        from rc_reward_config
+        where pkg = #{pkg}
+        and token in
+        <foreach collection="tokenList" item="token" open="(" close=")" separator=",">
+            #{token}
+        </foreach>
+    </select>
+
+    <select id="queryList" resultType="com.video.entity.RCRewardConfigDO">
+        select id
+        ,pkg
+        ,token
+        ,coefficient
+        ,create_time
+        ,update_time
+        from rc_reward_config
+        where pkg = #{pkg}
+        and token in
+        <foreach collection="tokenList" item="token" open="(" close=")" separator=",">
+            #{token}
+        </foreach>
+    </select>
+
+</mapper>

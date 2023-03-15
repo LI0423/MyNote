@@ -1,0 +1,100 @@
+server:
+  port: 8090
+  tomcat:
+      accesslog:
+        enabled: true
+        renameOnRotate: true
+        prefix: access
+        fileDateFormat: .yyyy-MM-dd-HH
+        pattern: '%{X-Forwarded-For}i %l %u %t "%r" %s %b %D "%{Referer}i" "%{User-Agent}i"'
+        directory: /tmp/video-user/
+      accept-count: 1024
+
+
+spring:
+  datasource:
+    url: jdbc:mysql://10.48.1.125:3306/video_task?serverTimezone=Asia/Shanghai&autoReconnect=true&useUnicode=true&characterEncoding=utf-8
+    username: root
+    password: Hua_xxx_111
+    # Quartz 的配置，对应 QuartzProperties 配置类
+  quartz:
+    job-store-type: memory # Job 存储器类型。默认为 memory 表示内存，可选 jdbc 使用数据库。
+    auto-startup: true # Quartz 是否自动启动
+    wait-for-jobs-to-complete-on-shutdown: true # 应用关闭时，是否等待定时任务执行完成。默认为 false ，建议设置为 true
+    properties: # 添加 Quartz Scheduler 附加属性，更多可以看 http://www.quartz-scheduler.org/documentation/2.4.0-SNAPSHOT/configuration.html 文档
+      org:
+        quartz:
+          threadPool:
+            threadCount: 10 # 线程池大小。默认为 10 。
+            class: org.quartz.simpl.SimpleThreadPool # 线程池类型
+
+# debug
+mybatis-plus:
+  configuration:
+        log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  type-enums-package: com.video.entity
+  # redis配置,后面可能会修改成自定义配置
+#  redis:
+#    host: 127.0.0.1
+#    port: 6379
+#    timeout: 1s
+#    database: 0
+#    lettuce:
+#      pool:
+#        max-wait: 1s
+#        max-active: 50
+#        max-idle: 20
+#        min-idle: 10
+
+video:
+  task:
+    config:
+      wechat-auth:
+        get-access-token-url: https://api.weixin.qq.com/sns/oauth2/access_token?appid=%s&secret=%s&code=%s&grant_type=authorization_code
+        get-user-info-url: https://api.weixin.qq.com/sns/userinfo?access_token=%s&openid=%s
+      http-client:
+        connection-request-timeout: 2000
+        connect-timeout: 2000
+        socket-timeout: 2000
+        default-max-per-route: 50
+        max-total: 200
+        validate-after-inactivity: 2000
+      cache-redis:
+        host: 127.0.0.1
+        port: 6379
+        timeout: 5000
+        max-wait: 1000
+        max-active: 50
+        max-idle: 20
+        min-idle: 10
+      cache:
+        min-expire: 600
+        max-expire: 1200
+        unit: SECONDS
+      security:
+        salt: 3582d6815e095be3d83fecae039ef46e88cff3844bba6c5f703dae669a9a6647
+        encryptKey: UNKNOW
+      invit-reward-publisher-gap: 5
+      distributed-lock:
+        expire: 10s
+      ali-cloud-sms:
+        sys-domain: dysmsapi.aliyuncs.com
+        sys-version: 2017-05-25
+        worker:
+          max-count: 50
+          work-queue-size: 100000
+      sms-global:
+        send-ver-code-time-interval: 60000
+        ver-code-effective-time: 3000000
+cloud:
+  obs:
+    endPoint: https://obs.cn-south-1.myhuaweicloud.com
+    bucketName: material-feed
+    url: http://mv-res.xdplt.com
+    maxSize: 2_097_152
+
+google:
+  server:
+    client:
+      id:
+        mq_image: 1031024886269-r73jm4e4g27o6u80571rn6ecfdv7sr6n.apps.googleusercontent.com

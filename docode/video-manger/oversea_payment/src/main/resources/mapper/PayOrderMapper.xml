@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.video.oversea.payment.mapper.PayOrderMapper">
+  <resultMap id="PayOrderDO" type="com.video.entity.PayOrderDO">
+    <id column="id" jdbcType="BIGINT" property="id" />
+    <result column="channel" jdbcType="INTEGER" property="channel" />
+    <result column="third_mchid" jdbcType="VARCHAR" property="thirdMchid" />
+    <result column="third_app_id" jdbcType="VARCHAR" property="thirdAppId" />
+    <result column="third_prepay_id" jdbcType="VARCHAR" property="thirdPrepayId" />
+    <result column="third_out_trade_no" jdbcType="VARCHAR" property="thirdOutTradeNo" />
+    <result column="third_pay_type" jdbcType="INTEGER" property="thirdPayType" />
+    <result column="app_id" jdbcType="BIGINT" property="appId" />
+    <result column="user_id" jdbcType="BIGINT" property="userId" />
+    <result column="type" jdbcType="INTEGER" property="type" />
+    <result column="amount" jdbcType="BIGINT" property="amount" />
+    <result column="status" jdbcType="INTEGER" property="status" />
+    <result column="third_error_code" jdbcType="VARCHAR" property="thirdErrorCode" />
+    <result column="third_error_msg" jdbcType="VARCHAR" property="thirdErrorMsg" />
+    <result column="completion_time" jdbcType="TIMESTAMP" property="completionTime" />
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+    <result column="modify_time" jdbcType="TIMESTAMP" property="modifyTime" />
+  </resultMap>
+
+  <sql id="PayOrderDO_Column_List">
+    id,
+    channel,
+    third_transaction_id,
+    third_mchid,
+    third_app_id,
+    third_prepay_id,
+    third_out_trade_no,
+    third_pay_type,
+    app_id,
+    user_id,
+    `type`,
+    amount,
+    `status`,
+    third_error_code,
+    third_error_msg,
+    prepay_expire_time,
+    completion_time,
+    create_time,
+    modify_time
+  </sql>
+
+  <select id="selectByUserIdAndAppIdAndPrepayId" resultType="com.video.entity.PayOrderDO">
+    select *
+    from pay_order
+    where user_id = #{userId} and app_id = #{appId} and prepay_id = #{prepayId}
+  </select>
+
+  <select id="selectByThirdOutTradeNo" resultType="com.video.entity.PayOrderDO">
+    select *
+    from pay_order
+    where third_out_trade_no = #{thirdOutTradeNo}
+  </select>
+
+  <update id="updatePayOrderById">
+    update pay_order set status = #{status}, third_transaction_id = #{thirdTransactionId} where id = #{id}
+  </update>
+</mapper>

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.video.payment.mapper.AppPaymentConfigMapper">
+
+    <select id="selectByAliPayAppId" resultType="com.video.entity.AppPaymentConfigDO">
+        select *
+        from app_payment_config
+        where ali_pay_app_id = #{aliPayAppId}
+        limit 1
+    </select>
+    <select id="selectByFrozenStatusAndDeletedAndSubSelect"
+            resultType="com.video.entity.AppPaymentConfigDO">
+        select *
+        from app_payment_config
+        where id in
+              (select merchant_id
+               from app_payment_config_mapping
+               where merchant_type = #{merchant_type} and mapping_type = #{mapping_type}
+                 and status = #{status} and app_id = #{app_id})
+          and frozen_status = #{frozen_status}
+          and deleted = #{deleted}
+    </select>
+</mapper>

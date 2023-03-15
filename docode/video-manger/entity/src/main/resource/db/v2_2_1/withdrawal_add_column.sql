@@ -1,0 +1,1 @@
+ALTER TABLE withdrawal ADD COLUMN `one_time_unique_id` varchar(63) COMMENT '一次性任务唯一ids';

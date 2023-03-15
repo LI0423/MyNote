@@ -1,0 +1,1 @@
+ALTER TABLE withdrawal ADD COLUMN token varchar(255) COMMENT '用户token';

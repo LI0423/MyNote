@@ -1,0 +1,2 @@
+ALTER TABLE TASK_LOG ADD KEY `USER_ID_INVIT_UID_TCODE_MTIME_INVTRWGVCNT_INDEX` (`user_id`, `invited_user_id`, `task_code`, `modify_time`, `invit_reward_gived_count`);
+ALTER TABLE TASK_LOG ADD KEY `USER_ID_INVTTKCOMP_CREATE_TIME_NUMBER` (`user_id`, `invit_task_completed`, `create_time`, `number`);

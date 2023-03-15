@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.video.manager.mapper.DataConfigMapper">
+
+    <select id="ifRepeat" resultType="java.lang.Boolean">
+        select *
+        from data_config
+        where item = #{item} and status = 1
+        <if test="id != null">
+            and id not in (#{id})
+        </if>
+    </select>
+</mapper>

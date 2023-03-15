@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.video.oversea.payment.mapper.PayRecordMapper">
+    <resultMap id="PayRecordDO" type="com.video.entity.PayRecordDO">
+        <id column="id" jdbcType="BIGINT" property="id"/>
+        <result column="pay_order_id" jdbcType="BIGINT" property="payOrderId"/>
+        <result column="result" jdbcType="INTEGER" property="result"/>
+        <result column="third_error_code" jdbcType="VARCHAR" property="thirdErrorCode"/>
+        <result column="third_error_msg" jdbcType="VARCHAR" property="thirdErrorMsg"/>
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
+        <result column="modify_time" jdbcType="TIMESTAMP" property="modifyTime"/>
+    </resultMap>
+
+    <sql id="PayRecordDO_Column_List">
+        id, pay_order_id, `result`, third_error_code, third_error_msg, create_time, modify_time
+    </sql>
+
+    <select id="selectLastByPayOrderId" resultType="com.video.entity.PayRecordDO">
+        select <include refid="PayRecordDO_Column_List"/>
+        from pay_record
+        where pay_order_id = #{payOrderId}
+    </select>
+</mapper>

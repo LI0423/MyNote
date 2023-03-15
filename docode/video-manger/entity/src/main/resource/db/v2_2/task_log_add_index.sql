@@ -1,0 +1,2 @@
+ALTER TABLE task_log ADD KEY `UID_TCODE_MTYPE_MCDTVALUE_CTIME_INDEX` (`user_id`, `task_code`, `medal_type`, `medal_condition_value`, `create_time`);
+ALTER TABLE task_log ADD KEY `UID_TCODE_ACDAYS_CTIME_INDEX` (`user_id`, `task_code`, `active_days`, `create_time`);
