@@ -62,3 +62,80 @@ Nginx
     为了加快网站的解析速度，可以把动态页面和静态页面由不同的服务器来解析，加快解析速度，降低原来单个服务器的压力。一般来说，都需要将动态资源和静态资源
     分开，由于 Nginx 的高并发和静态资源缓存等特性，经常将静态资源部署在 Nginx 上。如果请求的是静态资源，直接到静态资源目录获取资源，如果是动态资源的
     请求，则利用反向代理的原理，把请求转发给对应后台应用去处理，从而实现动静分离。
+
+7.Nginx常用命令
+    cd /usr/local/nginx/sbin/
+    ./nginx     启动
+    ./nginx -s stop     停止
+    ./nginx -s quit     安全退出
+    ./nginx -s reload   重新加载配置文件
+    ps aux | grep nginx 查看nginx进程
+    service firewalld start     开启防火墙
+    service firewalld restart   重启防火墙
+    service firewalld stop      关闭防火墙
+    firewall-cmd --list-all     查看防火墙规则，firewall-cmd 是Linux提供的操作firewall的一个工具
+    firewall-cmd --query-port=8080/tcp      查询端口是否开放
+    firewall-cmd --permanent --add-port=80/tcp      开放80端口，--permanent表示设为持久，--add-port标识添加的端口
+    firewall-cmd --permenent --remove-port=8080/tcp 移除端口
+    firewall-cmd --reload       重启防火墙（修改配置后要重启防火墙）
+
+
+
+配置示例
+    server {
+        listen       80;                        表示监听80端口
+        server_name  example.com;               表示该配置适用于example.com域名的请求
+
+        location / {                            表示该配置适用于所有请求路径
+            root   /var/www/example.com;        表示请求匹配该配置时，使用该目录下的文件作为响应内容的根目录
+            index  index.html index.htm;        表示如果请求路径是目录，使用index.html或index.html文件作为响应内容的默认文件
+        }
+    }
+    配置负载均衡：
+    upstream backend {                          表示定义一个名为backend的负载均衡组，nginx会根据权重将请求分发到三个服务器上的一个或多个。
+        server backend1.example.com weight=5;   向负载均衡组中添加一个后端服务器，权重为5，权重表示服务器处理请求的优先级，权重越高，服务器
+                                                处理请求的概率就越大。
+        server backend2.example.com;            默认权重为1
+        server backend3.example.com;
+    }
+
+    server {
+        listen 80;
+        server_name example.com;
+
+        location / {
+            proxy_pass http://backend;          表示将请求转发到名为backend的代理服务器上
+            proxy_set_header Host $host;        表示将请求头中的Host字段设置为当前请求的域名
+            proxy_set_header X-Real-IP $remote_addr;    表示将请求头中的 X-Real-IP 字段设置为客户端的 IP 地址
+        }
+    }
+    配置 SSL：
+    server {
+        listen       443 ssl;
+        server_name  example.com;
+
+        ssl_certificate      /path/to/cert.pem;
+        ssl_certificate_key  /path/to/key.pem;
+
+        location / {
+            root   /var/www/example.com;
+            index  index.html index.htm;
+        }
+    }
+    配置缓存：
+    server {
+        listen       80;
+        server_name  example.com;
+
+        location / {
+            proxy_pass http://backend;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_cache_bypass $http_pragma;
+            proxy_cache_revalidate on;
+            proxy_cache_valid 200 60m;
+            proxy_cache_valid 404 1m;
+            proxy_cache_key "$scheme$request_method$host$request_uri";
+            proxy_cache_use_stale error timeout invalid_header updating http_500 http_502 http_503 http_504;
+        }
+    }
