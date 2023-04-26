@@ -1,0 +1,161 @@
+观察者模式
+    1.定义
+        指多个对象间存在一对多的依赖关系，当一个对象的状态发生改变时，所有依赖于它的对象都得到通知并被自动更新。有时又称作发布-订阅
+        模式、模型-视图模式，是对象行为型模式。
+    2.优缺点
+    （1）优点： 
+        降低了目标与观察者之间的耦合关系，两者之间是抽象耦合关系。
+        目标与观察者之间建立了一套触发机制。
+    （2）缺点：
+        目标与观察者之间的依赖关系并没有完全接触，而且有可能出现循环引用。
+        当观察者对象很多时，通知的发布会花费很多时间，影响程序的效率。
+    3.结构
+    （1）抽象主题角色：也叫抽象目标类，提供了一个用于保存观察者对象的聚集类和增加、删除观察者对象的方法，以及通知所有观察者的方法。
+    （2）具体主题角色：也叫具体目标类，实现抽象目标中的通知方法，当具体主题的内部状态发生改变时，通知所有注册过的观察者对象。
+    （3）抽象观察者角色：是一个抽象类或接口，包含一个更新自己的抽象方法，当接到具体主题的更改通知时被调用。
+    （4）具体观察者角色：实现抽象观察者中定义的抽象方法，以便在得到目标的更改通知时更新自身的状态。
+    4.实现
+    //抽象目标
+    abstract class Subject {
+        protected List<Observer> observers = new ArrayList<Observer>();
+
+        //增加观察者方法
+        public void add(Observer observer){
+            observers.add(observer);
+        }
+
+        //删除观察者方法
+        public void remove(Observer observer){
+            observers.remove(observer);
+        }
+
+        public abstract void notifyObserver();
+    }
+
+    //具体目标
+    class ConcreteSubject extends Subject {
+        public void notifyObserver(){
+            System.out.println("具体目标发生改变");
+
+            for(Object obs : observers){
+                ((Observer) obs).response();
+            }
+        }
+    }
+
+    //抽象观察者
+    interface Observer {
+        void response();
+    }
+
+    //具体观察者1   
+    class ConcreteObserver1 implements Observer {
+        public void response(){
+            System.out.println("具体观察者1作出反应");
+        }
+    }
+
+    //具体观察者2
+    class ConcreteObserver2 implements Observer {
+        public void response(){
+            System.out.println("具体观察者2作出反应");
+        }
+    }
+
+    public class ObserverPattern {
+        public static void main(String[] args){
+            Subject subject = new ConcreteSubject();
+            Observer obs1 = new ConcreteObserver1();
+            Observer obs2 = new ConcreteObserver2();
+            subject.add(obs1);
+            subject.add(obs2);
+            subject.notifyObserver();
+        }
+    }
+
+具体实现例子：
+    //创建主题接口Subject，定义注册观察者、注销观察者和通知观察者的方法
+    public interface Subject {
+        public void registerObserver(Observer o);
+        public void removeObserver(Observer o);
+        public void notifyObservers();
+    }
+
+    //实现主题接口，创建具体主题类WeatherData并在其中实现观察者注册、注销和通知的方法
+    public class WeatherData implements Subject {
+        private ArrayList<Observer> observers;
+        private float temperature;
+        private float humidity;
+        private float pressure;
+        
+        public WeatherData(){
+            observers = new ArrayList<Observer>();
+        }
+
+        public void registerObserver(Observer o) {
+            observers.add(o);
+        }
+
+        public void removeObserver(Observer o){
+            int i = observers.indexOf(o);
+            if(i > 0){
+                observers.remove(i);
+            }
+        }
+
+        public void notifyObservers(){
+            for(Observer observer : observers) {
+                observer.update(temperature, humidity, pressure);
+            }
+        }
+
+        public void measurementsChanged(){
+            notifyObservers();
+        }
+
+        public void setMeasurements(float temperature, float humidity, float pressure){
+            this.temperature = temperature;
+            this.humidity = humidity;
+            this.pressure = pressure;
+            measurementsChanged();
+        }
+    }
+
+    //创建观察者接口Observer，定义更新方法
+    public interface Observer {
+        public void update(float temperature, float humidity, float pressure);
+    }
+
+    //实现观察者接口，创建具体观察者类CurrentConditionDisplay，并在其中实现更新方法
+    public class CurrentConditionDisplay implements Observer {
+        private float temperature;
+        private float humidity;
+        private Subject weatherData;
+
+        public CurrentConditionDisplay(Subject weatherData){
+            this.weatherData = weatherData;
+            weatherData.registerObserver(this);
+        }
+
+        public void update(float temperature, float humidity, float pressure){
+            this.temperature = temperature;
+            this.humidity = humidity;
+            display();
+        }
+
+        public void display(){
+            System.out.println("Current conditions: " + temperature + "F dgress and " + humidity + "% humidity");
+        }
+    }
+
+    public class WeatherStation {
+        public static void main(String[] args){
+            WeatherData weatherData = new WeatherData();
+
+            CurrentConditionDisplay currentDisplay = new CurrentConditionDisplay(weatherData);
+
+            weatherData.setMeasurements(80, 65, 30.4f);
+            weatherData.setMeasurements(82, 70, 29.2f);
+            weatherData.setMeasurements(78, 90, 29.2f);
+        }
+    }

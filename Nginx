@@ -83,19 +83,19 @@ Nginx
 
 配置示例
     server {
-        listen       80;                        表示监听80端口
-        server_name  example.com;               表示该配置适用于example.com域名的请求
+        listen       80;                        #表示监听80端口
+        server_name  example.com;               #表示该配置适用于example.com域名的请求
 
-        location / {                            表示该配置适用于所有请求路径
-            root   /var/www/example.com;        表示请求匹配该配置时，使用该目录下的文件作为响应内容的根目录
-            index  index.html index.htm;        表示如果请求路径是目录，使用index.html或index.html文件作为响应内容的默认文件
+        location / {                            #表示该配置适用于所有请求路径
+            root   /var/www/example.com;        #表示请求匹配该配置时，使用该目录下的文件作为响应内容的根目录
+            index  index.html index.htm;        #表示如果请求路径是目录，使用index.html或index.html文件作为响应内容的默认文件
         }
     }
     配置负载均衡：
-    upstream backend {                          表示定义一个名为backend的负载均衡组，nginx会根据权重将请求分发到三个服务器上的一个或多个。
-        server backend1.example.com weight=5;   向负载均衡组中添加一个后端服务器，权重为5，权重表示服务器处理请求的优先级，权重越高，服务器
-                                                处理请求的概率就越大。
-        server backend2.example.com;            默认权重为1
+    upstream backend {                          #表示定义一个名为backend的负载均衡组，nginx会根据权重将请求分发到三个服务器上的一个或多个。
+        server backend1.example.com weight=5;   #向负载均衡组中添加一个后端服务器，权重为5，权重表示服务器处理请求的优先级，权重越高，服务器
+                                                #处理请求的概率就越大。
+        server backend2.example.com;            #默认权重为1
         server backend3.example.com;
     }
 
@@ -104,9 +104,9 @@ Nginx
         server_name example.com;
 
         location / {
-            proxy_pass http://backend;          表示将请求转发到名为backend的代理服务器上
-            proxy_set_header Host $host;        表示将请求头中的Host字段设置为当前请求的域名
-            proxy_set_header X-Real-IP $remote_addr;    表示将请求头中的 X-Real-IP 字段设置为客户端的 IP 地址
+            proxy_pass http://backend;          #表示将请求转发到名为backend的代理服务器上
+            proxy_set_header Host $host;        #表示将请求头中的Host字段设置为当前请求的域名
+            proxy_set_header X-Real-IP $remote_addr;    #表示将请求头中的 X-Real-IP 字段设置为客户端的 IP 地址
         }
     }
     配置 SSL：
