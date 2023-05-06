@@ -1,0 +1,114 @@
+装饰器模式
+    1.定义
+        指在不改变现有对象结构的情况下，动态地给该对象增加一些职责。
+    2.优缺点
+    （1）优点：
+        是继承的有力补充，在不改变原有对象的情况下动态的给一个对象扩展功能，即插即用。
+        通过使用不用装饰类及这些装饰类的排列组合可以实现不同效果。
+    （2）缺点：
+        会增加许多子类，增加程序复杂性。
+    3.结构
+    （1）抽象构件角色：定义一个抽象接口以规范准备接收附加责任的对象。
+    （2）具体构建角色：实现抽象构件通过装饰角色为其添加一些职责。
+    （3）抽象装饰角色：继承抽象构件并包含具体构件的实例，可以通过其子类扩展具体构件的功能。
+    （4）具体装饰角色：实现抽象装饰的相关方法，并给具体构件对象添加附加的责任。
+    4.实现
+    public class DecoratorPattern{
+        public class static void main(String[] args){
+            Component p = new ConcreteComponent();
+            p.operation();
+            System.out.println("--------");
+            Component d = new ConcreteDecorator(p);
+            d.operation();
+        }
+    }
+
+    //抽象构件角色
+    interface Component{
+        public void operation();
+    }
+
+    //具体构件角色
+    class ConcreteComponent implements Component{
+        public ConcreteComponent(){
+            System.out.println("创建具体构建角色");
+        }
+
+        public void operation(){
+            System.out.println("调用具体构件角色的方法");
+        }
+    }
+
+    //抽象装饰角色
+    abstract class Decorator implements Component {
+        private Component component;
+
+        public Decorator (Component component){
+            this.component = component;
+        }
+
+        public void operation(){
+            component.operation();
+        }
+    }
+
+    //具体装饰角色
+    class ConcreteDecorator extends Decorator {
+        public ConcreteDecorator(Component component){
+            super(component);
+        }
+
+        public void operation(){
+            super.operation();
+            addedFunction();
+        }
+
+        public void addedFunction(){
+            System.out.println("为具体构件角色增加额外功能")
+        }
+    }
+
+    例子🌰：
+        public interface Text {
+            String getContent();
+        }
+
+        public class PlainText implements Text {
+            private String content;
+
+            public PlainText(String content){
+                this.content = content;
+            }
+
+            @Override
+            public String getContent(){
+                return content;
+            }
+        }
+
+        public abstract class TextDecorator implements Text {
+            protected Text text;
+
+            public TextDecorator (Text text){
+                this.text = text;
+            }
+        }
+
+        public class BoldText extends TextDecorator {
+            public BoldText(Text text){
+                super(text);
+            }
+
+            @Override
+            public String getContent(){
+                return "<b>" + text.getContent() + "</b>";
+            }
+        }
+
+        public class DecoratorPattern {
+            public static void main(String[] args) {
+                Text text = new PlainText("Hello world!");
+                text = new BoldText(text);
+                System.out.println(text.getContent());
+            }
+        }
