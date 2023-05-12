@@ -1,0 +1,57 @@
+状态模式
+    1.定义
+        对有状态的对象把复杂的“判断逻辑”提取到不同的状态对象中，允许状态对象在其内部状态发生改变时改变其行为。
+    2.优缺点
+    （1）优点：
+        结构清晰，状态模式将与特定状态相关的行为局部化到一个状态中，并且将不同状态的行为分割开来。
+        将状态转换显示化，减少对象间的相互依赖。
+        状态类职责明确，有利于程序的扩展。
+    （2）缺点：
+        状态模式的使用会增加系统的类与对象的个数。
+        状态模式的结构与实现较为复杂，使用不当会导致代码混乱。
+    3.结构
+    （1）环境类：也称上下文，定义了客户端需要的接口，内部维护一个当前状态，并负责具体状态的切换。
+    （2）抽象状态类：定义一个接口，用来封装环境对象中的的特定状态所对应的行为，可以有一个或多个行为。
+    （3）具体状态类：实现抽象状态所对应的行为，并且在需要的情况下进行状态切换。
+    4.实现
+    //环境类
+    class Context {
+        private State state;
+
+        public Context(){
+            this.state = new ConcreteStateA();
+        }
+
+        public void setState(State state){
+            this.state = state;
+        }
+
+        public State getState(){
+            return (state);
+        }
+
+        public void Handler(){
+            state.Handle(this);
+        }
+    }
+
+    //抽象状态类
+    abstract class State {
+        public abstract void Handle(Context context);
+    }
+
+    //具体状态类A
+    class ConcreteStateA extends State {
+        public void Handle(Context context){
+            System.out.println("当前状态是：A");
+            context.setState(new ConcreteStateA());
+        }
+    }
+
+    //具体状态类B
+    class ConcreteStateB extends State {
+        public void Handle(Context context){
+            System.out.println("当前状态是：B");
+            context.setState(new ConcreteStateB());
+        }
+    }
