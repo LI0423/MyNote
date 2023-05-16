@@ -109,25 +109,29 @@
         public static void main(String[] args) throws IOException, TimeoutException {
             //创建连接工厂
             ConnectionFactory factory = new ConnectionFactory();
-            factory.setUsername("guest");
-            factory.setPassword("guest");
             //设置 RabbitMQ 地址
             factory.setHost("localhost");
+            //用户名
+            factory.setUsername("guest");
+            //密码
+            factory.setPassword("guest");
             //建立到代理服务器到连接
             Connection conn = factory.newConnection();
             //获得信道
             Channel channel = conn.createChannel();
+            //生成一个队列。队列名称、是否持久化、是否进行消息共享,是否自动删除，其他参数
+            channel.queueDeclare("test", true, false, false, null);
             //声明交换器
             String exchangeName = "hello-exchange";
-            channel.exchangeDeclare(exchangeName, "direct", true);
-
+            channel.exchangeDeclare(exchangeName, "direct", true );
+            //路由键
             String routingKey = "hola";
+            //队列绑定交换机
+            channel.queueBind("test", exchangeName, routingKey);
             //发布消息
-            byte[] messageBodyBytes = "quit".getBytes();
+            byte[] messageBodyBytes = "HelloWorld".getBytes();
+            //发送消息，交换机名称、路由key、其他参数消息、消息体
             channel.basicPublish(exchangeName, routingKey, null, messageBodyBytes);
-            if(channel.waitForConfirms()){
-                log.info("消息发送失败！");
-            }
 
             channel.close();
             conn.close();
@@ -149,19 +153,22 @@
             Connection conn = factory.newConnection();
             //获得信道
             final Channel channel = conn.createChannel();
-            //声明交换器
-            String exchangeName = "hello-exchange";
-            channel.exchangeDeclare(exchangeName, "direct", true);
             //声明队列
-            String queueName = channel.queueDeclare().getQueue();
-            String routingKey = "hola";
-            //绑定队列，通过键 hola 将队列和交换器绑定起来
-            channel.queueBind(queueName, exchangeName, routingKey);
+            String queueName = "test";
 
             while(true) {
                 //消费消息
                 boolean autoAck = false;
                 String consumerTag = "";
+                //不公平分发，能者多劳
+                int prefetchcount = 1;
+                channel.basicQos(prefetchcount);
+                /*
+                消费哪个队列
+                消费成功后是否要自动应答
+                消费者取录消费的回调
+                消费者未成功消费的回调
+                */
                 channel.basicConsume(queueName, autoAck, consumerTag, new DefaultConsumer(channel) {
                     @Override
                     public void handleDelivery(String consumerTag,
@@ -170,6 +177,7 @@
                                             byte[] body) throws IOException {
                         String routingKey = envelope.getRoutingKey();
                         String contentType = properties.getContentType();
+                        System.out.println("consumerTag: "+ consumerTag);
                         System.out.println("消费的路由键：" + routingKey);
                         System.out.println("消费的内容类型：" + contentType);
                         long deliveryTag = envelope.getDeliveryTag();
@@ -187,6 +195,12 @@
 10.RabbitMQ发送消息到MQ失败
 （1）发送方确认机制
     消息发送到MQ那端以后，MQ会回一个确认收到的消息。
+    生产者将信道设置成confirm模式，信道进入confirm模式之后，所有在信道上面发布的消息都会被指派一个唯一的id，一旦消息被投递到所有匹配的队列之后，broker就会发送一个确认给
+    生产者，使得生产者知道消息已经正确到达目的队列了，如果消息和队列是可持久化的，确认消息会在将消息写入磁盘之后发出。
+
+    confirm是异步的，发布一条消息，生产者应用程序在等信道返回确认的同时继续发送下一条消息，当消息得到最终确认之后，生产者应用便可以通过回调的方式来处理该确认消息，如果mq因自身
+    内部错误导致消息丢失，就会发送一条nack消息。
+
     配置：
         spring:
             rabbitmq:

@@ -48,6 +48,7 @@
             strategy.strategyMethod();
         }
     }
+    
     5.例子🌰：
     public interface QuackBehavior {
         void quack();
