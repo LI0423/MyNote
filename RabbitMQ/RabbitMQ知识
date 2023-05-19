@@ -128,10 +128,24 @@
             String routingKey = "hola";
             //队列绑定交换机
             channel.queueBind("test", exchangeName, routingKey);
-            //发布消息
-            byte[] messageBodyBytes = "HelloWorld".getBytes();
-            //发送消息，交换机名称、路由key、其他参数消息、消息体
-            channel.basicPublish(exchangeName, routingKey, null, messageBodyBytes);
+                //开启发布确认
+                channel.confirmSelect();
+                ConcurrentSkipListMap<Long, String> map = new ConcurrentSkipListMap<>();
+                //消息确认成功，回调函数
+                ConfirmCallback ackCallBack = (deliveryTag, multiple) ->{
+                    ConcurrentNavigableMap<Long, String> confirmed = map.headMap(deliveryTag);
+                    confirmed.remove(deliveryTag);
+                    System.out.println("确认消息：" + deliveryTag);
+                };
+                //消息确认失败，回调函数
+                //deliveryTag: 消息的标记
+                //multiple: 是否为批量确认
+                ConfirmCallback nackCallBack = (deliveryTag, multiple) -> System.out.println("未确认消息：" + deliveryTag);
+                //消息监听器，监听消息成功失败
+                channel.addConfirmListener(ackCallBack, nackCallBack);
+            String message = "HelloWorld";
+            channel.basicPublish(exchangeName, routingKey, MessageProperties.PERSISTENT_TEXT_PLAIN, message.getBytes());
+                map.put(channel.getNextPublishSeqNo(), message);
 
             channel.close();
             conn.close();
@@ -201,6 +215,8 @@
     confirm是异步的，发布一条消息，生产者应用程序在等信道返回确认的同时继续发送下一条消息，当消息得到最终确认之后，生产者应用便可以通过回调的方式来处理该确认消息，如果mq因自身
     内部错误导致消息丢失，就会发送一条nack消息。
 
+    在仅开启生产者确认机制的情况下，交换机接收到消息后就会给生产者发送确认消息，如果该消息不可路由，消息会被直接丢弃，生产者不知道消息被丢失。
+
     配置：
         spring:
             rabbitmq:
@@ -210,6 +226,8 @@
                                         //simple 如果消息成功到达Broker后一样会触发ConfirmCallBack回调，发送消息成功后使用rabbitTemplate调用waitForConfirms
                                         //    或waitForConfirmsOrDie方法等待broker节点返回发送结果，根据返回结果来判定下一步的逻辑。waitForConfirmsOrDie方法
                                         //    如果返回false则会关闭channel信道，接下来无法发送消息倒broker。
+                publisher-returns: true
+
                 listener:
                     simple:
                         retry:

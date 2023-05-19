@@ -3,22 +3,9 @@ package Algorithm.sort;
 import java.util.ArrayList;
 import java.util.List;
 
-public class InorderTraversal {
+import Algorithm.leetcode.TreeNode;
 
-    private static class TreeNode{
-        int val;
-        TreeNode left;
-        TreeNode right;
-        TreeNode(){}
-        TreeNode(int val){
-            this.val = val;
-        }
-        TreeNode(int val , TreeNode left,TreeNode right){
-            this.val = val;
-            this.left = left;
-            this.right = right;
-        }
-    }
+public class InorderTraversal {
     
     private static List<Integer> ans;
     public List<Integer> inorderTraversal(TreeNode root){

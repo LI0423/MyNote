@@ -17,20 +17,6 @@ package Algorithm.leetcode;
 // 注意：两结点之间的路径长度是以它们之间边的数目表示。
 
 public class DiameterOfBinaryTree {
-    class TreeNode {
-        int val;
-        TreeNode left;
-        TreeNode right;
-        TreeNode(){}
-        TreeNode(int val) {
-            this.val = val;
-        }
-        TreeNode(int val, TreeNode left, TreeNode right) {
-            this.val = val;
-            this.left = left;
-            this.right = right;
-        }
-    }
 
     int ans;
     public int diameterOfBinaryTree(TreeNode root){

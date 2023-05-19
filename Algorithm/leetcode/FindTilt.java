@@ -29,18 +29,6 @@ package Algorithm.leetcode;
 // 坡度总和：0 + 0 + 0 + 2 + 7 + 6 = 15
 
 public class FindTilt {
-    class TreeNode {
-        int val;
-        TreeNode left;
-        TreeNode right;
-        TreeNode() {}
-        TreeNode(int val) { this.val = val; }
-        TreeNode(int val, TreeNode left, TreeNode right) {
-            this.val = val;
-            this.left = left;
-            this.right = right;
-        }
-    }
 
     int ans;
     public int findTilt(TreeNode root){

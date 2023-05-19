@@ -2,7 +2,6 @@ package Algorithm.leetcode;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
-import java.util.List;
 
 //559. N 叉树的最大深度
 
@@ -20,22 +19,6 @@ import java.util.List;
 // 输出：5
 
 public class MaxDepth {
-
-    class Node {
-        public int val;
-        public List<Node> children;
-    
-        public Node() {}
-    
-        public Node(int _val) {
-            val = _val;
-        }
-    
-        public Node(int _val, List<Node> _children) {
-            val = _val;
-            children = _children;
-        }
-    }
 
     //DFS: 从 root 的所有子节点中的取最大深度，并在此基础上加一（统计 root 节点）即是答案。
     public int maxDepth(Node root){
