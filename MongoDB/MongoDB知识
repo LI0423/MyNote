@@ -139,18 +139,18 @@
         }
     })
 
-    db.teachingPlanTemplate_copy.find({
-	"_id": "63a5258dfbc32e3646057ead",
-	"contentList": {
-		$elemMatch: {
-			"contentTemplateList": {
-				$elemMatch: {
-					"title.content": "教学内容"
-				}
-			}
-		}
-	}
-})
+    db.teachingPlanTemplate.find({
+        "_id": "63a5258dfbc32e3646057ead",
+        "contentList": {
+            $elemMatch: {
+                "contentTemplateList": {
+                    $elemMatch: {
+                        "title.content": "教学内容"
+                    }
+                }
+            }
+        }
+    })
 
 
 3、update
@@ -187,6 +187,70 @@
                 }
             }]
         })
+    db.teachingResourceSuper.update(
+        {
+	        "_id": ObjectId("63aaa905fbc32e3646057f6b"),
+        }, {
+            "$set": {
+                "contentList.$[i].contentTemplateList.$[j].contentTemplateList.$[y].isPicture": true
+            }
+        }, {
+            arrayFilters: [{
+                "i.title.content": {$in:["开始部分","热身部分","主体部分","结束部分"]}
+            }, { "j.title.content": {$in:["组织要求","组织队形"]} }
+			,{ "y.content": "" }]
+        });
+    db.teachingPlanTemplate_new.updateMany(
+        {},
+        {
+            $set: {
+                "contentList.$[i].contentTemplateList.$[j].title.content": "组织队形"
+                }
+        }, {
+            arrayFilters: [{
+                "i.title.content": {
+                    $in: ["开始部分", "热身部分", "主体部分", "结束部分"]
+                }
+            },
+            {
+                "j.title.content": "组织要求"
+            }
+            ]
+        }
+    );
+    db.teachingPlanTemplate_new.updateMany(
+        {
+            "contentList.title.content": {
+            $in: ["开始部分", "热身部分", "主体部分", "结束部分"]
+            },
+            "contentList.contentTemplateList.title.content": {
+            $in: ["组织要求", "组织队形"]
+            },
+            "contentList.contentTemplateList.contentTemplateList.content": ""
+        },
+        {
+            $set: {
+            "contentList.$[i].contentTemplateList.$[j].contentTemplateList.$[y].isPicture": true
+            }
+        },
+        {
+            arrayFilters: [
+            {
+                "i.title.content": {
+                $in: ["开始部分", "热身部分", "主体部分", "结束部分"]
+                }
+            },
+            {
+                "j.title.content": {
+                $in: ["组织要求", "组织队形"]
+                }
+            },
+            {
+                "y.content": ""
+            }
+            ]
+        }
+    );
     #批量更新
     db.collection.updateMany(
         {"balance": {$lt: 100}},
