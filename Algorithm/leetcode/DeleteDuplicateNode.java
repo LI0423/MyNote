@@ -2,19 +2,6 @@ package Algorithm.leetcode;
 
 public class DeleteDuplicateNode {
 
-    private static class ListNode{
-        int val;
-        ListNode next;
-        ListNode(){}
-        ListNode(int val){
-            this.val = val;
-        }
-        ListNode(int val , ListNode next){
-            this.val = val;
-            this.next = next;
-        }
-    }
-
     public ListNode deleteDuplicateNode(ListNode node){
         ListNode dummy = new ListNode(-1 , node);
         ListNode cur = dummy;

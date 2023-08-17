@@ -34,27 +34,18 @@ import java.util.Set;
 // 由于这两个链表不相交，所以 intersectVal 必须为 0，而 skipA 和 skipB 可以是任意值。
 // 这两个链表不相交，因此返回 null 。
 
-class ListNode {
-    int val;
-    ListNode Next;
-    public ListNode(int val, ListNode Next){
-        this.val = val;
-        this.Next = Next;
-    }
-}
-
 public class GetIntersectionNode {
     public ListNode getIntersectionNode(ListNode headA, ListNode headB){
         Set<ListNode> set = new HashSet<>();
         while(headA != null){
             set.add(headA);
-            headA = headA.Next;
+            headA = headA.next;
         }
         while (headB != null){
             if (set.contains(headB)) {
                 return headB;
             }
-            headB = headB.Next;
+            headB = headB.next;
         }
         return null;
     }
@@ -65,8 +56,8 @@ public class GetIntersectionNode {
         }
         ListNode pA = headA, pB = headB;
         while (pA != pB) {
-            pA = pA == null ? headB : headA.Next;
-            pB = pB == null ? headA : headB.Next;
+            pA = pA == null ? headB : headA.next;
+            pB = pB == null ? headA : headB.next;
         }
         return pA;
     }

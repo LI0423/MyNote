@@ -1,7 +1,5 @@
 package Algorithm.leetcode;
 
-import java.util.Arrays;
-
 //643. 子数组最大平均数 I
 
 // 给你一个由 n 个元素组成的整数数组 nums 和一个整数 k 。

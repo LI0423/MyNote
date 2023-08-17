@@ -24,14 +24,6 @@ import java.util.Set;
 // 输出：false
 // 解释：链表中没有环。
 
-class ListNode {
-    int val;
-    ListNode next;
-    ListNode (int val, ListNode next){
-        this.val = val;
-        this.next = next;
-    }
-}
 
 public class HasCycle {
     public boolean hasCycle(ListNode head){

@@ -5,16 +5,6 @@ import java.util.Deque;
 
 public class ReversePrint {
 
-    private static class ListNode{
-        int val;
-        ListNode next;
-        ListNode(){}
-        ListNode(int val){}
-        ListNode(int val , ListNode next){
-            this.next = next;
-        }
-    }
-
     /**
      * 先计算链表长度，然后创建一个数组，遍历链表倒序插入数组
      * @param head

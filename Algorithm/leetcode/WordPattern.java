@@ -2,7 +2,6 @@ package Algorithm.leetcode;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.regex.Pattern;
 
 //290. 单词规律
 // 给定一种规律 pattern 和一个字符串 s ，判断 s 是否遵循相同的规律。
