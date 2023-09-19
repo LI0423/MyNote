@@ -92,3 +92,27 @@
             return new ConcreteProduct2();
         }
     }
+
+//Python
+
+    class Localizer(Protocol):
+        def localize(self, msg:str) -> str:
+            pass
+
+    class GreekLocalizer:
+        def __init__(self) -> None:
+            self.translations = {"dog": "σκύλος", "cat": "γάτα"}
+
+        def localize(self, msg:str) -> str:
+            return self.translations.get(msg, msg)
+
+    class EnglishLocalizer:
+        def localize(self, msg:str) -> str:
+            return msg
+        
+    def get_localizer(language: str = 'English') -> Localizer:
+        localizer: Dict[str, Type[Localizer]] = {
+            "English": EnglishLocalizer,
+            "Greek": GreekLocalizer,
+        }
+        return localizer[language]()

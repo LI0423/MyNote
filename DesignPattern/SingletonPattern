@@ -56,3 +56,77 @@
                 return instance
             }
         }
+
+//Python
+    class Singleton(object):
+        def __new__(cls, *args, **kw):
+            if not hasattr(cls, '_instance'):
+                orig = super(Singleton, cls)
+                cls._instance = orig.__new__(cls, *args, **kw)
+            return cls._instance
+
+    class Bus(Singleton):
+        lock = threading.RLock()
+        def sendData(self, data):
+            self.lock.acquire()
+            time.sleep(3)
+            print 'Sending Singal Data...', data
+            self.lock.release()
+    
+    class VisitEntity(threading.Thread):
+        my_bus = ''
+        name = ''
+        def getName(self):
+            return self.name
+        def setName(self):
+            self.name = name
+        def run(self):
+            self.my_bus = Bus()
+            self.my_bus.sendData(self.name)
+        
+    if __name__ == '__main__':
+        for i in range(3):
+            print 'Entity %d begin to run ...' %i
+            my_entity = VisitEntity()
+            my_entity.setName('Entity_' + str(i))
+            my_entity.start()
+
+
+    class Lazy_property:
+        def __init__(self, function):
+            self.function = function
+            functools.update_wrapper(self, function)
+            
+        def __get__(self, obj, type_):
+            if obj is None:
+                return self
+            val = self.function(obj)
+            obj.__dict__[self.function.__name__] = val
+            return val
+        
+    def lazy_property2(fn):
+        attr = '__lazy__' + fn.__name__
+
+        @property
+        def _lazy_property(self):
+            if not hasattr(self, attr):
+                setattr(self, attr, fn(self))
+            return getattr(self, attr)
+        return _lazy_property
+
+    class Person:
+        def __init__(self, name, occupation):
+            self.name = name
+            self.occupation = occupation
+            self.call_count2 = 0
+
+        @lazy_property
+        def relatives(self):
+            relatives = 'Many relatives.'
+            return relatives
+
+        @lazy_property2
+        def parents(self):
+            self.call_count2 += 1
+            return 'father and mother'
+        
