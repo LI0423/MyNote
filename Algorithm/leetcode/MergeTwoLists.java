@@ -2,7 +2,7 @@ package Algorithm.leetcode;
 
 public class MergeTwoLists {
 
-    private static ListNode mergeTwoLists(ListNode l1, ListNode l2){
+    public ListNode mergeTwoLists(ListNode l1, ListNode l2){
         ListNode prevhead = new ListNode(-1);
         ListNode prev = prevhead;
         while(l1 != null && l2 != null){

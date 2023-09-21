@@ -5,7 +5,7 @@ package Algorithm.leetcode;
 
 public class LengthOfLIS {
 
-    public int LengthOfLIS(int[] nums){
+    public int lengthOfLIS(int[] nums){
         if(nums.length == 0){
             return 0;
         }

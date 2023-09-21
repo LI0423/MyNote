@@ -2,7 +2,7 @@ package Algorithm.leetcode;
 
 public class FindRepeatNumber {
 
-    private int findRepeatNumber(int[] nums){
+    public int findRepeatNumber(int[] nums){
         for(int i = 0;i<nums.length;i++){
             while(nums[i] != i){
                 if(nums[i] == nums[nums[i]]){
@@ -14,7 +14,7 @@ public class FindRepeatNumber {
         return -1;
     }
     
-    private void swap(int[] nums,int i,int j){
+    public void swap(int[] nums,int i,int j){
         int t = nums[i];
         nums[i] = nums[j];
         nums[j] = t; 
