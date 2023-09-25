@@ -1,0 +1,217 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Current File",
+            "request": "launch",
+            "mainClass": "${file}"
+        },
+        {
+            "type": "java",
+            "name": "AddStrings",
+            "request": "launch",
+            "mainClass": "Algorithm.leetcode.AddStrings",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "DeleteAndEarn",
+            "request": "launch",
+            "mainClass": "Algorithm.leetcode.DeleteAndEarn",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "DetectCapitalUse",
+            "request": "launch",
+            "mainClass": "Algorithm.leetcode.DetectCapitalUse",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "FindDispearedNumbers",
+            "request": "launch",
+            "mainClass": "Algorithm.leetcode.FindDispearedNumbers",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "FindShortestSubArray",
+            "request": "launch",
+            "mainClass": "Algorithm.leetcode.FindShortestSubArray",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "FindWords",
+            "request": "launch",
+            "mainClass": "Algorithm.leetcode.FindWords",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "JumpGame",
+            "request": "launch",
+            "mainClass": "Algorithm.leetcode.JumpGame",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "JumpGameII",
+            "request": "launch",
+            "mainClass": "Algorithm.leetcode.JumpGameII",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "LemonadeChange",
+            "request": "launch",
+            "mainClass": "Algorithm.leetcode.LemonadeChange",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "MatrixReshape",
+            "request": "launch",
+            "mainClass": "Algorithm.leetcode.MatrixReshape",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "MaxLenOfSubarrayPositiveProduct",
+            "request": "launch",
+            "mainClass": "Algorithm.leetcode.MaxLenOfSubarrayPositiveProduct",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "MinCostClimbingStairs",
+            "request": "launch",
+            "mainClass": "Algorithm.leetcode.MinCostClimbingStairs",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "MoveZero",
+            "request": "launch",
+            "mainClass": "Algorithm.leetcode.MoveZero",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "RemoveDuplicates2",
+            "request": "launch",
+            "mainClass": "Algorithm.leetcode.RemoveDuplicates2",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "RemoveElement",
+            "request": "launch",
+            "mainClass": "Algorithm.leetcode.RemoveElement",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "ReverseStr",
+            "request": "launch",
+            "mainClass": "Algorithm.leetcode.ReverseStr",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "ReverseVowels",
+            "request": "launch",
+            "mainClass": "Algorithm.leetcode.ReverseVowels",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "ReverseWords",
+            "request": "launch",
+            "mainClass": "Algorithm.leetcode.ReverseWords",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "Rob",
+            "request": "launch",
+            "mainClass": "Algorithm.leetcode.Rob",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "RotateArray",
+            "request": "launch",
+            "mainClass": "Algorithm.leetcode.RotateArray",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "ShortestToChar",
+            "request": "launch",
+            "mainClass": "Algorithm.leetcode.ShortestToChar",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "SqrtX",
+            "request": "launch",
+            "mainClass": "Algorithm.leetcode.SqrtX",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "BubbleSort",
+            "request": "launch",
+            "mainClass": "Algorithm.sort.BubbleSort",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "InsertSort",
+            "request": "launch",
+            "mainClass": "Algorithm.sort.InsertSort",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "MergeSort",
+            "request": "launch",
+            "mainClass": "Algorithm.sort.MergeSort",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "QuickSort",
+            "request": "launch",
+            "mainClass": "Algorithm.sort.QuickSort",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "SelectionSort",
+            "request": "launch",
+            "mainClass": "Algorithm.sort.SelectionSort",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "ShellSort",
+            "request": "launch",
+            "mainClass": "Algorithm.sort.ShellSort",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "ExportDBData",
+            "request": "launch",
+            "mainClass": "BigData.zExportData.ExportDBData",
+            "projectName": "MyNote_f98cd070"
+        }
+    ]
+}
