@@ -28,6 +28,7 @@ package Algorithm.leetcode;
 
 public class BinaryGap {
 
+    // 定义两个变量，一个变量用来记录第一次出现1的位置，对n进行二进制转换遍历，i记录第二次出现i的位置，ans记录结果。
     public int binaryGap(int n){
         int last = -1, ans = 0;
         for (int i = 0; n != 0; ++i){

@@ -18,6 +18,7 @@ package Algorithm.leetcode;
 
 public class MiddleNode {
 
+    // 数组方式，通过遍历将链表的各个节点放入数组中，得到数组的长度，然后返回长度/2之后的数据
     public ListNode middleNode(ListNode head) {
         ListNode[] res = new ListNode[100];
         int t = 0;
@@ -28,6 +29,7 @@ public class MiddleNode {
         return res[t/2];
     }
 
+    // 单指针，定义一个变量用来计数，第一次遍历记录链表长度，第二次遍历记录长度/2之后的节点
     public ListNode middleNode2(ListNode head){
         int n = 0;
         ListNode cur = head;
@@ -44,6 +46,7 @@ public class MiddleNode {
         return cur;
     }
 
+    // 双指针，快指针每次走两个节点，慢指针每次走一个节点，当快指针走到链表的末尾时，慢指针刚好走到链表的中间节点
     public ListNode middleNode3(ListNode head){
         ListNode fast = head, slow = head;
         while (fast != null && fast.next != null) {

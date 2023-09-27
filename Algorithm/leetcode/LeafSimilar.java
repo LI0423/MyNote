@@ -21,6 +21,7 @@ import java.util.List;
 
 public class LeafSimilar {
 
+    // 采用深度优先遍历的方式，每次把叶子节点放入列表中，最后进行列表数据的比较
     public boolean leafSimilar(TreeNode root1, TreeNode root2){
         List<Integer> list1 = new ArrayList<>();
         if (root1 != null ){

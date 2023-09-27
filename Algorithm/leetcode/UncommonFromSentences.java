@@ -22,6 +22,7 @@ import java.util.Map;
 
 public class UncommonFromSentences {
 
+    // 哈希表，把两句话中的所有单词都放入同一个hash表中，key为单词，value为个数，然后遍历hash表取出值为1的key。
     Map<String, Integer> map = new HashMap<>();
     public String[] uncommonFromSentences(String s1, String s2){
         addMap(s1);

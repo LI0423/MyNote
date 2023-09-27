@@ -22,6 +22,7 @@ package Algorithm.leetcode;
 // 解释：s 会变成 "c"，但 t 仍然是 "b"。
 
 public class BackspaceCompare {
+    // 栈，对字符串进行从前到后的字符遍历，碰到字母时进行压栈，碰到#进行弹栈，遍历结束后栈内留下的字符就是最终结果。
     public boolean backspaceCompare(String s, String t){
         return handle(s).equals(handle(t));
     }
