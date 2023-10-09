@@ -24,6 +24,8 @@ import java.util.List;
 
 public class HasGroupsSizeX {
 
+    // 暴力算法，首先统计每个数字的个数，然后将数字的个数添加到列表中，接着遍历并增加X的大小，
+    // 看原数组的长度是否是X的倍数，如果是的话就遍历列表中的数据，如果列表中的数据不是X的倍数就继续增加X的大小，直到列表中的所有数据遍历完毕。
     public boolean hasGroupsSizeX(int[] deck) {
         int n = deck.length;
         int[] count = new int[10000];
@@ -53,6 +55,7 @@ public class HasGroupsSizeX {
         return false;
     }
 
+    // 最大公约数，首先统计数组中每个数字的个数，我们只要求出所有数字个数的最大公约数 g，判断 g 是否大于等于 2 即可，如果大于等于 2，则满足条件，否则不满足。
     public boolean hasGroupsSizeX2(int[] deck) {
         int[] count = new int[10000];
         for (int c : deck) {

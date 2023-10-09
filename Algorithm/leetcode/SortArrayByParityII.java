@@ -18,6 +18,7 @@ package Algorithm.leetcode;
 
 public class SortArrayByParityII {
 
+    // 两次遍历，第一次遍历将i为偶数并且nums[i]为偶数的nums[i]的数字添加到新数组的偶数位，第二次遍历添加奇数。
     public int[] sortArrayByParityII(int[] nums){
         int n = nums.length;
         int[] res = new int[n];
@@ -38,6 +39,7 @@ public class SortArrayByParityII {
         return res;
     }
 
+    // 双指针，i指向偶数位，j指向奇数位，如果这两位不符合规则就进行交换
     public int[] sortArrayByParityII2(int[] nums){
         int n = nums.length;
         int j = 1;

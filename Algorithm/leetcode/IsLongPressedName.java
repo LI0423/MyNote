@@ -18,6 +18,8 @@ package Algorithm.leetcode;
 
 public class IsLongPressedName {
 
+    // 双指针，i指向name，j指向typed，遍历进行比较如果两指针指向的字符相等就都向后移一位，如果指向typed向后移一位与指向name的内容不一致，
+    // 就判断指向typed的指针内容与前一位的指针内容是否一致，如果一致继续向后移，说明此时该字符是被多次输入的，而如果不一致说明为缺少字符或输错字符，则不符合条件。
     public boolean isLongPressedName(String name, String typed) {
         int i = 0, j = 0;
         while(j < typed.length()){
