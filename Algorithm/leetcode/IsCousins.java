@@ -37,6 +37,7 @@ public class IsCousins {
     int yDepth;
     boolean yFound = false;
 
+    // 深度优先搜索
     public boolean isCousins(TreeNode root, int x, int y) {
         this.x = x;
         this.y = y;
@@ -67,7 +68,7 @@ public class IsCousins {
         dfs(root.right, depth + 1, parent);
     }
     
-
+    // 广度优先搜索
     public boolean isCousins2(TreeNode root, int x, int y) {
         this.x = x;
         this.y = y;
