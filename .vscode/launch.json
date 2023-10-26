@@ -6,6 +6,13 @@
     "configurations": [
         {
             "type": "java",
+            "name": "BitwiseComplement",
+            "request": "launch",
+            "mainClass": "Algorithm.leetcode.BitwiseComplement",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
             "name": "CommonChars",
             "request": "launch",
             "mainClass": "Algorithm.leetcode.CommonChars",

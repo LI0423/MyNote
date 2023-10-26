@@ -1,0 +1,89 @@
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.*;
+import java.util.stream.Collectors;
+
+public class Enum {
+    public static void main(String[] args) {
+        System.out.println(FileListMode.NORMAL.shortName());
+        System.out.println(FileListMode.DIRECTORY.shortName());
+
+        var modifiers = Modifier.modifierAsInt(Modifier.PUBLIC, Modifier.STATIC);
+        System.out.println("int " + modifiers);
+        var modifierSet = Modifier.intAsModifierSet(modifiers);
+        System.out.println("set " + modifierSet);
+
+        var emptySet = EnumSet.noneOf(Modifier.class);
+        var enumSet = EnumSet.of(Modifier.PUBLIC, Modifier.FINAL);
+        System.out.println(emptySet);
+        System.out.println(enumSet);
+
+        var enumMap = new EnumMap<>(Map.of(Modifier.PUBLIC, "private", Modifier.FINAL, "final"));
+        System.out.println(enumMap);
+
+    }
+}
+
+enum FileListMode {
+    ALL,
+    NORMAL,
+    DIRECTORY;
+    public String shortName() {
+        return name().toLowerCase().substring(0, 3);
+    }
+}
+
+enum Modifier {
+    PUBLIC(1),
+    FINAL(2),
+    STATIC(4);
+    private final int value;
+    Modifier(int value) {
+        this.value = value;
+    }
+    private static final List<Modifier> MODIFIERS = List.of(values());
+    static int modifierAsInt(Modifier... modifiers) {
+        return Arrays.stream(modifiers).map(m -> m.value).reduce(0, (a, b) -> a | b);
+    }
+    static Set<Modifier> intAsModifierSet(int modifiers) {
+        return MODIFIERS.stream().filter(m -> (modifiers & m.value) != 0).collect(Collectors.toSet());
+    }
+}
+
+interface FilePredicate {
+    boolean test(Path path) throws IOException;
+}
+
+enum FileListMode2 implements FilePredicate {
+    ALL {
+        public boolean test(Path path) throws IOException {
+            return true;
+        }
+    },
+    NORMAL {
+        public boolean test(Path path) throws IOException {
+            return !Files.isHidden(path);
+        }
+    },
+    DIRECTORY {
+        public boolean test(Path path) throws IOException {
+            return NORMAL.test(path) && Files.isDirectory(path);
+        }
+    }
+}
+
+enum FileListMode3 {
+    ALL(path -> true),
+    NORMAL(path -> !Files.isHidden(path)),
+    DIRECTORY(path -> NORMAL.test(path) && Files.isDirectory(path));
+    private final FilePredicate predicate;
+    FileListMode3(FilePredicate predicate){
+        this.predicate = predicate;
+    }
+    public boolean test(Path path) throws IOException {
+        return predicate.test(path);
+    }
+}
+
+

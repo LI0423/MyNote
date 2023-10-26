@@ -1,0 +1,94 @@
+import java.util.Arrays;
+import java.util.Objects;
+
+public class EqualsAndHashCodeAndToString {
+
+    public static void main(String[] args) {
+        var user1 = new User("Bob");
+        var user2 = new User("Bob");
+        System.out.println(user1.equals(user2));
+        System.out.println(user1.hashCode() == user2.hashCode());
+        System.out.println(user1);
+
+        var user3 = new User2("Bob", 31);
+        var user4 = new User2("Bob", 31);
+        System.out.println(user3.equals(user4));
+        System.out.println(user3.hashCode() == user4.hashCode());
+        System.out.println(user3);
+
+        var user5 = new User3("Bob", 31, "bob", "df15cb4e019ec2eac654fb2e486c56df285c8c7b".toCharArray());
+        var user6 = new User3("Bob", 31, "bob", "df15cb4e019ec2eac654fb2e486c56df285c8c7b".toCharArray());
+        System.out.println(user5.equals(user6));
+        System.out.println(user5.hashCode() == user6.hashCode());
+        System.out.println(user5);
+
+    }
+}
+
+class User {
+    private final String name;
+
+    public User(String name) {
+        this.name = Objects.requireNonNull(name);
+    }
+
+    public boolean equals(Object o) {
+        return o instanceof User user && name.equals(user.name);
+    }
+
+    public int hashCode() {
+        return name.hashCode();
+    }
+
+    public String toString(){
+        return "User " + name;
+    }
+}
+
+class User2 {
+    private final String name;
+    private final int age;
+
+    public User2(String name, int age) {
+        this.name = Objects.requireNonNull(name);
+        this.age = age;
+    }
+
+    public boolean equals(Object o) {
+        return o instanceof User2 user2 && age == user2.age && name.equals(user2.name);
+    }
+
+    public int hashCode() {
+        return name.hashCode() ^ age;
+    }
+
+    public String toString() {
+        return "User " + name + " " + age;
+    }
+}
+
+class User3 {
+    private final String name;
+    private final int age;
+    private final String login;
+    private final char[] password;
+
+    public User3(String name, int age, String login, char[] password) {
+        this.name = Objects.requireNonNull(name);
+        this.age = age;
+        this.login = Objects.requireNonNull(login);
+        this.password = password.clone();
+    }
+
+    public boolean equals(Object o) {
+        return o instanceof User3 user3 && age == user3.age && name.equals(user3.name) && login.equals(user3.login) && Arrays.equals(password, user3.password);
+    }
+
+    public int hashCode() {
+        return Objects.hash(name, age, login, Arrays.hashCode(password));
+    }
+
+    public String toString() {
+        return "User " + name + " " + age + " " + login + " " + "*".repeat(password.length);
+    }
+}
