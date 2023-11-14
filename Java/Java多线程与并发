@@ -34,7 +34,7 @@ Java多线程与并发
         MyCallable mc = new MyCallable();
         FutureTask<Integer> ft = new FutureTask<>(mc);
         Thread thread = new Thread(ft);
-        thread.start(); 
+        thread.start();
     }
  （3）继承Thread类
     public class MyThread extends Thread{
@@ -70,6 +70,83 @@ Java多线程与并发
     （2）线程已经拿到这个锁的所有权，又重入这把锁，锁计数器就会累加，变为2，并随着累加的次数一直累加。
     （3）这把锁已经被别的线程获取了，等待锁释放。
 
+    修饰实例方法：
+        synchronized修饰实例方法，锁对象为当前实例对象，也称之为对象锁，进入同步代码需要获取当前实例对象的锁。进入同步实例方法时，
+        如果锁对象不是同一实例对象，则不会形成资源竞争，线程之间互不影响。
+        public class SynchronizedTest {
+            public static void main(String[] args) {
+                CustomService customService = new CustomService();
+                new Thread(() -> customService.test1(), "ThreadA").start();
+                new Thread(() -> customService.test2(), "ThreadB").start();
+            }
+
+            static class CustomService{
+                @SneakyThrows
+                public synchronized void test1() {
+                    TimeUnit.SECONDS.sleep(1);
+                    for(int i = 0; i < 5; i++) {
+                        System.out.println(Thread.currentThread.getName() + " method:test1 :" + i);
+                    }
+                }
+                @SneakyThrows
+                public synchronized void test2() {
+                    TimeUnit.SECONDS.sleep(1);
+                    for(int i = 0; i < 5; i++) {
+                        System.out.println(Thread.currentThread.getName() + " method:test2 :" + i);
+                    }
+                }
+            }
+        }
+        虽然多个线程分别调用了不同的Synchronized修饰的实例方法，但是这些方法的锁对象是同一个，因此形成资源竞争，同一时刻只能有一个线程执行同步代码。
+
+    修饰静态方法：
+        synchronized修饰静态方法，锁对象为当前类的Class对象，也称之为类锁，进入同步代码前需要获取类的Class对象的锁。
+        public class SynchronizedTest{
+            @SneakyThrows
+            public static void main(String[] args) {
+                CustomService customService = new CustomService();
+                new Thread(() -> customService.test1(), "ThreadA").start();
+                TimeUnit.SECONDS.sleep(1);
+                new Thread(() -> customService.test2(), "ThreadB").start();
+            }
+
+            static class CustomService{
+                @SneakyThrows
+                public static synchronized void test3(){
+                    TimeUnit.SECONDS.sleep(2);
+                    for (int i = 0; i < 5; i++){
+                        System.out.println(Thread.currentThread().getName() + "method:test3 :" + i);
+                    }
+                }
+                @SneakyThrows
+                public static synchronized void test4(){
+                    TimeUnit.SECONDS.sleep(2);
+                    for (int i = 0; i < 5; i++){
+                        System.out.println(Thread.currentThread().getName() + "method:test4 :" + i);
+                    }
+                }
+            }
+        }
+        ThreadA先获得CustomService的Class对象锁，这是一个类锁（全局锁），而后ThreadB来获取CustomService的实例对象锁，虽然不是同一个锁对象，
+        但是类锁是一个全局锁，因此形成资源竞争，同一时刻只能有一个线程执行同步代码。
+
+    修饰代码块：
+        synchronized修饰代码块，取决于锁对象，对给定对象加锁，进入同步代码则需要获取给定对象的锁。
+        public void test5(){
+            // 修饰代码块，锁对象为实例对象
+            synchronized (this) {
+            }
+        }
+        public void test6(){
+            // 修饰代码块，锁对象为实例对象
+            synchronized(new Object()){
+            }
+        }
+        public void test7(){
+            // 修饰代码块，锁对象为类的class对象
+            synchronized(Object.class){
+            }
+        }
 6.JVM锁的优化
     （1）锁粗化：减少不必要的紧连在一起的unlock，lock操作，将多个连续的锁扩展成一个范围更大的锁。
     （2）锁消除：通过运行时JIT编译器的逃逸分析来消除一些没有在当前同步块以外被其他线程贡献的数据的锁的保护，通过逃逸分析也可以在线程本地Stack上进行对象空间的
@@ -80,14 +157,14 @@ Java多线程与并发
             当一个线程访问同步块并获取锁时，会在对象头和栈帧中的锁记录里存储锁偏向的线程ID，以后该线程在进入和退出同步块时不需要进行CAS操作了加锁和解锁，只需要测
         试下对象头的Mark Word里是否存储着指向当前线程的偏向锁。偏向锁使用了一种等待竞争才会释放锁的机制，当其他线程尝试获取偏向锁时，持有偏向锁的线程才会释放锁。
         偏向锁的撤销需要等到全局安全点（当前线程没有正在执行的字节码）。首先暂停拥有偏向锁的线程，然后检查持有偏向锁的线程是否还活着，如果线程处于不活动状态，直接
-        将对象头设置为无锁状态，如果还活着，JVM会遍历栈帧中的锁记录，栈帧中的锁记录和对象头要么偏向于其他线程，要么恢复到无锁状态活着标记对象不适合作为偏向锁。
+        将对象头设置为无锁状态，如果还活着，JVM会遍历栈帧中的锁记录，栈帧中的锁记录和对象头要么偏向于其他线程，要么恢复到无锁状态或者标记对象不适合作为偏向锁。
     （5）适应性自旋锁：当线程在获取轻量级锁的过程中执行CAS操作失败时，在进入与monitor相关联的操作系统重量级锁前会进入忙等，然后再次尝试，当尝试一定的次数后如果仍然
     没有成功与该monitor关联的semaphore（互斥锁）进入到阻塞状态。
             如果在同一个锁对象上，自旋等待刚刚成功获取过锁，并且持有锁的线程正在运行中，那么JVM会认为该锁自旋获取到锁的可能性很大，会自动增加等待时间。比如增加到
         100次循环。相反，如果对于某个锁，自旋很少成功获取锁。那再以后要获取这个锁时将可能省略掉自旋过程，以避免浪费处理器资源。
 
 7.Thread.sleep()和Object.wait()的区别 
-    Thread.sleep()不会释放占有的锁，Object.wait()会释放占有的锁； 
+    Thread.sleep()不会释放占有的锁，Object.wait()会释放占有的锁；
     Thread.sleep()必须传入时间，Object.wait()可传可不传，不传表示一直阻塞下去； 
     Thread.sleep()到时间了会自动唤醒，然后继续执行； 
     Object.wait()不带时间的，需要另一个线程使用Object.notify()唤醒； 
@@ -115,7 +192,7 @@ Java多线程与并发
     如果在park()之前执行了unpark()会怎样? 线程不会被阻塞，直接跳过park()，继续执行后续内容；
 
 10.ThreadLocal如何实现线程隔离
-    主要是用到了Thread对象中的一个ThreadLocalMap类型的变量threadLocals，负责存储当前线程的关于Connection的对象，dbConnectionLocal这个变量为key，以新建的Connection
+    主要是用到了Thread对象中的一个ThreadLocalMap类型的变量threadLocals，负责存储当前线程的关于Connection的对象，ConnectionLocal这个变量为key，以新建的Connection
     对象为value，线程第一次读取的时候如果不存在就会调用ThreadLocal的initialValue方法创建一个Connection对象并且返回。
     首先获取当前线程对象，然后从线程对象中获取到ThreadLocalMap的成员属性threadLocals。如果当前线程的threadLocals已经初始化（即不为null）并且存在以当前ThreadLocal对象
     为key的值，则直接返回当前线程要获取的对象。如果当前线程的threadLocals已经初始化（即不为null）但是不存在以当前ThreadLocal对象为key的对象，重新创建一个对象，并添加到当前
@@ -281,7 +358,7 @@ Java多线程与并发
     threadFactory：自定义的线程仓库，可以给生成的线程设置一个具有识别度的线程名，默认为DefaultThreadFactory。
     Handler：线程池的饱和策略，当阻塞队列满了且没有空闲线程，必须采用一种饱和策略处理该任务。
         Abortpolicy：直接抛出异常，默认策略。
-        CallerRunspolicy：用线程调用者来执行这个任务。
+        CallerRunsPolicy：用线程调用者来执行这个任务。
         DiscardOldestPolicy：丢弃阻塞队列中最靠前的任务，并执行当前任务。
         DiscardPolicy：直接丢弃任务。
 （3）线程池任务的提交
@@ -296,3 +373,25 @@ Java多线程与并发
     shutdown：将线程池中的线程状态设置为SHUTDOWN，然后关闭所有没有在执行任务的线程。
     shutdownnow：将线程的状态设置为STOP，然后停止所有正在执行或者暂停执行任务的线程，只要调用这两个关闭方法中的任意一个，isShutDown()返回true。当所有任务都成功关闭了，
         isTerminated()返回true。
+
+    @Configuration
+    public class ThreadPoolConfig{
+        public static String THREAD_NAME = "thread-pool-%d";
+        public static final int CORE_POOL_SIZE = Runtime.getRuntime().avaliableProcessors * 2 + 1;
+        public static final int MAXIMUM_POOL_SIZE = Runtime.getRuntime.avaliableProcessors * 2;
+
+        @bean
+        public ExecutorService threadPool() {
+            ThreadFactory threadFactory = new ThreadFactoryBuilder().setNameFormat(THREAD_NAME).build();
+            return new ThreadPoolExecutor(
+                CORE_POOL_SIZE,
+                MAXIMUM_POOL_SIZE,
+                0L,
+                TimeUnit.SECONDS,
+                new MemorySafeLinkedBlockingQueue<>();
+                threadFactory,
+                new ThreadPoolExecutor.CallerRunsPolicy()
+            );
+        }
+
+    }
