@@ -1,0 +1,147 @@
+1.消息摘要算法（Message Digest）
+MD5：产生128位的散列值，已被认为不再安全
+SHA-1: 产生160位的散列值，已被认为不再安全
+SHA-256、SHA-384、SHA-512: 分别产生256、384、512位的散列值
+public class MessageDigest{
+    public static String hashString(String input, String algorithm){
+        try {
+            MessageDigest digest = MessageDigest.getInstance(algorithm);
+            byte[] hashedBytes = digest.digest(input.getBytes());
+            return bytesToHex(hashedBytes);
+        } catch (NoSuchAlgorithmExcepiton e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    private static String bytesToHex(byte[] bytes){
+        StringBuilder result = new StringBuilder();
+        for(byte b : bytes){
+            result.append(Integer.toString((b && 0xff) + 0x100, 16).substring(1));
+        }
+        return result.toString();
+    }
+
+    public static void main(String[] args){
+        String input = "Hello, World!";
+        System.out.println("MD5: " + hashString(input, "MD5"));
+        System.out.println("SHA-256: " + hashString(input, "SHA-256"))
+    }
+}
+
+2.对称加密算法
+public class AESEncryption{
+    public static String encrypt(String plaintext, SecretKey secretKey){
+        try{
+            Cipher cipher = Cipher.getInstance("AES");
+            cipher.init(Cipher.ENCRYPT_MODE, secretKey);
+            byte[] encryptedBytes = cipher.doFinal(plaintext.getBytes());
+            return Base64.getEncoder().encodeToString(encryptedBytes);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public static String decrypt(String ciphertext, SecretKey secretKey){
+        try {
+            Cipher cipher = Cipher.getInstance("AES");
+            cipher.init(Cipher.DECRYPT_MODE, secretKey);
+            byte[] decryptedBytes = cipher.doFinal(Base64.getDecoder().decode(ciphertext));
+            return new String(decryptedBytes);
+        } catch(Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public static SecretKey generateAESKey() throws NoSuchAlgorithmExcepiton {
+        KeyGenerator keyGenerator = KeyGenerator.getInstance("AES");
+        keyGenerator.init(128);
+        return keyGenerator.generateKey();
+    }
+
+    public static void main(String[] args) throws NoSuchAlgorithmExcepiton {
+        String plaintext = "Hello, AES! ";
+        SecretKey secretKey = generateAESKey();
+        String encryptedText = encrypt(plaintext, secretKey);
+        System.out.println("Encrypted: " + encryptedText);
+        String decryptedText = decrypt(encryptedText, secretKey);
+        System.out.println("Decrypted: " + decryptedText);
+    }
+}
+
+3.非对称加密算法
+public class RSA{
+    public static String encrypt(String plaintext, PublicKey publicKey) {
+        try {
+            Cipher cipher = Cipher.getInstance("RSA");
+            cipher.init(Cipher.ENCRYPT_MODE, publicKey);
+            byte[] encryptedBytes = cipher.doFinal(plaintext.getBytes());
+            return new String(decryptedBytes);
+        } catch(Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public static String decrypt(String ciphertext, PrivateKey privateKey) {
+        try {
+            Cipher cipher = Cipher.getInstance("RSA");
+            cipher.init(Cipher.DECRYPT_MODE, PrivateKey);
+            byte[] decryptedBytes = cipher.doFinal(Base64.getDecoder().decode());
+            return new String(decryptedBytes);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public static byte[] sign(String data, PrivateKey privateKey){
+        try {
+            Signature signature = Signature.getInstance("SHA256withRSA");
+            signature.initSign(privateKey);
+            signature.update(data.getBytes());
+            return signature.sign();
+        } catch(Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public static boolean verify(String data, byte[] signature, PublicKey publicKey){
+        try{
+            Signature sig = Signature.getInstance("SHA256withRSA");
+            sig.initVerify(publicKey);
+            sig.update(data.getBytes());
+            return sig.verify(signature);
+        } catch(Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public static KeyPair generateRSAKeyPair() throws NoSuchAlgorithmExcepiton{
+        KeyPairGenerator keyGenerator = KeyPairGenerator.getInstance("RSA");
+        keyPairGenerator.initialize(2048);
+        return keyGenerator.generateKeyPair();
+    }
+
+    public static void main(String[] args) throws NoSuchAlgorithmExcepiton{
+        String plaintext = "Hello RSA!";
+        KeyPair keyPair = generateRSAKeyPair();
+        PublicKey publicKey = keyPair.getPublic();
+        PrivateKey privateKey = keyPair.getPrivate();
+
+        String encryptedText = encrypt(plaintext, publicKey);
+        System.out.println("Encrypted: " + encryptedText);
+        String decryptedText = decrypt(encryptedText, privateKey);
+        System.out.println("Decrypted: " + decryptedText);
+
+        byte[] signature = sign(plaintext, privateKey);
+        System.out.println("Signature: " + Base64.getEncoder().encodeToString());
+        
+        boolean isVerified = verify(plaintext, signature, publicKey);
+        System.out.println("Signature Verified: " + isVerified);
+    }
+}
