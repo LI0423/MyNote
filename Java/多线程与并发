@@ -201,7 +201,7 @@ Java多线程与并发
     Object.wait()方法需要在synchronized块中执行； 
     LockSupport.park()可以在任意地方执行； 
     Object.wait()方法声明抛出了中断异常，调用者需要捕获或者再抛出； 
-    LockSupport.park()不需要捕获中断异常； 
+    LockSupport.park()不需要捕获中断异常；
     Object.wait()不带超时的，需要另一个线程执行notify()来唤醒，但不一定继续执行后续内容； 
     LockSupport.park()不带超时的，需要另一个线程执行unpark()来唤醒，一定会继续执行后续内容； 
     如果在wait()之前执行了notify()会怎样? 抛出IllegalMonitorStateException异常； 
@@ -219,11 +219,17 @@ Java多线程与并发
     并不会释放，而ThreadLocalMap对于key虽然是弱引用，但是强引用不会释放，弱引用当然也会一直有值，同时创建的LocalVariable对象也不会释放，就造成了内存泄露；如果LocalVariable
     对象不是一个大对象的话，其实泄露的并不严重，泄露的内存=核心线程数*LocalVariable对象的大小。
 
-12.手写死锁
+12.ThreadLocalMap的key为什么使用弱引用
+    key使用强引用：引用threadLocal的对象被回收了，但是ThreadLocalMap还持有ThreadLocal的强引用，如果没有手动删除，ThreadLocal不会被回收，导致Entry内存泄露。
+    key使用弱引用：引用ThreadLocal的对象被回收了，由于ThreadLocalMap持有ThreadLocal的弱引用，即使没有手动删除，ThreadLocal也会被回收，value在下一次ThreadLocalMap调用
+        set，get，remove的时候会被清除。
+    因此，内存泄露的原因是ThreadLocal和Thread的生命周期一样长，如果没有手动删除对应的key就会导致内存泄露，而不是弱引用。
+    
+13.手写死锁
     public class DeadLock {
         public static void main(String[] args){
-            Resouece res1 = new Resouece();
-            Resouece res2 = new Resouece();
+            Resource res1 = new Resource();
+            Resource res2 = new Resource();
 
             res1.flag= true;
             res2.flag = false;
@@ -244,7 +250,7 @@ Java多线程与并发
         }
     }
 
-    public class Resouece{
+    public class Resource{
         boolean flag = true;
         private static final Object obj1 = new Object();
         private static final Object obj2 = new Object();
@@ -276,13 +282,13 @@ Java多线程与并发
         }
     }
 
-13.如何避免死锁
+14.如何避免死锁
 （1）打破互斥条件：改造独占性资源为虚拟资源，大部分资源已无法改造。
 （2）打破不可抢占条件：当一进程占有一独占性资源后又申请一独占性资源无法满足，则退出原占有的资源。
 （3）打破占有且申请条件：采用资源预先分配策略，即进程运行前申请全部资源，满足则运行，不然就等待。
 （4）打破循环等待条件：实现资源有序分配策略，对所有设备实现分类编号，所有进程只能采用按序号递增的形式申请资源。
 
-14.CountDownLatch
+15.CountDownLatch
     CountDownLatch能够使一个线程在等待另外一些线程完成各自工作之后再继续执行。相当于是一个计数器，计数器的初始值就是线程的数量，每当一个任务完成后，计数器的值就减1，
     当计数器的值为0时，表示所有的线程都完成了任务。在CountDownLatch上await的线程就会被唤醒，继续执行其他任务，也可以延迟唤醒，给CountDownLatch加一个延迟时间就可以。
 （1）使用方法
@@ -349,7 +355,7 @@ Java多线程与并发
 （2）源码分析
     CountDownLatch的底层是由AQS支持的，AQS核心数据结构是两个队列，一个是同步队列（sync queue），一个是条件队列（condition queue）。
 
-15.线程池
+16.线程池
 （1）线程池的三种类型
     newFixedThreadPool：线程池中的线程数量达到corePoolSize，即使当前没有可执行任务，也不会释放空闲线程。由于使用的无界阻塞队列LinkedBlockingQueue，线程池里的数量不超过
         corePoolSize时，MaximumPoolSize和KeepAliveTime就会是个无用参数。由于是无界队列，那么饱和策略就会失效。
