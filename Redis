@@ -60,7 +60,7 @@ Redis
 14. sunion des key [key]            结果保存到des，存在覆盖，des可以是key本身
 
 五、Zset数据类型
-1. zset score member [score member]         将一个或多个member元素及其score加入有序集key中，如果mem存在则更新score并重新插入member保证位置正确，
+1. zset score member [score member]         将一个或多个member元素及其score加入有序集key中，如果member存在则更新score并重新插入member保证位置正确，
     score可以是正数也可以是双精度浮点数
 2. zcard key            返回有序集合key的元素个数
 3. zcount key min max           返回score位于min，max之间的成员数量
