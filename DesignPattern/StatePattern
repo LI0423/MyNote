@@ -55,6 +55,7 @@
             context.setState(new ConcreteStateB());
         }
     }
+    
     5.例子🌰：
     public interface State {
         //投入25分钱

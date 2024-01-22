@@ -63,9 +63,10 @@
     更换容器名
         docker rename [容器id] 新容器名
     进入容器
-        docker attach [容器id]  如果从这个stdin中exit，会导致容器的停止
+        docker attach [容器id]  如果从这个stdin中exit，不会导致容器的停止
     交互式进入容器
         docker exec [容器id]    -d, --detach 在容器中后台执行命令； -i, --interactive=true/false 打开标准输入接受用户输入命令
+        docker exec -it containerId /bin/bash
     导出一个已经创建的容器到一个文件
         docker export [容器id]
     导出的容器快照文件可以再导入为镜像

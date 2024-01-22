@@ -1,6 +1,9 @@
 Redis
 1.启动	redis-cli
-2.带ip和端口启动	redis-cli -h 0.0.0.0 -p 6379
+2.带ip和端口启动	redis-cli -h 0.0.0.0 -p 6379 -a password
+
+常用
+keys * 获取所有key
 
 一、String数据类型
 1. set key value [过期时间]      将字符串值关联到key，已关联则覆盖，无视类型，原本带有生存时间TTL则被清除

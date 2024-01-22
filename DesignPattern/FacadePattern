@@ -12,75 +12,48 @@
     （2）子系统角色：实习系统的部分功能，客户可以通过外观角色访问它。
     （2）客户角色：通过一个外观角色访问各个子系统的功能。
     4.实现
-    public class FacadePattern{
-        public static void main(String[] args){
-            Facade f = new Facade();
-            f.method();
+    //子系统角色
+    public class AudioPlayer {
+        public void play(){
+            System.out.println("playing audio...");
         }
     }
-
+    //子系统角色
+    public class VideoPlayer {
+        public void pley(){
+            System.out.println("playing video...");
+        }
+    }
     //外观角色
-    class Facade {
-        private SubSystem01 obj1 = new SubSystem01();
-        private SubSystem02 obj2 = new SubSystem02();
+    public class MultimediaPlayerFacade {
+        private AudioPlayer audioPlayer;
+        private VideoPlayer videoPlayer;
 
-        public void method(){
-            obj1.method1();
-            obj2.method2();
+        public MultimediaPlayerFacade(){
+            this.audioPlayer = new audioPlayer();
+            this.videoPlayer = new videoPlayer();
+        }
+
+        public void playAudio(){
+            audioPlayer.play();
+        }
+
+        public void playVideo(){
+            videoPlayer.play();
         }
     }
-
-    //子系统角色
-    class SubSystem01 {
-        public void method1(){
-            System.out.println("子系统01的method1被调用");
+    public class FacadePattern {
+        public static void main(String[] args) {
+            MultimediaPlayerFacade facade = new MultimediaPlayerFacade();
+            //播放音频
+            facade.playAudio();
+            //播放视频
+            facade.playVideo();
         }
     }
-
-    //子系统角色
-    class SubSystem02 {
-        public void method2(){
-            System.out.println("子系统02的method1被调用");
-        }
-    }
-
-    例子🌰：
-        public class AudioPlayer {
-            public void play(){
-                System.out.println("playing audio...");
-            }
-        }
-
-        public class VideoPlayer {
-            public void pley(){
-                System.out.println("playing video...");
-            }
-        }
-
-        public class MultimediaPlayerFacade {
-            private AudioPlayer audioPlayer;
-            private VideoPlayer videoPlayer;
-
-            public MultimediaPlayerFacade(){
-                this.audioPlayer = new audioPlayer();
-                this.videoPlayer = new videoPlayer();
-            }
-
-            public void playAudio(){
-                audioPlayer.play();
-            }
-
-            public void playVideo(){
-                videoPlayer.play();
-            }
-        }
-
-        public class FacadePattern {
-            public static void main(String[] args) {
-                MultimediaPlayerFacade facade = new MultimediaPlayerFacade();
-                //播放音频
-                facade.playAudio();
-                //播放视频
-                facade.playVideo();
-            }
-        }
+    5.应用场景
+    （1）解决易用性问题
+        封装系统的低层实现，隐藏系统的复杂性，提供一组更加简单易用、更高层的接口。
+    （2）解决性能问题
+        通过将多个接口调用替换为一个门面接口调用，减少网络通信成本，提高APP客户端的响应速度。
+    （3）解决分布式事务问题

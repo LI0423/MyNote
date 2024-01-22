@@ -125,3 +125,36 @@
         )
         bank.service();
     }
+    
+    扩展：
+    callback模式
+    public interface Callback{
+        void onCallback(String message);
+    }
+
+    public class Caller{
+        private Callback callback;
+
+        public void doSomething(){
+            String message = "操作完成";
+            callback.onCallback(message);
+        }
+    }
+
+    public class testClass{
+        public static void main(String[] args){
+            Callback callback = new Callback(){
+                @Override
+                void onCallback(String message){
+                    System.out.println(message);
+                }
+            }
+            //Callback callback = message -> System.out.println(message);
+
+            Caller caller = new Caller(callback);
+            caller.doSomething();
+        }
+    }
+
+    
+

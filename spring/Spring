@@ -275,50 +275,184 @@
     也可以不指定异常类型，此时会匹配所有异常。
 
 6.综合示例
-    public class Service1{
-        public void m1(){
-            System.out.println("m1方法");
-        }
+    //自定义注解，指定使用范围在方法上
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target(ElementType.METHOD)
+    public @interface LogRecord {
 
-        public void m2(){
-            System.out.println("m2方法");
-        }
+        String opName();
+
+        String desc() default "";
     }
 
     //这个类使用@Aspect进行标注
     @Aspect
-    public class Aspect1{
+    @Component
+    public class LogAspect {
 
-        //定义一个切点，可以匹配Service1中所有方法
-        @Pointcut("execution(*com.test.service.Service1.*(..))")
-        public void pointcut(){
+        private ThreadLocal<LogRecordEntity> threadLocal = new ThreadLocal<>();
+
+        @Pointcut("@annotation(com.example.demo.aop.LogRecord)")
+        public void pointcut() {
         }
 
-        //定义一个前置通知，这个通知对上面定义的切入点中的所有方法奏效
-        @Before(value="pointcut()")
-        public void before(JoinPoint joinPoint){
+        @Before("pointcut()")
+        public void before() {
             System.out.println("前置通知");
         }
 
-        //定义了一个异常通知，这个通知对上面定义的切点所有方法奏效
-        @AfterThrowing(value="pointcut()",throwing="e")
-        public void after(JoinPoint joinPoint,Exception e){
-            System.out.println("异常通知"+e.getMessage());
+        @After("pointcut()")
+        public void after() {
+            System.out.println("后置通知");
+        }
+
+        @Around("pointcut()")
+        public Object around(ProceedingJoinPoint joinPoint) throws Throwable {
+            String requestTime = String.valueOf(System.currentTimeMillis());
+            System.out.println("环绕通知前。。。。。。");
+
+            HttpServletRequest request = HttpRequestUtil.getRequest();
+            if (request == null) {
+                return null;
+            }
+
+            LogRecordEntity logRecord = new LogRecordEntity();
+            logRecord.setId(UUID.randomUUID().toString().replace("-", ""));
+            logRecord.setPath(request.getRequestURI());
+            logRecord.setMethod(request.getMethod());
+            logRecord.setRequestIp(request.getRemoteHost());
+            logRecord.setRequestTime(requestTime);
+
+            MethodSignature signature = (MethodSignature) joinPoint.getSignature();
+            Method method = signature.getMethod();
+            if (method.isAnnotationPresent(LogRecord.class)) {
+                LogRecord annotation = method.getAnnotation(LogRecord.class);
+                logRecord.setOpName(annotation.opName());
+            }
+
+            String inputParam = Arrays.toString(joinPoint.getArgs());
+            logRecord.setInputParam(inputParam);
+
+            String name = method.getName();
+            logRecord.setQualifiedName(name);
+
+            threadLocal.set(logRecord);
+
+            Object proceed = joinPoint.proceed();
+            System.out.println("环绕通知后。。。。。。");
+
+            return proceed;
+        }
+
+        @AfterReturning(value = "pointcut()", returning = "ret")
+        public Object afterReturning(Object ret) {
+            System.out.println("返回值通知。。。。。。");
+
+            LogRecordEntity logRecord = this.getLogRecordEntity();
+            String outputParam = ret.toString();
+
+            logRecord.setOutParam(outputParam);
+            logRecord.setStatus("成功");
+
+            System.out.println(logRecord);
+            threadLocal.remove();
+
+            return ret;
+        }
+
+        @AfterThrowing(value = "pointcut()", throwing = "ex")
+        public void throwingAdvice(Throwable ex) {
+            System.out.println("异常通知。。。。。。");
+
+            LogRecordEntity logRecordEntity = this.getLogRecordEntity();
+            logRecordEntity.setErrMessage(ex.getMessage());
+            logRecordEntity.setStatus("失败");
+
+            System.out.println(logRecordEntity);
+            threadLocal.remove();
+        }
+
+        private LogRecordEntity getLogRecordEntity() {
+            LogRecordEntity logRecord = threadLocal.get();
+            long start = Long.parseLong(logRecord.getRequestTime());
+            long end = System.currentTimeMillis();
+
+            logRecord.setCostTime(start - end + "ms");
+            logRecord.setResponseTime(String.valueOf(end));
+            return logRecord;
         }
     }
 
-    public class Test{
-        @Test
-        public void test(){
-            try{
-                Service1 target = new Service1();
-                AspectJProxyFactory proxyFactory = new AspectJProxyFactory();
-                proxyFactory.setTarget(target);
-                proxyFactory.addAspect(Aspect1.class);
-                Service1 proxy = proxyFactory.getProxy();
-                proxy.m1();
-            }catch(Exception e){
-            }
+    //实体类
+    @NoArgsConstructor
+    @Setter
+    @Getter
+    public class LogRecordEntity implements Serializable {
+
+        private String id;
+
+        private String opName;
+
+        private String path;
+
+        private String method;
+
+        private String requestIp;
+
+        private String qualifiedName;
+
+        private String inputParam;
+
+        private String outParam;
+
+        private String errMessage;
+
+        private String requestTime;
+
+        private String responseTime;
+
+        private String costTime;
+
+        private String status;
+
+        @Override
+        public String toString() {
+            return "LogRecordEntity{" +
+                    "id='" + id + '\'' +
+                    ", opName='" + opName + '\'' +
+                    ", path='" + path + '\'' +
+                    ", method='" + method + '\'' +
+                    ", requestIp='" + requestIp + '\'' +
+                    ", qualifiedName='" + qualifiedName + '\'' +
+                    ", inputParam='" + inputParam + '\'' +
+                    ", outParam='" + outParam + '\'' +
+                    ", errMessage='" + errMessage + '\'' +
+                    ", requestTime='" + requestTime + '\'' +
+                    ", responseTime='" + responseTime + '\'' +
+                    ", costTime='" + costTime + '\'' +
+                    ", status='" + status + '\'' +
+                    '}';
+        }
+    }
+
+    //测试
+    @RestController
+    @RequestMapping("/api/aop")
+    public class LogController {
+        @LogRecord(opName = "测试日志", desc = "测试日志描述内容")
+        @GetMapping("/log")
+        public String demo(@RequestParam("id") String id,
+                        @RequestParam("name") String name){
+            System.out.println("业务逻辑代码。。。。。。");
+            return "success";
+        }
+
+        @LogRecord(opName = "测试异常日志", desc = "异常日志描述内容")
+        @GetMapping("/err")
+        public String errDemo(){
+            System.out.println("业务异常。。。。。。");
+            int i = 10 /0 ;
+            return "err";
         }
     }
 

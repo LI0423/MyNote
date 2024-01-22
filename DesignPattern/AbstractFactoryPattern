@@ -22,55 +22,98 @@
         至于创建对象的家族这一概念是在 Client 体现，Client 要通过 AbstractFactory 同时调用两个方法来创建出两个对象，在这里这两个对象就有很大的相关性，Client 需要同时创建出这两个对象。
         从高层次来看，抽象工厂使用了组合，即 Cilent 组合了 AbstractFactory，而工厂方法模式使用了继承。
 
-    public class AbstractProductA {
-    }
+    public class KangProduct {
+        private String companyName = "康师傅";
 
-    public class AbstractProductB {
-    }
-
-    public class ProductA1 extends AbstractProductA {
-    }
-
-    public class ProductA2 extends AbstractProductA {
-    }
-
-    public class ProductB1 extends AbstractProductB {
-    }
-
-    public class ProductB2 extends AbstractProductB {
-    }
-
-    public abstract class AbstractFactory {
-        abstract AbstractProductA createProductA();
-        abstract AbstractProductB createProductB();
-    }
-
-    public class ConcreteFactory1 extends AbstractFactory {
-        AbstractProductA createProductA(){
-            return new ProductA1();
-        }
-
-        AbstractProductB createProductB(){
-            return new ProductB1();
+        public String getCompanyName(){
+            return companyName;
         }
     }
 
-    public class ConcreteFactory2 extends AbstractFactory {
-        AbstractProductA createProductA(){
-            return new ProductA2();
-        }
+    public class KangNoodle extends KangProduct {
 
-        AbstractProductB createProductB(){
-            return new ProductB2();
+        private String name = "康师傅方便面";
+
+        public String getName(){
+            return name;
         }
     }
 
-    public class Client {
-        public static void main(String[] args) {
-            AbstractFactory abstractFactory = new ConcreteFactory1();
-            AbstractProductA productA = abstractFactory.createProductA();
-            AbstractProductB productB = abstractFactory.createProductB();
+    public class KangWater extends KangProduct {
+        private String name = "康师傅矿泉水";
+
+        public String getName(){
+            return name;
         }
+    }
+
+    public class TongProduct {
+        private String companyName = "统一";
+
+        private String getCompanyName(){
+            return companyName;
+        }
+    }
+
+    public class TongNoodle extends TongProduct{
+        private String name = "统一方便面";
+
+        public String getName(){
+            return name;
+        }
+    }
+
+    public class TongWater extends TongProduct{
+        private String name = "统一矿泉水";
+
+        public String getName(){
+            return name;
+        }
+    }
+
+    public interface EnterpriseFactory {
+        KangProduct kang();
+        TongProduct tong();
+    }
+
+    public class NoodleFactory implements EnterpriseFactory {
+
+        @Override
+        public KangProduct kang(){
+            return new KangNoodle();
+        }
+
+        @Override
+        public TongProduct tong(){
+            return new TongNoodle();
+        }
+    }
+
+    public class WaterFactory implements EnterpriseFactory {
+        
+        @Override
+        public KangProduct kang(){
+            return new KangWater();
+        }
+
+        @Override
+        public TongProduct tong(){
+            return new TongWater();
+        }
+    }
+    
+    public static void main(String[] args) {
+        NoodleFactory noodleFactory = new NoodleFactory();
+        KangNoodle kang = (KangNoodle)noodleFactory.kang();
+        TongNoodle tong = (TongNoodle)noodleFactory.tong();
+        System.out.println(kang.getName());
+        System.out.println(tong.getName());
+
+        WaterFactory waterFactory = new WaterFactory();
+        KangWater kang = (KangWater)WaterFactory.kang();
+        TongWater tong = (TongWater)waterFactory.tong();
+        System.out.println(kang.getName());
+        System.out.println(tong.getName());
     }
 
 //Python

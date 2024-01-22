@@ -15,37 +15,40 @@
     （2）抽象产品：简单工厂创建的所有对象的父类，负责描述所有实例共有的公共接口。
     （3）具体产品：简单工厂模式的创建目标。
     4.实现
-    public class client{
-        public static void main(String[] args){
+    
+    //抽象产品
+    public interface Product{
+        void show();
+    }
 
+    //具体产品
+    public class ConcreteProduct1 implements Product {
+        public void show(){
+            System.out.println("具体产品1");
         }
-        //抽象产品
-        public interface Product{
-            void show();
+    }
+
+    //具体产品
+    public class ConcreteProduct2 implements Product {
+        public void show(){
+            System.out.println("具体产品2");
         }
-        //具体产品
-        static class ConcreteProduct1 implements Product{
-            public void show(){
-                System.out.println("具体产品1");
-            }
-        }
-        static class ConcreteProduct2 implements Product{
-            public void show(){
-                System.out.println("具体产品2");
-            }
-        }
-        final class Const{
-            static final int PRODUCT_A = 0;
-            static final int PRODUCT_B = 1;
-        }
-        static class SimpleFactory{
-            public static Product makeProduct(int kind){
-                switch(kind){
-                    case Const.PRODUCT_A:
-                        return new ConcreteProduct1();
-                    case Const.PRODUCT_B:
-                        return new ConcreteProduct2();
-                }
+    }
+
+    public class Const {
+        public static final int PRODUCT_A = 0;
+        public static final int PRODUCT_B = 1;
+    }
+
+    public class SimpleFactory {
+        public static Product makeProduct(int kind) {
+            switch(kind) {
+                case PRODUCT_A:
+                    return new ConcreteProduct1();
+                case PRODUCT_B:
+                    return new ConcreteProduct2();
+                default:
+                    return null;
             }
         }
     }

@@ -89,7 +89,7 @@
         private float pressure;
         
         public WeatherData(){
-            observers = new ArrayList<Observer>();
+            observers = new ArrayList<>();
         }
 
         public void registerObserver(Observer o) {

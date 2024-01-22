@@ -62,13 +62,28 @@
     JDK动态代理：在程序运行时运用反射机制动态创建而成。
     public interface IHello{
         void sayHello();
+        void sayHello2();
     }
-    public class HelloImpl implements IHello{
+
+    public interface IGoodBye {
+        void sayGoodBye();
+    }
+
+    public class HelloImpl implements IHello, IGoodBye{
         @Override
         public void sayHello(){
-            System.out.println("Hello World");
+            System.out.println("Say Hello");
+        }
+        @Override
+        public void sayHello2() {
+            System.out.println("say hello 2");
+        }
+        @Override
+        public void sayGoodBye(){
+            System.out.println("Say Good Bye");
         }
     }
+
     public class MyInvocationHandler implements InvocationHandler{
         private Object target;
         public MyInvocationHandler(Object target){
@@ -76,39 +91,97 @@
         }
 
         @Override
-        public Object invoke(Object proxy,Method method,Object[] args) throws Throwable{
-            Object rs = method.invoke(target,args);
-            return rs;
+        public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+            preHandle();
+            Object invoke = method.invoke(target, args);
+            afterHandle();
+            return invoke;
+        }
+
+        public void preHandle(){
+            System.out.println("preHandle");
+        }
+
+        public void afterHandle(){
+            System.out.println("afterHandle");
+        }
+
+        public static Object createProxy(Object target){
+            ClassLoader classLoader = target.getClass().getClassLoader();//加载接口的类加载器
+            Class<?>[] interfaces = target.getClass().getInterfaces();//代理需要实现的接口，可以有多个
+            MyInvocationHandler myInvocationHandler = new MyInvocationHandler(target);//自定义的InvocationHandler，方法调用的实际处理者。
+            return Proxy.newProxyInstance(classLoader, interfaces, myInvocationHandler);
         }
     }
+    
     public class MyProxyTest{
         public static void main(String[] args){
-            IHello iHello2 = (IHello) Proxy.newProxyInstance(IHello.class.getClassLoader(), //加载接口的类加载器
-                            new Class[]{IHello.class},  //代理需要实现的接口，可以有多个
-                            new MyInvocationHandler(new HelloImpl()));  //自定义的InvocationHandler，方法调用的实际处理者。
-            iHello2.sayHello();
+            IHello proxy = (IHello) MyInvocationHandler.createProxy(new HelloImpl());
+            proxy.sayHello();
+            proxy.sayHello2();
         }
     }
 
     CGLIB动态代理：是一个基于ASM的字节码生成库，它允许我们在运行时对字节码进行修改和动态生成。CGLIB通过继承方式实现代理。
-    public class HelloConcrete{
-        public String sayHello(String str){
-            return "HelloConcrete: "+str;
+    public class CustomServiceImpl {
+        public int save(){
+            System.out.println("保存");
+            return 0;
+        }
+    
+        public int update(){
+            System.out.println("更新");
+            return 0;
+        }
+    
+        public int delete(){
+            System.out.println("删除");
+            return 0;
         }
     }
     //实现一个MethodInterceptor，方法调用会被转发到该类的intercept（）方法
-    class MyMethodInterceptor implements MethodInterceptor{
+    public class MyMethodInterceptor implements MethodInterceptor {
+
+        private Object target;
+    
+        public MyMethodInterceptor(Object target) {
+            this.target = target;
+        }
+    
+        public Object createProxy(){
+            Enhancer enhancer = new Enhancer();
+            enhancer.setSuperclass(target.getClass());
+            enhancer.setCallback(this);
+            return enhancer.create();
+        }
+    
         @Override
-        public Object intercept(Object obj,Method method,Object[] args,MethodProxy proxy) throws Throwable{
-            logger.info("You said : " + Arrays.toString(args));
-            return proxy.invokeSuper(obj,args);
+        public Object intercept(Object o, Method method, Object[] objects, MethodProxy methodProxy) throws Throwable {
+            System.out.println("增强前");
+            Object invoke = method.invoke(target, objects);
+    //        Object o1 = methodProxy.invokeSuper(o, objects);
+            System.out.println("增强后");
+            return invoke;
+        }
+    
+    }
+    //在需要使用CustomServiceImpl的时候，通过CGLIB动态代理获取代理对象。
+    public class TestClass {
+        public static void main(String[] args) {
+            CustomServiceImpl customService = new CustomServiceImpl();
+            CustomServiceImpl proxy =(CustomServiceImpl) new MyMethodInterceptor(customService).createProxy();
+            proxy.save();
+            proxy.update();
+            proxy.delete();
         }
     }
-    //在需要使用HelloConcrete的时候，通过CGLIB动态代理获取代理对象。
-    Enhancer enhancer = new Enhancer();
-    enhancer.setSuperclass(HelloConcrete.class);
-    enhancer.setCallback(new MyMethodInterceptor());
-    HelloConcrete hello = (HelloConcrete) enhancer.create();
+
+    5.应用场景
+    （1）业务系统的非功能性需求开发
+    监控、统计、鉴权、限流、事务、幂等、日志。将附加功能与业务功能解耦，放到代理类中统一处理。
+    （2）代理模式在RPC、缓存中的应用
+    通过远程代理将网络通信、数据编码等细节隐藏起来。客户端在使用RPC服务的时候，就像使用本地函数一样，无需了解跟服务器交互的细节。
+
 
 一、JDK动态代理
     使用jdk动态代理模式实现对接口耗时的统计。
@@ -122,7 +195,7 @@
         @Override
         public Object invoke(Object proxy, Method method, Object[] args) throws Throwable{
             long startTime = System.nanoTime();
-            Object result - method.invoke(this.target, args);
+            Object result = method.invoke(this.target, args);
             long endTime = System.nanoTime();
             System.out.println(this.target.getClass() + "耗时：" + (endTime-startTime));
             return result;

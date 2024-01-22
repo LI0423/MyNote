@@ -49,7 +49,7 @@
         }
     }
     
-    5.例子🌰：
+    5.例子1🌰：
     public interface QuackBehavior {
         void quack();
     }
@@ -91,3 +91,61 @@
             duck.performQuack();
         }
     }
+
+    例子2🌰：
+    策略模式与工厂模式结合使用
+    public interface Strategy {
+
+        void method1();
+    
+        void method2();
+    
+    }
+
+    public class ConcreteStrategyA implements Strategy{
+        @Override
+        public void method1() {
+            System.out.println("StrategyA method1");
+        }
+    
+        @Override
+        public void method2() {
+            System.out.println("StrategyA method2");
+        }
+    }
+    
+    public class ConcreteStrategyB implements Strategy{
+        @Override
+        public void method1() {
+            System.out.println("StrategyB method1");
+        }
+    
+        @Override
+        public void method2() {
+            System.out.println("StrategyB method2");
+        }
+    }    
+
+    public class StrategyFactory {
+
+        private static StrategyFactory strategyFactory = new StrategyFactory();
+    
+        private StrategyFactory(){}
+    
+        public static StrategyFactory getInstance(){
+            return strategyFactory;
+        }
+    
+        private static Map<String, Strategy> strategyMap = new HashMap<>();
+    
+        static {
+            strategyMap.put("A", new ConcreteStrategyA());
+            strategyMap.put("B", new ConcreteStrategyB());
+        }
+    
+        public Strategy getStrategy(String id){
+            return strategyMap.get(id);
+        }
+    
+    }
+    
