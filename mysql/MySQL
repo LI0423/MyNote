@@ -145,6 +145,171 @@
 
     自定义字段有两种声明方式，一种是在查询语句前进行声明，第二种是在查询语句中将声明当作临时表进行查询。
 
+9.json数组解析查询
+（1）JSON_EXTRACT(json, path, ...)
+    筛选出json数组的第一个对象：
+        select JSON_UNQUOTE(JSON_EXTRACT(options, '$[0]')) as all_options
+        from questionnaire_question
+        where create_by = 'system'
+        order by questionnaire_id, all_options
+（2）JSON_UNQUOTE(json_val)
+    取消双引号：
+        select JSON_UNQUOTE('"123456"');  // 123456
+（3）JSON_KEYS(json, path)
+    返回一个包含指定json对象最上层的成员数组：
+        select JSON_KEYS('{"a": 1, "b": 2, "c": 3}');   // ["a", "b", "c"]
+        select JSON_KEYS('[1, {"a": 1, "b": 2, "c": 3}]');   // ["a", "b", "c"]
+（4）JSON_ARRAY()
+    返回一个包含了所有参数的json数组
+        select JSON_ARRAY(1, '1', NULL, TRUE, FALSE, NOW());    // [1, "1", null, true, false, "2024-01-31 13:53:00"]
+        select JSON_ARRAY(JSON_ARRAY(1, 2), JSON_ARRAY('a', 'b'));      // [[1, 2], ["a", "b"]]
+（5）JSON_OBJECT()
+    返回一个包含了由参数指定的所有键值对的JSON对象
+        select JSON_BOJECT('name', 'xxx', 'age', 22);   // {"name": "xxx", "age": 22}
+        select JSON_BOJECT('name', 'xxx', 'age', 22, 'age', 33);    // {"name": "xxx", "age": 33}
+（6）JSON_DEPTH(json)
+    返回一个JSON文档的最大深度
+        select JSON_DEPTH('[]');    // 1
+        select JSON_DEPTH('[1, 2]');    // 2
+        select JSON_DEPTH('[1, [2, 3]]');   // 3
+（7）JSON_LENGTH(json, path)
+    返回JSON文档或者JSON文档中通过路径指定的节点长度
+        select JSON_LENGTH('[]');   // 0
+        select JSON_LENGTH('[1, 2]');    // 2
+        select JSON_LENGTH('[1, {"x": 2}]');   // 2
+（8）JSON_CONTAINS(target_json, candidate_json, path)
+    检查一个JSON文档是否包含另一个JSON文档
+        select JSON_CONTAINS('[1, 2, {"x": 3}]', '1');  // 1
+        select JSON_CONTAINS('[1, 2, {"x": 3}]', '{"x": 3}');   // 1
+        select JSON_CONTAINS('[1, 2, [3, 4]]', '2', '$[2]');    // 0
+（9）JSON_ARRAY_APPEND(json, path, value[])
+    向JSON文档中的指定的数组中追加一个值并返回修改后的JSON文档
+        select JSON_ARRAY_APPEND('[1, 2, 3]', '$', 4);  // [1, 2, 3, 4]
+        select JSON_ARRAY_APPEND('[1, [2, 3]', '$[0]', 4);  // [[1, 4], [2, 3]]
+        select JSON_ARRAY_APPEND('{"name": "Tim", "hobby": ["car"]}', '$.hobby', "food");   // {"name": "Tim", "hobby": ["car", "food"]}
+（10）JSON_ARRAY_INSERT(json, path, value[])
+    向JSON文档中的指定数组的指定位置插入一个值并返回新的JSON文档
+        set @str = '[1, [2, 3], {"a": [4, 5]}]';
+        select JSON_ARRAY_INSERT(@str, '$[0]', 0);  // [0, 1, [2, 3], {"a": [4, 5]}]
+        select JSON_ARRAY_INSERT(@str, '$[1][0]', 0);   // [1, [0, 2, 3], {"a": [4, 5]}]
+        select JSON_ARRAY_INSERT(@str, '$[1].a[0]', 0); // [1, [2, 3], {"a": [0, 4, 5]}]
+（11）JSON_CONTAINS_PATH(json, one_or_all, path)
+    检查一个JSON文档中在指定的路径上是否有值存在
+        select JSON_CONTAINS_PATH('[1, 2, {"x": 3}]', 'all', '$[0]');   // 1
+        select JSON_CONTAINS_PATH('[1, 2, {"x": 3}]', 'all', '$[3]');   // 0
+        select JSON_CONTAINS_PATH('[1, 2, {"x": 3}]', 'one', '$[0]', '$[3]');   // 1
+        select JSON_CONTAINS_PATH('[1, 2, {"x": 3}]', 'all', '$[0]', '$[3]');   // 0
+（12）JSON_INSERT(json, path, value)
+    向一个JSON文档中插入数据并返回新的JSON文档
+        set @arr = '[1, [2, 3], {"a": [4, 5]}]';
+        select JSON_INSERT(@arr, '$[0]', 0, '$[3]', 6);     // [1, [2, 3], {"a": [4, 5]}, 6]
+        set @obj = '{"x": 1}';
+        select JSON_INSERT(@obj, '$.y', '2');   // {"x": 1, "y": "2"}
+（13）JSON_MERGE(json1, json2)
+    合并两个或多个JSON文档并返回合并的结果
+        select JSON_MERGE('1', 'true', '"hello"', null);    // [1, true, "hello", null]
+        select JSON_MERGE('[1, 2]', '[2, 3]');      // [1, 2, 2, 3]
+        select JSON_MERGE('{"x": 1}', '{"x": 2, "y": 3}');      // {"x": [1, 2], "y": 3}
+        select JSON_MERGE('{"x": 1}', '[1, 2]');    // [{"x": 1}, 1, 2]
+（14）JSON_MERGE_PATCH(json1, json2)
+    对两个或多个JSON文档执行替换合并并返回合并的结果
+    合并规则：
+        若第一个参数不是对象，则合并的结果与第二个参数合并空对象的结果相同。
+        若第二个参数不是对象，则合并的结果为第二个参数。
+        若两个参数都是对象，则合并的对象有以下成员：
+            只存在于第一个对象中的成员。
+            只存在于第二个对象中且不是null的成员。
+            存在于第二个对象且值不是null，并且在第一个对象中有对应的相同键的成员。
+
+        select JSON_MERGE_PATCH('2', 'true');   // true
+        select JSON_MERGE_PATCH('[1, 2]', '[2, 3]');    // [2, 3]
+        select JSON_MERGE_PATCH('{"x": 1, "z": 7}', '{"x": 2, "y": 3}');    // {"x": 2, "y": 3, "z": 7}
+        select JSON_MERGE_PATCH('{"x": 1, "z": 7}', '{"x": 2, "z": null}'); // {"x": 2}
+（15）JSON_MERGE_PRESERVE()
+    合并两个或多个JSON文档并返回合并的结果
+    合并规则：
+        两个数组合并为一个数组，保留所有数组中的元素。
+        两个对象合并为一个对象，保留所有的键和值。
+        一个纯值会被包装成一个数组并作为数组进行合并。
+        对象和数组合并时，会将对象包装到一个数组中并作为数组进行合并。
+
+        select JSON_MERGE_PRESERVE('2', 'true');    // [2, true]
+        select JSON_MERGE_PRESERVE('[1, 2]', '[2, 3]');     // [1, 2, 2, 3]
+        select JSON_MERGE_PRESERVE('{"x": 1, "z": 7}', '{"x": 2, "y": 3}');     // {"x": [1, 2], "y": 3, "z": 7}
+        select JSON_MERGE_PRESERVE('{"x": 1, "z": 7}', '{"x": 2, "z": null}');  // {"x": [1, 2], "z": [7, null]}
+（16）JSON_OVERLAPS(json1, json2)
+    检测两个JSON文档是否拥有任何一个相同键值对或数组元素
+    判断规则：
+        比较两个数组时，如果两个数组至少有一个相同的元素返回1，否则返回0。
+        比较两个对象时，如果两个对象至少有一个相同的键值对返回1，否则返回0。
+        比较两个纯值时，如果两个值相同返回1，否则返回0。
+        比较纯值和数组时，如果值是这个数组中的直接元素返回1，否则返回0。
+        比较纯值和对象的结果为0。
+        比较数组和对象的结果为0。
+
+        select JSON_OVERLAPS('[1, 2, 3]', '[3, 4, 5]');     // 1
+        select JSON_OVERLAPS('[1, 2, [3]]', '[3, 4, 5]');   // 0
+        select JSON_OVERLAPS('{"x": 1}', '{"x": 1, "y": 2}');   // 1
+        select JSON_OVERLAPS('{"x": 1}', '{"y": 2}');   // 0
+        select JSON_OVERLAPS('[1, 2, 3]', '3');     // 1
+        select JSON_OVERLAPS('[1, 2, [3]]', '3');   // 0
+（17）JSON_PRETTY(json)
+    格式化输出一个JSON文档，方便阅读
+        select JSON_PRETTY('[1, 2, 3]');
+        select JSON_PRETTY('{"x": 1, "y": 2}');
+（18）JSON_REMOVE(json, path)
+    从一个JSON文档中删除由路径指定的数据并返回修改后的JSON文档。
+        select JSON_REMOVE('[0, 1, 2, [3, 4]]', '$[0]', '$[2]');    // [1, 2]
+        select JSON_REMOVE('{"x": 1, "y": 2}', '$.x');  // {"y": 2}
+（19）JSON_REPLACE(json, path, value)
+    在一个JSON文档中替换已存在的数据并返回新的JSON文档。
+        set @arr = '[1, [2, 3]]';
+        select JSON_REPLACE(@arr, '$[0]', 0, '$[2]', 6);    // [0, [2, 3]]
+        select JSON_REPLACE(@arr, '$[0]', 0, '$[1]', 6);    // [0, 6]
+        set @obj = '{"x": 1}';
+        select JSON_REPLACE(@obj, '$.x', 'true', '$.y', true);  // {"x": "true"}
+        select JSON_REPLACE(@obj, '$.x', '[1, 2]');     // {"x": "[1, 2]"}
+        select JSON_REPLACE(@obj, '$.x', JSON_ARRAY(1, 2)); // {"x": [1, 2]}
+（20）JSON_SET(json, path, value)
+    在一个JSON文档中插入或更新数据并返回新的JSON文档。
+        set @obj = '{"x": 1}';
+        select JSON_SET(@obj, '$.x', '10', '$.y', '[1, 2]');    // {"x": "10", "y": "[1, 2]"}
+        select JSON_SET(@obj, '$.x', '$.y', '{"z": 2}');    // {"x": "10", "y": "{\"z\": 2}"}
+        select JSON_SET(@obj, '$.x', '$.y', CAST('[1, 2]' AS JSON));    // {"x": "10", "y": [1, 2]}
+        
+10.mysqldump备份、还原、导入、导出
+    mysqldump -u用户名 -p密码 -h主机 数据库 a -w "sql条件" -lock-all-tables > 路径
+    mysqldump -u用户名 -p密码 -h主机 数据库 < 路径
+    mysqldump -u用户名 -p密码 -h主机 数据库 a -where "条件语句" -no-create-info > 路径
+    mysqldump -u用户名 -p密码 -h主机 数据库 表
+
+    主要参数：
+    --all-databases 缩写 -A，备份所有库
+    --all-tablespaces 缩写 -Y，备份所有表空间
+    --no-tablespaces 缩写 -y，不备份任何表空间
+    --add-drop-database 在create database前添加drop database
+    --add-drop-table 默认开启，在create table前添加drop table
+    --skip-add-drop-table 禁用“--add-drop-table”
+    --add-locks 默认开启，在insert语句前添加lock tables，语句后添加unlock tables
+    --skip-add-locks 禁用“--add-locks”
+    --comments* 默认开启，缩写 -i，添加注释信息
+    --skip-comments 禁用“--comments*”
+    --compatible=name 导出的数据将和哪种数据库或哪个旧版本的MySQL服务器相兼容，值可以为oracle、postgresql。。。多个用逗号分隔
+    --complete-insert 缩写 -c，使用带有完整列名的insert语句，默认不带列名
+    --compress 缩写 -C，在服务端和客户端的协议中使用压缩
+    --create-options 默认开启，缩写-a，包含所有MySQL的特定创建选项
+    --databases 缩写 -B，备份多个数据库，如果没有使用-tables选项，后边的值都将被认为是数据库名，多个用逗号分隔，将会在输出文件中添加 use db_name
+    --default-character-set 默认utf8，设置默认字符集
+    --disable-keys 默认开启，缩写 -K，insert语句前添加“/*!40000 ALTER TABLE tb_name DISABLE KEYS */;”禁用索引，insert语句后添加“/*!40000 ALTER TABLE tb_name ENABLE KEYS */;”
+    启用索引；因为一次创建索引比逐行创建效率更高，这样可以提高数据恢复效率。
+    --events 缩写 -E，备份事件
+    --extended-insert 默认开启，缩写 -e，使用包含多个值列表的多行插入语法
+    --skip-extended-insert 禁用“--extended-insert“
+    --lock-all-tables 缩写 -x，在备份期间通过获取全局读取来锁定所有库和所有表，将会自动关闭--single-transaction 和 --lock-tables
+    --lock-tables 默认开启，缩写 -l，对需要备份的库的所有表加读锁，事务型表使用--single-transaction而非--lock-tables
+    --log-queries 默认开启，数据恢复时，如果日志记录是打开的，把查询记录到常规和慢查询日志中
+    --single-transaction 通过在一个事务中备份所有表来创建一致性快照
+
 三、MySQL索引
     索引是在存储引擎层实现的，而不是在服务器层实现的。
 1、B+树
