@@ -1,0 +1,4 @@
+一、WebSocket特点
+    WebSocket是真正的“全员工”的通信协议，与TCP一样，客户端和服务器都可以随时向对方发送数据。WebSocket没有使用TCP的“IP地址+端口号”，
+    而是延用了HTTP的URI格式，引入两个新名字：“ws”和“wss”，分别表示明文和加密的WebSocket协议。
+    WebSocket的默认端口“80”和“443”，分别表示明文和加密的WebSocket协议。

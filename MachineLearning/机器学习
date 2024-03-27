@@ -56,3 +56,16 @@
     视频数据是现实生活中需要用到的5D张量的少数数据类型之一。视频可以看作一系列帧，每一帧都是一张彩色图像。每一帧都可以保存在一个形状为（height，width，color_depth）
     的3D张量中，因此一系列帧可以保存在一个形状为（frames，height，width，color_width）的4D张量中，而不同视频组成的批量则可以保存在一个5D张量中，其形状为
     （samples，frames，height，width，coloe_width）。
+
+二、模型训练输出参数含义
+    Epoch：训练过程中的迭代次数（即完成了多少个epoch）
+    gpu_mem：GPU内存使用情况，通常是以MB或GB为单位的数字。
+    box_loss：模型预测出的bounding box的平均损失值。
+    cls_loss：模型预测出的分类的平均损失值。
+    dfl_loss：所有损失总和，即box+cls。
+    Instances：
+    Size：输入模型的图像的大小，通常是以像素为单位的宽度和高度。
+    P：该类别的预测精准度（precision），即正确预测的物体数量占所有预测的物体数量的比例。
+    R：该类别的召回率（recall），即正确预测的物体数量占所有真实物体数量的比例。
+    mAP@5：平均精度均值（mean average precision）的值，即IoU阈值为0.5时的平均精度。
+    mAP@5.95：在IoU阈值从0.5到0.95的范围内，所有阈值的平均精度的均值。

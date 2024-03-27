@@ -75,6 +75,9 @@ class Person {
     Optional<Integer> max = list.stream().reduce((x, y) -> x > y ? x : y);
     // 求最大值写法2
     Integer max2 = list.stream().reduce(1, Integer::max);
+    // 求最小值
+    Optional<SportItemScore> min = itemScores.stream().min(Comparator.comparing(SportItemScore::getTotalScore));
+
 
     //求员工的工资之和和最高工资
     // 求工资之和方式1：
