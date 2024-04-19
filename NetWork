@@ -181,6 +181,9 @@
         缓存系统：“命中”就是指用户访问的资源恰好放在缓存系统里可以直接返还给用户；“回源”则相反，缓存里没有，必须用代理回源站取。“命中率”就是命中次数与所有访问
             次数之比，回源率是回源次数与所有访问次数之比。
 
+10、HTTP服务器优化
+    衡量服务器性能的主要指标：吞吐量（requests per second）、并发数（concurrency）、响应时间（time per request）。
+    
 
 五、HTTPS协议
     HTTPS是让HTTP先和SSL（Secure Sockets Layer）通信，再由SSL和TCP通信，也就是说HTTPS使用了隧道进行通信。通过使用SSL，HTTPS具有了加密（防窃听）、
