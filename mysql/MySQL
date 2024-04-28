@@ -1,18 +1,38 @@
 一、窗口函数
 1.基本语法
     <窗口函数> over (partition by <用于分组的列名>
-                    order by <用于排序的列名>)
+                    order by <用于排序的列名>
+                    rows between <数据范围>)
     窗口函数包括专用窗口函数（rank,dense_rank,row_number等），聚合函数（sum,avg,count,max,min等）
     partition by 用来对表分组。
     order by 子句的功能是对分组后的结果进行排序，默认是升序。
     group by 分组汇总后改变了表的行数，一行只有一个类别。而partition by 和 rank 函数不会减少原表中的行数。
-2.rank,dense_rank,row_number 的区别
+    rows between unbounded preceding and current row 获取当前行和前面所有行，order by后面缺少窗口从句条件时默认。
+    rows between unbounded preceding and unbounded following 获取当前行前面所有行和后面所有行，order by和窗口从句都缺失时默认
+    rows between current row and unbounded following 包括本行和之后所有的行。
+    rows between 3 preceding and current row 当前行和前面三行，总共4行。
+    rows between 3 preceding and 1 following 当前行的前面三行和后面一行，总共5行
+2.排名函数
     rank()：根据排序字段为每个分组中的每一行分配一个序号，排名值相同时，序号相同，会占用下一个名次的位置，例如：1，1，1，4。
     dense_rank()：根据排序字段为每个分组中的每一行分配一个序号，排名值相同时，序号相同，不会占用下一个名次，例如：1，1，1，2。
     row_number()：为表中的每一行分配一个序号，可以指定分组（也可以不指定）及排序字段（连续且不重复），例如：1，2，3，4。
 3.聚合函数
     聚合函数用作窗口函数中，是对自身记录以及自身记录之上的所有数据进行计算。
     聚合函数作为窗口函数可以在每一行的数据里直观的看到截止到本行数据，统计数据是多少，对整体统计数据没影响。
+4.取值函数
+    first_value()：在窗口里取到第一个值。
+    last_value()：在窗口里取到最后一个值。
+    lead(字段, offset, default)：取当前行的后offset条数据，如果没有下一行则返回default值。
+    lag(字段, offset, default)：取当前行的前offset条数据，如果没有前一行则返回default值。
+5.分布函数
+    percent_rank()：将某个数值在数据集中的排位作为数据集的百分比返回，百分比值的范围为0到1。
+        计算公式：(当前行的rank-1) / (分组内的总行数-1)
+    cume_dist()：计算某个窗口或分区中某个值的累积分布。如果升序排序，可以使用以下公式确定累积分布：小于等于当前值x的行数 / 分区内的总行数。
+6.partition by 和 group by的区别
+    group by 是分组函数，partition by是分析函数。
+    执行顺序上：from > where > group by > having > order by，而partition by执行在这些关键字之后，可以理解为就是在执行完select之后，
+    在所得结果集上进行partition by分组。partition by相较于group by，能够在保留全部数据的基础上，只对其中某些字段进行分组排序，而group by
+    只保留参与分组的字段和聚合函数的结果。
 
 二、SQL语法
 1.WITH AS
@@ -332,6 +352,14 @@
     判断到有可能为null，还要把值取出来再判断下，不是null才累加。
     count(*)，并不会把全部字段取出来，而是专门做了优化，不取值。肯定不是null，按行累加。
 
+13.复制表结构、表数据、索引
+（1）创建表不复制数据（含表结构和索引、自增等约束）
+    create table {table_new} like {table_old};
+（2）不建表只复制数据（数据来自select）
+    insert into {table_new} select * from {table_old};
+（3）创建表并复制数据（表结构来自select，不含索引等约束）
+    create table {table_new} select * from {table_old};
+
 三、MySQL索引
     索引是在存储引擎层实现的，而不是在服务器层实现的。
 1、B+树
@@ -540,7 +568,9 @@ B+树找到一个记录所需的比较次数比B-树多，但是一次磁盘访�
         binlog有记录，redolog状态prepare：在binlog写完提交事务之前的crash，恢复操作：提交事务（因为之前没有提交）。
         binlog无记录，redolog状态prepare：在binlog写完之前的crash，恢复操作：回滚事务（因为crash时并没有成功写入数据库）。
 6.组提交
-    为了提高并发性能，mysql引入了binlog的组提交功能，prepare阶段不变，只针对commit阶段，将commit阶段拆分为三个过程：
+（1）日志逻辑序列号（log sequence number，LSN），LSN是单调递增的，用来对应redo log的一个个写入点；每次写入长度为length的redolog，
+    LSN的值就会加上length；LSN也会写到InnoDB的数据页中，来确保数据页不会被多次执行重复的redolog。
+（2）为了提高并发性能，mysql引入了binlog的组提交功能，prepare阶段不变，只针对commit阶段，将commit阶段拆分为三个过程：
         flush stage：多个线程进入顺序将binlog从cache写入文件（不刷盘）；
         sync stage：对binlog文件做fsync操作（多个线程的binlog合并一次刷盘）；
         commit stage：各个线程按顺序做InnoDB commit操作。
@@ -551,6 +581,14 @@ B+树找到一个记录所需的比较次数比B-树多，但是一次磁盘访�
         收集组提交队列，得到leader线程，其余follower线程进入阻塞；
         leader调用ha_flush_logs做一次redo write/sync，一次将所有线程的redolog刷盘；
         将队列中的线程的所有binlog cache写到binlog文件中。
+（3）一次组提交里面，组员越多，节约磁盘IOPS的效果越好。在并发更新场景下，第一个事务写完redolog buffer以后，越晚执行fsync，组员可能越多，节约
+    磁盘IOPS的效果越好。
+
+7.redo log写入策略
+    为了控制redo log的写入策略，InnoDB提供了innodb_flush_log_at_trx_commit参数，有三种取值：
+    设置为0时，表示每次事务提交时都只是把redo log留在redo log buffer中；
+    设置为1时，表示每次事务提交时都将redo log直接持久化到磁盘；
+    设置为2时，表示每次事务提交时都只是把redo log写到page cache。
 
 九、mysql索引建立原则
 1、选择唯一性索引
@@ -718,3 +756,17 @@ Online DDL重建表流程：
     生成临时文件的过程中，将所有对A的操作记录在一个日志文件（row log）中；
     临时文件生成后，将日志文件中的操作应用到临时文件中，得到一个逻辑数据上与表A相同的数据文件；
     用临时文件替换表A的数据文件。
+
+自增id
+1.自增值保存位置
+（1）MyISAM引擎的自增值保存在数据文件中。
+（2）InnoDB引擎的自增值也保存在内存里，到了8.0版本后，才有了自增值持久化的的能力，实现了发生重启，表的自增值可以恢复为MySQL重启前的值。
+    在5.7及之前的版本，自增值保存在内存里，没有持久化，每次重启后，第一次打开表的时候，都会去找自增值的最大值max(id)，然后将max(id)+1
+    作为这个表当前的自增值。
+    在8.0版本，将自增值的变更记录在了redo log中，重启的时候依靠redo log恢复重启前的版本。
+2.自增值修改机制
+    要插入的值是X，当前自增值是Y。如果X<Y，那么表的自增值不变；如果X>=Y，就要把当前自增值修改为新的自增值。
+3.自增值的修改时机
+    在真正执行插入数据的操作之前。
+    唯一键冲突会导致自增主键id不连续；事务回滚也会造成不连续。
+
