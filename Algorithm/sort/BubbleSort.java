@@ -43,7 +43,7 @@ public class BubbleSort{
 //                 swapped = True
 //         if not swapped:
 //             break
-//     return items        
+//     return items
 
 // def bubble_sort(items, comp=lambda x, y: x > y):
 //     items = items[:]

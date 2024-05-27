@@ -1,4 +1,4 @@
-package Algorithm.leetcode;
+package Algorithm.leetcode.greedy;
 
 //121. 买卖股票的最佳时机
 

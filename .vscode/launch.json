@@ -6,6 +6,41 @@
     "configurations": [
         {
             "type": "java",
+            "name": "MinimumCost",
+            "request": "launch",
+            "mainClass": "Algorithm.leetcode.greedy.MinimumCost",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "BalancedStringSplit",
+            "request": "launch",
+            "mainClass": "Algorithm.leetcode.greedy.BalancedStringSplit",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "MinCostToMoveChips",
+            "request": "launch",
+            "mainClass": "Algorithm.leetcode.greedy.MinCostToMoveChips",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "CanJumpII",
+            "request": "launch",
+            "mainClass": "Algorithm.leetcode.greedy.CanJumpII",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "MaxProfitII",
+            "request": "launch",
+            "mainClass": "Algorithm.leetcode.greedy.MaxProfitII",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
             "name": "BitwiseComplement",
             "request": "launch",
             "mainClass": "Algorithm.leetcode.BitwiseComplement",

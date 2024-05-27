@@ -11,7 +11,7 @@
     rows between unbounded preceding and unbounded following 获取当前行前面所有行和后面所有行，order by和窗口从句都缺失时默认
     rows between current row and unbounded following 包括本行和之后所有的行。
     rows between 3 preceding and current row 当前行和前面三行，总共4行。
-    rows between 3 preceding and 1 following 当前行的前面三行和后面一行，总共5行
+    rows between 3 preceding and 1 following 当前行的前面三行和后面一行，总共5行。
 2.排名函数
     rank()：根据排序字段为每个分组中的每一行分配一个序号，排名值相同时，序号相同，会占用下一个名次的位置，例如：1，1，1，4。
     dense_rank()：根据排序字段为每个分组中的每一行分配一个序号，排名值相同时，序号相同，不会占用下一个名次，例如：1，1，1，2。
