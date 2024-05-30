@@ -6,6 +6,69 @@
     "configurations": [
         {
             "type": "java",
+            "name": "MinimumMoves",
+            "request": "launch",
+            "mainClass": "Algorithm.leetcode.greedy.MinimumMoves",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "MinMovesToSeat",
+            "request": "launch",
+            "mainClass": "Algorithm.leetcode.MinMovesToSeat",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "LongestPalindrome",
+            "request": "launch",
+            "mainClass": "Algorithm.leetcode.greedy.LongestPalindrome",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "LargestOddNumber",
+            "request": "launch",
+            "mainClass": "Algorithm.leetcode.greedy.LargestOddNumber",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "MinOperation",
+            "request": "launch",
+            "mainClass": "Algorithm.leetcode.greedy.MinOperation",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "MaximumTime",
+            "request": "launch",
+            "mainClass": "Algorithm.leetcode.greedy.MaximumTime",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "MaximumUnits",
+            "request": "launch",
+            "mainClass": "Algorithm.leetcode.greedy.MaximumUnits",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "LargestPerimeter",
+            "request": "launch",
+            "mainClass": "Algorithm.leetcode.greedy.LargestPerimeter",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "MinTimeToType",
+            "request": "launch",
+            "mainClass": "Algorithm.leetcode.greedy.MinTimeToType",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
             "name": "MinimumCost",
             "request": "launch",
             "mainClass": "Algorithm.leetcode.greedy.MinimumCost",
