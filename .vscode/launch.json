@@ -6,6 +6,13 @@
     "configurations": [
         {
             "type": "java",
+            "name": "SplitNum",
+            "request": "launch",
+            "mainClass": "Algorithm.leetcode.greedy.SplitNum",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
             "name": "MinimumMoves",
             "request": "launch",
             "mainClass": "Algorithm.leetcode.greedy.MinimumMoves",
