@@ -1,6 +1,5 @@
 package Algorithm.leetcode.greedy;
 
-import java.util.Arrays;
 
 /**
  * 2591. 将钱分给最多的儿童

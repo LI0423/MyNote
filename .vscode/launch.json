@@ -6,6 +6,48 @@
     "configurations": [
         {
             "type": "java",
+            "name": "MinimumOperations",
+            "request": "launch",
+            "mainClass": "Algorithm.leetcode.greedy.MinimumOperations",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "MinSubsequence",
+            "request": "launch",
+            "mainClass": "Algorithm.leetcode.greedy.MinSubsequence",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "FillCups",
+            "request": "launch",
+            "mainClass": "Algorithm.leetcode.greedy.FillCups",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "ConvertTime",
+            "request": "launch",
+            "mainClass": "Algorithm.leetcode.greedy.ConvertTime",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "Maximum69Number",
+            "request": "launch",
+            "mainClass": "Algorithm.leetcode.greedy.Maximum69Number",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "RemoveDigit",
+            "request": "launch",
+            "mainClass": "Algorithm.leetcode.greedy.RemoveDigit",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
             "name": "SplitNum",
             "request": "launch",
             "mainClass": "Algorithm.leetcode.greedy.SplitNum",
