@@ -6,6 +6,20 @@
     "configurations": [
         {
             "type": "java",
+            "name": "AnswerQueries",
+            "request": "launch",
+            "mainClass": "Algorithm.leetcode.greedy.AnswerQueries",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "MinMaxDifference",
+            "request": "launch",
+            "mainClass": "Algorithm.leetcode.greedy.MinMaxDifference",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
             "name": "MinimumOperations",
             "request": "launch",
             "mainClass": "Algorithm.leetcode.greedy.MinimumOperations",
