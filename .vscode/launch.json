@@ -6,6 +6,34 @@
     "configurations": [
         {
             "type": "java",
+            "name": "CanSplitArray",
+            "request": "launch",
+            "mainClass": "Algorithm.leetcode.greedy.CanSplitArray",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "KItemsWithMaximumSum",
+            "request": "launch",
+            "mainClass": "Algorithm.leetcode.greedy.KItemsWithMaximumSum",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "MinimumBoxes",
+            "request": "launch",
+            "mainClass": "Algorithm.leetcode.greedy.MinimumBoxes",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "MaximizeSum",
+            "request": "launch",
+            "mainClass": "Algorithm.leetcode.greedy.MaximizeSum",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
             "name": "AnswerQueries",
             "request": "launch",
             "mainClass": "Algorithm.leetcode.greedy.AnswerQueries",
