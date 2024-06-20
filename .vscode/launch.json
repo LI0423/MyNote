@@ -6,6 +6,48 @@
     "configurations": [
         {
             "type": "java",
+            "name": "FindUnsortedSubarray",
+            "request": "launch",
+            "mainClass": "Algorithm.leetcode.greedy.FindUnsortedSubarray",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "ValidPalindrome",
+            "request": "launch",
+            "mainClass": "Algorithm.leetcode.greedy.ValidPalindrome",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "HalfQuestions",
+            "request": "launch",
+            "mainClass": "Algorithm.leetcode.greedy.HalfQuestions",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "LeastMinutes",
+            "request": "launch",
+            "mainClass": "Algorithm.leetcode.greedy.LeastMinutes",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "MinimumPossibleSum",
+            "request": "launch",
+            "mainClass": "Algorithm.leetcode.MinimumPossibleSum",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "MinimumPossibleSum",
+            "request": "launch",
+            "mainClass": "Algorithm.leetcode.greedy.MinimumPossibleSum",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
             "name": "CanSplitArray",
             "request": "launch",
             "mainClass": "Algorithm.leetcode.greedy.CanSplitArray",

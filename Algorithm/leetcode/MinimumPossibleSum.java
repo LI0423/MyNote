@@ -1,4 +1,4 @@
-package Algorithm.leetcode.greedy;
+package Algorithm.leetcode;
 
 /**
  * 2834. 找出美丽数组的最小和
@@ -36,5 +36,18 @@ nums = [1,3,4] 是美丽数组。
  */
 
 public class MinimumPossibleSum {
-    
+
+    public static int minimumPossibleSum(int n, int target){
+        final int MOD = (int) 1e9 + 7;
+        int m = target / 2;
+        if (n <= m){
+            return (int)((long) (1+n) * n / 2);
+        } 
+        return (int)(((long) (1 + m) * m / 2 + ((long) target + target + (n - m) - 1) * (n - m) / 2) % MOD);
+    }
+
+    public static void main(String[] args) {
+        int n = 16, target = 6;
+        System.out.println(minimumPossibleSum(n, target));
+    }
 }
