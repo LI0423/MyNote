@@ -6,6 +6,20 @@
     "configurations": [
         {
             "type": "java",
+            "name": "MaxmiumScore",
+            "request": "launch",
+            "mainClass": "Algorithm.leetcode.greedy.MaxmiumScore",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "MaxProfitIII",
+            "request": "launch",
+            "mainClass": "Algorithm.leetcode.greedy.MaxProfitIII",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
             "name": "FindUnsortedSubarray",
             "request": "launch",
             "mainClass": "Algorithm.leetcode.greedy.FindUnsortedSubarray",

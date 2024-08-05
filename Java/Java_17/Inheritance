@@ -78,7 +78,7 @@ record Hotel2(int roomPrice) implements Bookable {
     }
 }
 
-record  Palace2(int roomPrice, int extra) implements Bookable {
+record Palace2(int roomPrice, int extra) implements Bookable {
     public int price(int rooms){
         return rooms * (roomPrice + extra);
     }
