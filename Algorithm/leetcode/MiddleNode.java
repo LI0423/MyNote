@@ -1,5 +1,7 @@
 package Algorithm.leetcode;
 
+import Algorithm.DataStructure.ListNode;
+
 //876. 链表的中间结点
 
 // 给你单链表的头结点 head ，请你找出并返回链表的中间结点。

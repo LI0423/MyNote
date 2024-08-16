@@ -1,5 +1,7 @@
 package Algorithm.leetcode;
 
+import Algorithm.DataStructure.ListNode;
+
 public class SwapPairs {
 
     public ListNode swapPairs(ListNode head){

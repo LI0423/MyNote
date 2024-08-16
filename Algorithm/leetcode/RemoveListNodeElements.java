@@ -1,5 +1,7 @@
 package Algorithm.leetcode;
 
+import Algorithm.DataStructure.ListNode;
+
 public class RemoveListNodeElements {
 
     public ListNode removeListNodeElements(ListNode node,int val){

@@ -3,6 +3,8 @@ package Algorithm.leetcode;
 import java.util.ArrayDeque;
 import java.util.Deque;
 
+import Algorithm.DataStructure.ListNode;
+
 public class ReversePrint {
 
     /**

@@ -1,5 +1,7 @@
 package Algorithm.leetcode;
 
+import Algorithm.DataStructure.ListNode;
+
 public class DeleteDuplicateNode {
 
     public ListNode deleteDuplicateNode(ListNode node){
