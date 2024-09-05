@@ -35,8 +35,12 @@
     # # 输入列表并建堆
     # min_heap: list[int] = [1, 3, 2, 5, 4]
     # heapq.heapify(min_heap)
-    
+
 class MyHeap:
+    def __init__(self, nums: list[int]) -> None:
+        self.max_heap = nums
+        for i in range(self.parent(self.size() - 1), -1, -1):
+            self.sift_down(i)
     # 初始化小顶堆
     min_heap, flag = [], 1
     # 初始化大顶堆
@@ -109,6 +113,7 @@ class MyHeap:
             self.swap(i, ma)
             # 循环向下堆化
             i = ma
+    
     
 
     
