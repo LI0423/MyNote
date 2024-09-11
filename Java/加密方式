@@ -2,6 +2,7 @@
 MD5：产生128位的散列值，已被认为不再安全
 SHA-1: 产生160位的散列值，已被认为不再安全
 SHA-256、SHA-384、SHA-512: 分别产生256、384、512位的散列值
+
 public class MessageDigest{
     public static String hashString(String input, String algorithm){
         try {

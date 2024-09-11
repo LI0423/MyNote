@@ -165,3 +165,18 @@ class Person {
     List<Integer> collect = Stream.iterate(1, x -> x + 2).limit(10).collect(Collectors.toList());
     // skip：跳过前n个数据
     List<Integer> collect2 = Stream.iterate(1, x -> x + 2).skip(1).limit(5).collect(Collectors.toList());
+
+13.复杂场景应用
+    LinkedHashMap<String, List<String>> collect = currentCyclePrescriptionXZB.stream()
+    .collect(
+        Collectors.groupingBy(
+            data -> data.getCampusId() + DictionaryData.SPLIT + data.getCampusName(),
+            LinkedHashMap::new,
+            Collectors.collectingAndThen(
+                Collectors.mapping(
+                    data -> data.getSectionId() + DictionaryData.SPLIT + data.getNj() + DictionaryData.SPLIT + data.getSectionName() + data.getNj() + "年级" + DictionaryData.SPLIT + data.getGrade(),
+                    Collectors.toCollection(() -> new TreeSet<>()) // 使用 TreeSet 去重
+            ),
+            ArrayList::new // 返回List
+        )
+    ));
