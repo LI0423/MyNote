@@ -97,3 +97,33 @@
 docker 虚悬镜像是什么
     仓库名、标签都是none的镜像，dangling image
 
+六、容器间的通信
+    1、通过虚拟ip直接访问
+        安装docker后，docker会默认搭建一个docker0的网络，后续每个容器就是网络中的一个节点，每个节点会有属于网络中的一个虚拟ip，可以利用虚拟ip直接访问。
+        （1）进入容器，通过ifconfig或inspect查看容器ip，然后使用ping和curl实现互相访问。
+            docker exec -it container_name /bin/bash
+        （2）如果container 没有ifconfig，先进行安装
+            apt update
+            apt install net-tools -y
+            ifconfig
+    2、通过link方式指定要连接的容器
+        本质上还是使用docker0网络，修改host文件的ip映射来实现网络通信，并且随着ip的变化还可以动态维护这种映射关系。
+        （1）使用 --link 指定连接容器
+            docker run -d --name container_name --link container_name2:container_nickname imgId
+        （2）进入容器，通过ifconfig或inspect查看容器ip。
+            docker exec -it container_name /bin/bash
+            ifconfig
+        （3）使用ip或网络别名来访问容器
+            ping 172.17.0.2
+            ping container_nickname
+        这种方式存在局限性，只能单向请求，两个容器无法互相连接请求对方。因为link配置是在容器启动时生成好的，只能后面的容器单项请求前边的容器。
+    3、创建bridge网络，实现容器互联
+        （1）创建bridge网络
+            docker network create network_name
+            docker network ls
+        （2）创建容器并加入到bridge网络中
+            docker run -p port:port -d --name container_name --network network_name --network-alias container_nickname imgId
+        （3）进入容器，并访问其他容器
+            docker exec -it container_name /bin/bash
+        这种方式相对灵活，不需要提前规划，并且可以实现网状的网络通信请求。
+        

@@ -6,6 +6,27 @@
     "configurations": [
         {
             "type": "java",
+            "name": "Test",
+            "request": "launch",
+            "mainClass": "DesignPattern.FactoryMethod.abstractMode.Test",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "Test",
+            "request": "launch",
+            "mainClass": "DesignPattern.FactoryMethod.Test",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "Test",
+            "request": "launch",
+            "mainClass": "DesignPattern.AbstractFactory.Test",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
             "name": "MaxmiumScore",
             "request": "launch",
             "mainClass": "Algorithm.leetcode.greedy.MaxmiumScore",

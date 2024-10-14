@@ -19,48 +19,6 @@
     在简单工厂中，创建对象的是另一个类，而在工厂方法中，是由子类来创建对象。Factory 有一个 doSomething() 方法，这个方法需要用到一个产品对象，
     这个产品对象由 factoryMethod() 方法创建。该方法是抽象的，需要由子类去实现。
 
-    //抽象产品
-    public interface Product {
-        public void show();
-    }
-
-    //具体产品1:实现抽象产品中的抽象方法
-    public class ConcreteProduct1 implements Product {
-        public void show(){
-            System.out.println("具体产品1");
-        }
-    }
-
-    //具体产品2:实现抽象产品中的抽象方法
-    public class ConcreteProduct2 implements Product {
-        public void show(){
-            System.out.println("具体产品2");
-        }
-    }
-
-    //抽象工厂：提供了产品的生成方法
-    public interface AbstractFactory{
-        public Product newProduct(){}
-    }
-
-    //具体工厂：完成具体产品的生产
-    public class ConcreteFactory1 implements AbstractFactory {
-        public Product newProduct(){
-            System.out.println("具体工厂生产 -》具体产品1");
-            return new ConcreteProduct1();
-        }
-    }
-
-    //具体工厂：完成具体产品的生产
-    public class ConcreteFactory2 implements AbstractFactory {
-        public Product newProduct(){
-            System.out.println("具体工厂生产 -》 具体产品2");
-            return new ConcreteProduct2();
-        }
-    }
-
-
-
     public abstract class Factory {
         abstract public Product factoryMethod();
         public void doSomething() {
