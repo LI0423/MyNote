@@ -8,6 +8,34 @@
             "type": "java",
             "name": "Test",
             "request": "launch",
+            "mainClass": "DesignPattern.Adapter.InterfaceAdapter.Test",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "Test",
+            "request": "launch",
+            "mainClass": "DesignPattern.Adapter.ObjectAdapter.Test",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "Test",
+            "request": "launch",
+            "mainClass": "DesignPattern.Adapter.ClassAdapter.Test",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "Test",
+            "request": "launch",
+            "mainClass": "DesignPattern.Adapter.Test",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "Test",
+            "request": "launch",
             "mainClass": "DesignPattern.FactoryMethod.abstractMode.Test",
             "projectName": "MyNote_f98cd070"
         },

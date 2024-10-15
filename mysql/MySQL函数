@@ -1,0 +1,85 @@
+一、窗口函数
+1.基本语法
+    <窗口函数> over (partition by <用于分组的列名>
+                    order by <用于排序的列名>
+                    rows between <数据范围>)
+    窗口函数包括专用窗口函数（rank,dense_rank,row_number等），聚合函数（sum,avg,count,max,min等）
+    partition by 用来对表分组。
+    order by 子句的功能是对分组后的结果进行排序，默认是升序。
+    group by 分组汇总后改变了表的行数，一行只有一个类别。而partition by 和 rank 函数不会减少原表中的行数。
+    rows between unbounded preceding and current row 获取当前行和前面所有行，order by后面缺少窗口从句条件时默认。
+    rows between unbounded preceding and unbounded following 获取当前行前面所有行和后面所有行，order by和窗口从句都缺失时默认
+    rows between current row and unbounded following 包括本行和之后所有的行。
+    rows between 3 preceding and current row 当前行和前面三行，总共4行。
+    rows between 3 preceding and 1 following 当前行的前面三行和后面一行，总共5行。
+2.排名函数
+    rank()：根据排序字段为每个分组中的每一行分配一个序号，排名值相同时，序号相同，会占用下一个名次的位置，例如：1，1，1，4。
+    dense_rank()：根据排序字段为每个分组中的每一行分配一个序号，排名值相同时，序号相同，不会占用下一个名次，例如：1，1，1，2。
+    row_number()：为表中的每一行分配一个序号，可以指定分组（也可以不指定）及排序字段（连续且不重复），例如：1，2，3，4。
+3.聚合函数
+    聚合函数用作窗口函数中，是对自身记录以及自身记录之上的所有数据进行计算。
+    聚合函数作为窗口函数可以在每一行的数据里直观的看到截止到本行数据，统计数据是多少，对整体统计数据没影响。
+4.取值函数
+    first_value()：在窗口里取到第一个值。
+    last_value()：在窗口里取到最后一个值。
+    lead(字段, offset, default)：取当前行的后offset条数据，如果没有下一行则返回default值。
+    lag(字段, offset, default)：取当前行的前offset条数据，如果没有前一行则返回default值。
+5.分布函数
+    percent_rank()：将某个数值在数据集中的排位作为数据集的百分比返回，百分比值的范围为0到1。
+        计算公式：(当前行的rank-1) / (分组内的总行数-1)
+    cume_dist()：计算某个窗口或分区中某个值的累积分布。如果升序排序，可以使用以下公式确定累积分布：小于等于当前值x的行数 / 分区内的总行数。
+6.partition by 和 group by的区别
+    group by 是分组函数，partition by是分析函数。
+    执行顺序上：from > where > group by > having > order by，而partition by执行在这些关键字之后，可以理解为就是在执行完select之后，
+    在所得结果集上进行partition by分组。partition by相较于group by，能够在保留全部数据的基础上，只对其中某些字段进行分组排序，而group by
+    只保留参与分组的字段和聚合函数的结果。
+
+二、普通函数
+1.IFNULL(column,值) 
+    如果某列的查询结果为null，可以转换成指定的数值返回。
+
+2.count(*)
+（1）InnoDB执行count(*)的时候，需要把数据一行一行地从引擎里面读出来，然后累计计数。
+    InnoDB是索引组织表，主键索引树的叶子节点是数据，而普通索引树的叶子节点是主键值。所以普通索引树比主键索引树小很多。因此MySQL优化器会找到最小
+    的那棵树来遍历。在保证逻辑正确的前提下，尽量减少扫描的数据量。
+（2）不同的count用法
+    count(主键 id)，InnoDB引擎会遍历整张表，把每一行的id值都取出来，返回给server层。server层拿到id后，判断是不为空的，就按行累加。
+    count(1)，InnoDB引擎遍历整张表，但不取值。server层对于返回的每一行，放一个数字“1”进去，判断是不为空的，按行累加。
+    count(字段)，如果这个字段是定义为not null的话，一行行地从记录里面读出这个字段，判断不能为null，按行累加；如果允许为null，那么执行的时候，
+    判断到有可能为null，还要把值取出来再判断下，不是null才累加。
+    count(*)，并不会把全部字段取出来，而是专门做了优化，不取值。肯定不是null，按行累加。
+
+3.CAST(value as datatype)
+（1）DATE 
+    将value转换为‘YYYY-MM-dd’格式。
+    select CAST('2024-10-15 09:30:29' as date) # 2024-10-15
+（2）DATETIME
+    将value转换为‘YYYY-MM-dd HH:mm:ss’格式。
+    select CAST('2024-10-15' as datetime) # 2024-10-15 00:00:00
+（3）TIME
+    将value转换为‘HH:mm:ss’格式。
+    select CAST('2024-10-15 09:34:30' as time) # 09:34:30
+（4）CHAR
+    将value转换为CHAR（固定长度的字符串）格式。
+    select CAST(150 as char) # '150'
+    select concat('hello world', cast(437 as char))
+（5）SIGNED
+    将value转换为INT（有符号的整数）格式。
+    select CAST('5.0' as SIGNED) # 5
+    select CAST(-5.4 as SIGNED) # -5
+    select CAST(-5.5 as SIGNED) # -6
+（6）UNSIGNED
+    将value转换为INT（无符号的整数）格式。
+    select CAST('5.0' as UNSIGNED) # 5
+    select CAST(-6.4 as UNSIGNED) # 0
+    select CAST(6.5 as UNSIGNED) # 7
+    select CAST(-6.5 as UNSIGNED) # 0
+（7）DECIMAL
+    将value转换为FLOAT（浮点数）
+    select CAST('9.5' as DECIMAL) # 9
+    
+    DECIMAL(数值精度, 小数点保留长度)
+    DECIMAL(10, 2) 存储最多8位整数和2位小数。
+    select CAST('9.5' as DECIMAL(10,2)) # 9.50
+    select CAST('1234567890.123' as DECIMAL(10, 2)) # 99999999.99
+    select CAST('220.2321111' as DECIMAL(10,3)) # 220.232
