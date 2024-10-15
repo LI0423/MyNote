@@ -8,6 +8,13 @@
             "type": "java",
             "name": "Test",
             "request": "launch",
+            "mainClass": "DesignPattern.Bridge.Test",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "Test",
+            "request": "launch",
             "mainClass": "DesignPattern.Adapter.InterfaceAdapter.Test",
             "projectName": "MyNote_f98cd070"
         },
