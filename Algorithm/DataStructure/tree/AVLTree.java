@@ -1,4 +1,4 @@
-package Algorithm.DataStructure;
+package Algorithm.DataStructure.tree;
 
 public class AVLTree {
 

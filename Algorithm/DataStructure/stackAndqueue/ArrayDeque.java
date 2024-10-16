@@ -1,4 +1,4 @@
-package Algorithm.DataStructure;
+package Algorithm.DataStructure.stackAndqueue;
 
 import java.lang.reflect.InaccessibleObjectException;
 

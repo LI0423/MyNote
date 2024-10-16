@@ -1,4 +1,4 @@
-package Algorithm.DataStructure;
+package Algorithm.DataStructure.hashmap;
 
 // 开放寻址哈希表
 public class HashMapOpenAddressing{

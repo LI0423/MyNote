@@ -1,4 +1,6 @@
-package Algorithm.DataStructure;
+package Algorithm.DataStructure.tree;
+
+import Algorithm.DataStructure.TreeNode;
 
 public class BinarySearchTree {
     TreeNode root;

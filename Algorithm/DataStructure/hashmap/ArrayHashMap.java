@@ -1,4 +1,4 @@
-package Algorithm.DataStructure;
+package Algorithm.DataStructure.hashmap;
 
 import java.util.ArrayList;
 import java.util.List;

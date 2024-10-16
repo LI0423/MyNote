@@ -1,4 +1,6 @@
-package Algorithm.DataStructure;
+package Algorithm.DataStructure.stackAndqueue;
+
+import Algorithm.DataStructure.ListNode;
 
 public class LinkedListStack {
     private ListNode stackPeek;
