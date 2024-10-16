@@ -16,105 +16,13 @@
     （4）指挥者：调用建造者对象中的部件构造与装配方法完成复杂对象的创建，在指挥者中不包含具体产品的信息。
     4.实现
 
-    //家装对象类    
-    public class House {
-
-        //买家电
-        private String jiadian;
-
-        //买地板
-        private String diban;
-
-        //买油漆
-        private String youqi;
-
-        public String getJiadian(){
-            return jiadian;
-        }
-
-        public void setJiadian(String jiadian){
-            this.jiadian = jiadian;
-        }
-
-        public String getDiban(){
-            return diban;
-        }
-
-        public void setDiban(String diban){
-            this.diban = diban;
-        }
-
-        public String getYouqi(){
-            return youqi;
-        }
-
-        public void setYouqi(String youqi){
-            this.youqi = youqi;
-        }
-
-    }
-
-    //抽象建造者
-    public interface HouseBuilder{
-        //买家电
-        void doJiadian();
-        //买地板
-        void doDiban();
-        //买油漆
-        void doYouqi();
-
-        House getHouse();
-    }
-
-    //具体建造者
-    public class JianzhuangBuilder implements HouseBuilder{
-        private House house = new House();
-
-        @Override
-        public void doJiadian(){
-            house.setDiban("简单家电");
-        }
-
-        @Override
-        public void doDiban(){
-            house.setDiban("简单地板")
-        }
-
-        @Override
-        public void doYouqi(){
-            house.setYouqi("简单油漆");
-        }
-    }
-
-    //家装公司
-    public class HouseDirector{
-        public House builder(HouseBuilder houseBuilder){
-            houseBuilder.doJiadian();
-            houseBuilder.doDiban();
-            houseBuilder.doYouqi();
-            return houseBuilder.getHouse();
-        }
-    }
-
-    public class APP{
-        public static void main(String[] args){
-            house();
-        }
-
-        public static void house(){
-            HouseDirector houseDirector = new HouseDirector();
-            JianzhuangBuilder jianzhuangBuilder = new JianzhuangBuilder();
-            houseDirector.builder(jianzhuangBuilder);
-        }
-    }
-
-/**变种的Builder模式**/
-变种的Builder模式包括以下内容：
-    在要构造的类内部创建一个静态内部类Builder；
-    静态内部类的参数与构建类一致；
-    构建类的构造参数是静态内部类，使用静态内部类的变量一一赋值给构建类；
-    静态内部类提供参数的setter方法，并且返回值是当前Builder对象；
-    最终提供一个build方法构建一个构建类对象，参数是当前Builder对象。
+    /**变种的Builder模式**/
+    变种的Builder模式包括以下内容：
+        在要构造的类内部创建一个静态内部类Builder；
+        静态内部类的参数与构建类一致；
+        构建类的构造参数是静态内部类，使用静态内部类的变量一一赋值给构建类；
+        静态内部类提供参数的setter方法，并且返回值是当前Builder对象；
+        最终提供一个build方法构建一个构建类对象，参数是当前Builder对象。
 
     public class Student {
         private String name;
