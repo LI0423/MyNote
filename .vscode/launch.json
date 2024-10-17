@@ -6,6 +6,13 @@
     "configurations": [
         {
             "type": "java",
+            "name": "WeatherStation",
+            "request": "launch",
+            "mainClass": "DesignPattern.Observer.WeatherStation",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
             "name": "Test",
             "request": "launch",
             "mainClass": "DesignPattern.Decorator.Test",

@@ -144,7 +144,7 @@
         }
 
         public void display(){
-            System.out.println("Current conditions: " + temperature + "F dgress and " + humidity + "% humidity");
+            System.out.println("Current conditions: " + temperature + "F degress and " + humidity + "% humidity");
         }
     }
 
