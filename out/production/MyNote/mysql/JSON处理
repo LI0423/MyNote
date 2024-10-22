@@ -1,0 +1,199 @@
+json数组解析查询
+（1）JSON_EXTRACT(json, path, ...)
+    筛选出json数组的第一个对象：
+        select JSON_UNQUOTE(JSON_EXTRACT(options, '$[0]')) as all_options
+        from questionnaire_question
+        where create_by = 'system'
+        order by questionnaire_id, all_options
+
+（2）JSON_UNQUOTE(json_val)
+    取消双引号：
+        select JSON_UNQUOTE('"123456"');  // 123456
+
+（3）JSON_KEYS(json, path)
+    返回一个包含指定json对象最上层的成员数组：
+        select JSON_KEYS('{"a": 1, "b": 2, "c": 3}');   // ["a", "b", "c"]
+        select JSON_KEYS('[1, {"a": 1, "b": 2, "c": 3}]');   // ["a", "b", "c"]
+
+（4）JSON_ARRAY()
+    返回一个包含了所有参数的json数组
+        select JSON_ARRAY(1, '1', NULL, TRUE, FALSE, NOW());    // [1, "1", null, true, false, "2024-01-31 13:53:00"]
+        select JSON_ARRAY(JSON_ARRAY(1, 2), JSON_ARRAY('a', 'b'));      // [[1, 2], ["a", "b"]]
+
+（5）JSON_OBJECT()
+    返回一个包含了由参数指定的所有键值对的JSON对象
+        select JSON_BOJECT('name', 'xxx', 'age', 22);   // {"name": "xxx", "age": 22}
+        select JSON_BOJECT('name', 'xxx', 'age', 22, 'age', 33);    // {"name": "xxx", "age": 33}
+
+（6）JSON_DEPTH(json)
+    返回一个JSON文档的最大深度
+        select JSON_DEPTH('[]');    // 1
+        select JSON_DEPTH('[1, 2]');    // 2
+        select JSON_DEPTH('[1, [2, 3]]');   // 3
+
+（7）JSON_LENGTH(json, path)
+    返回JSON文档或者JSON文档中通过路径指定的节点长度
+        select JSON_LENGTH('[]');   // 0
+        select JSON_LENGTH('[1, 2]');    // 2
+        select JSON_LENGTH('[1, {"x": 2}]');   // 2
+
+（8）JSON_CONTAINS(target_json, candidate_json, path)
+    检查一个JSON文档是否包含另一个JSON文档
+        select JSON_CONTAINS('[1, 2, {"x": 3}]', '1');  // 1
+        select JSON_CONTAINS('[1, 2, {"x": 3}]', '{"x": 3}');   // 1
+        select JSON_CONTAINS('[1, 2, [3, 4]]', '2', '$[2]');    // 0
+
+（9）JSON_ARRAY_APPEND(json, path, value[])
+    向JSON文档中的指定的数组中追加一个值并返回修改后的JSON文档
+        select JSON_ARRAY_APPEND('[1, 2, 3]', '$', 4);  // [1, 2, 3, 4]
+        select JSON_ARRAY_APPEND('[1, [2, 3]', '$[0]', 4);  // [[1, 4], [2, 3]]
+        select JSON_ARRAY_APPEND('{"name": "Tim", "hobby": ["car"]}', '$.hobby', "food");   // {"name": "Tim", "hobby": ["car", "food"]}
+
+（10）JSON_ARRAY_INSERT(json, path, value[])
+    向JSON文档中的指定数组的指定位置插入一个值并返回新的JSON文档
+        set @str = '[1, [2, 3], {"a": [4, 5]}]';
+        select JSON_ARRAY_INSERT(@str, '$[0]', 0);  // [0, 1, [2, 3], {"a": [4, 5]}]
+        select JSON_ARRAY_INSERT(@str, '$[1][0]', 0);   // [1, [0, 2, 3], {"a": [4, 5]}]
+        select JSON_ARRAY_INSERT(@str, '$[1].a[0]', 0); // [1, [2, 3], {"a": [0, 4, 5]}]
+
+（11）JSON_CONTAINS_PATH(json, one_or_all, path)
+    检查一个JSON文档中在指定的路径上是否有值存在
+        select JSON_CONTAINS_PATH('[1, 2, {"x": 3}]', 'all', '$[0]');   // 1
+        select JSON_CONTAINS_PATH('[1, 2, {"x": 3}]', 'all', '$[3]');   // 0
+        select JSON_CONTAINS_PATH('[1, 2, {"x": 3}]', 'one', '$[0]', '$[3]');   // 1
+        select JSON_CONTAINS_PATH('[1, 2, {"x": 3}]', 'all', '$[0]', '$[3]');   // 0
+
+（12）JSON_INSERT(json, path, value)
+    向一个JSON文档中插入数据并返回新的JSON文档
+        set @arr = '[1, [2, 3], {"a": [4, 5]}]';
+        select JSON_INSERT(@arr, '$[0]', 0, '$[3]', 6);     // [1, [2, 3], {"a": [4, 5]}, 6]
+        set @obj = '{"x": 1}';
+        select JSON_INSERT(@obj, '$.y', '2');   // {"x": 1, "y": "2"}
+
+（13）JSON_MERGE(json1, json2)
+    合并两个或多个JSON文档并返回合并的结果
+        select JSON_MERGE('1', 'true', '"hello"', null);    // [1, true, "hello", null]
+        select JSON_MERGE('[1, 2]', '[2, 3]');      // [1, 2, 2, 3]
+        select JSON_MERGE('{"x": 1}', '{"x": 2, "y": 3}');      // {"x": [1, 2], "y": 3}
+        select JSON_MERGE('{"x": 1}', '[1, 2]');    // [{"x": 1}, 1, 2]
+
+（14）JSON_MERGE_PATCH(json1, json2)
+    对两个或多个JSON文档执行替换合并并返回合并的结果
+    合并规则：
+        若第一个参数不是对象，则合并的结果与第二个参数合并空对象的结果相同。
+        若第二个参数不是对象，则合并的结果为第二个参数。
+        若两个参数都是对象，则合并的对象有以下成员：
+            只存在于第一个对象中的成员。
+            只存在于第二个对象中且不是null的成员。
+            存在于第二个对象且值不是null，并且在第一个对象中有对应的相同键的成员。
+
+        select JSON_MERGE_PATCH('2', 'true');   // true
+        select JSON_MERGE_PATCH('[1, 2]', '[2, 3]');    // [2, 3]
+        select JSON_MERGE_PATCH('{"x": 1, "z": 7}', '{"x": 2, "y": 3}');    // {"x": 2, "y": 3, "z": 7}
+        select JSON_MERGE_PATCH('{"x": 1, "z": 7}', '{"x": 2, "z": null}'); // {"x": 2}
+
+（15）JSON_MERGE_PRESERVE()
+    合并两个或多个JSON文档并返回合并的结果
+    合并规则：
+        两个数组合并为一个数组，保留所有数组中的元素。
+        两个对象合并为一个对象，保留所有的键和值。
+        一个纯值会被包装成一个数组并作为数组进行合并。
+        对象和数组合并时，会将对象包装到一个数组中并作为数组进行合并。
+
+        select JSON_MERGE_PRESERVE('2', 'true');    // [2, true]
+        select JSON_MERGE_PRESERVE('[1, 2]', '[2, 3]');     // [1, 2, 2, 3]
+        select JSON_MERGE_PRESERVE('{"x": 1, "z": 7}', '{"x": 2, "y": 3}');     // {"x": [1, 2], "y": 3, "z": 7}
+        select JSON_MERGE_PRESERVE('{"x": 1, "z": 7}', '{"x": 2, "z": null}');  // {"x": [1, 2], "z": [7, null]}
+
+（16）JSON_OVERLAPS(json1, json2)
+    检测两个JSON文档是否拥有任何一个相同键值对或数组元素
+    判断规则：
+        比较两个数组时，如果两个数组至少有一个相同的元素返回1，否则返回0。
+        比较两个对象时，如果两个对象至少有一个相同的键值对返回1，否则返回0。
+        比较两个纯值时，如果两个值相同返回1，否则返回0。
+        比较纯值和数组时，如果值是这个数组中的直接元素返回1，否则返回0。
+        比较纯值和对象的结果为0。
+        比较数组和对象的结果为0。
+
+        select JSON_OVERLAPS('[1, 2, 3]', '[3, 4, 5]');     // 1
+        select JSON_OVERLAPS('[1, 2, [3]]', '[3, 4, 5]');   // 0
+        select JSON_OVERLAPS('{"x": 1}', '{"x": 1, "y": 2}');   // 1
+        select JSON_OVERLAPS('{"x": 1}', '{"y": 2}');   // 0
+        select JSON_OVERLAPS('[1, 2, 3]', '3');     // 1
+        select JSON_OVERLAPS('[1, 2, [3]]', '3');   // 0
+
+（17）JSON_PRETTY(json)
+    格式化输出一个JSON文档，方便阅读
+        select JSON_PRETTY('[1, 2, 3]');
+        select JSON_PRETTY('{"x": 1, "y": 2}');
+
+（18）JSON_REMOVE(json, path)
+    从一个JSON文档中删除由路径指定的数据并返回修改后的JSON文档。
+        select JSON_REMOVE('[0, 1, 2, [3, 4]]', '$[0]', '$[2]');    // [1, 2]
+        select JSON_REMOVE('{"x": 1, "y": 2}', '$.x');  // {"y": 2}
+
+（19）JSON_REPLACE(json, path, value)
+    在一个JSON文档中替换已存在的数据并返回新的JSON文档。
+        set @arr = '[1, [2, 3]]';
+        select JSON_REPLACE(@arr, '$[0]', 0, '$[2]', 6);    // [0, [2, 3]]
+        select JSON_REPLACE(@arr, '$[0]', 0, '$[1]', 6);    // [0, 6]
+        set @obj = '{"x": 1}';
+        select JSON_REPLACE(@obj, '$.x', 'true', '$.y', true);  // {"x": "true"}
+        select JSON_REPLACE(@obj, '$.x', '[1, 2]');     // {"x": "[1, 2]"}
+        select JSON_REPLACE(@obj, '$.x', JSON_ARRAY(1, 2)); // {"x": [1, 2]}
+
+（20）JSON_SET(json, path, value)
+    在一个JSON文档中插入或更新数据并返回新的JSON文档。
+        set @obj = '{"x": 1}';
+        select JSON_SET(@obj, '$.x', '10', '$.y', '[1, 2]');    // {"x": "10", "y": "[1, 2]"}
+        select JSON_SET(@obj, '$.x', '$.y', '{"z": 2}');    // {"x": "10", "y": "{\"z\": 2}"}
+        select JSON_SET(@obj, '$.x', '$.y', CAST('[1, 2]' AS JSON));    // {"x": "10", "y": [1, 2]}
+        
+（20）JSON_TABLE
+    将JSON文档解析成表格形式的数据。
+    select * 
+    from JSON_TABLE(json, 
+                    '$[*]' 
+                    COLUMNS(product varchar(50) PATH '$.product', 
+                    price int PATH '$.price'));
+
+    select JSON_UNQUOTE(JSON_EXTRACT(stage_mark, CONCAT('$[', jt.idx, '].duration'))) as totalMark,
+           JSON_UNQUOTE(JSON_EXTRACT(stage_mark, CONCAT('$[', jt.idx, '].speed'))) as speed
+    from JSON_TABLE(stage_mark, 
+                    '$[*]' 
+                    COLUMNS(idx FOR_ORDINALITY, 
+                    stageName varchar(50) PATH '$.stageName')) as jt
+    where stageName = ?
+
+（21）JSON_ARRAYAGG
+    用于将一组值聚合为一个JSON数组。
+
+    stage_mark = [{"speed": 0.0, "pacing": 0.0, "endTime": 1728697040057, "duration": 2.17, "beginTime": 1728697037887, "stageName": "反应时"},
+    {"speed": 3.82, "pacing": 0.0, "endTime": 1728697041367, "duration": 1.31, "beginTime": 1728697037887, "stageName": "阶段一"},
+    {"speed": 12.16, "pacing": 0.0, "endTime": 1728697042487, "duration": 3.2899999999999996, "beginTime": 1728697037887, "stageName": "阶段二"},
+    {"speed": 1.92, "pacing": 0.0, "endTime": 1728697043777, "duration": 2.6, "beginTime": 1728697037887, "stageName": "阶段三"}]
+
+    传入stageName根据其对应的duration来进行排序
+    
+    WITH StageData AS (
+        select stage.value as stage_info,
+        JSON_UNQUOTE(JSON_EXTRACT(stage.value, '$.duration')) as duration,
+        JSON_UNQUOTE(JSON_EXTRACT(stage.value, '$.stageName')) as stage_name,
+        sts.student_id as studentId,
+        sts.student_name as studentName,
+        sts.age
+        from sport_train_score sts inner join JSON_TABLE(stage_mark, '$[*]' COLUMNS (value JSON PATH '$')) as stage)
+    select studentId,
+    studentName,
+    age,
+    JSON_ARRAYAGG(stage_info) as stageMark
+    from (
+        select studentId,
+        studentName,
+        age,
+        stage_info,
+        case when stage_name = '阶段一' then cast(duration as decimal(10, 2)) end as sort_duration
+        from StageData) res
+    group by studentId, studentName, age
+    order by MAX(sort_duration)
+

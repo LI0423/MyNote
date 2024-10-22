@@ -1,0 +1,595 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Test",
+            "request": "launch",
+            "mainClass": "DesignPattern.Proxy.JDKProxy.Test",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "Test",
+            "request": "launch",
+            "mainClass": "DesignPattern.Test",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "Test",
+            "request": "launch",
+            "mainClass": "DesignPattern.StrategyPatternFiles.Test",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "Test",
+            "request": "launch",
+            "mainClass": "DesignPattern.Strategy.Test",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "Test",
+            "request": "launch",
+            "mainClass": "DesignPattern.SimpleFactory.Test",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "Test",
+            "request": "launch",
+            "mainClass": "DesignPattern.Proxy.Test",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "WeatherStation",
+            "request": "launch",
+            "mainClass": "DesignPattern.Observer.WeatherStation",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "Test",
+            "request": "launch",
+            "mainClass": "DesignPattern.Decorator.Test",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "Test",
+            "request": "launch",
+            "mainClass": "Test",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "Test",
+            "request": "launch",
+            "mainClass": "DesignPattern.Bridge.Test",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "Test",
+            "request": "launch",
+            "mainClass": "DesignPattern.Adapter.InterfaceAdapter.Test",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "Test",
+            "request": "launch",
+            "mainClass": "DesignPattern.Adapter.ObjectAdapter.Test",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "Test",
+            "request": "launch",
+            "mainClass": "DesignPattern.Adapter.ClassAdapter.Test",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "Test",
+            "request": "launch",
+            "mainClass": "DesignPattern.Adapter.Test",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "Test",
+            "request": "launch",
+            "mainClass": "DesignPattern.FactoryMethod.abstractMode.Test",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "Test",
+            "request": "launch",
+            "mainClass": "DesignPattern.FactoryMethod.Test",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "Test",
+            "request": "launch",
+            "mainClass": "DesignPattern.AbstractFactory.Test",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "MaxmiumScore",
+            "request": "launch",
+            "mainClass": "Algorithm.leetcode.greedy.MaxmiumScore",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "MaxProfitIII",
+            "request": "launch",
+            "mainClass": "Algorithm.leetcode.greedy.MaxProfitIII",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "FindUnsortedSubarray",
+            "request": "launch",
+            "mainClass": "Algorithm.leetcode.greedy.FindUnsortedSubarray",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "ValidPalindrome",
+            "request": "launch",
+            "mainClass": "Algorithm.leetcode.greedy.ValidPalindrome",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "HalfQuestions",
+            "request": "launch",
+            "mainClass": "Algorithm.leetcode.greedy.HalfQuestions",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "LeastMinutes",
+            "request": "launch",
+            "mainClass": "Algorithm.leetcode.greedy.LeastMinutes",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "MinimumPossibleSum",
+            "request": "launch",
+            "mainClass": "Algorithm.leetcode.MinimumPossibleSum",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "MinimumPossibleSum",
+            "request": "launch",
+            "mainClass": "Algorithm.leetcode.greedy.MinimumPossibleSum",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "CanSplitArray",
+            "request": "launch",
+            "mainClass": "Algorithm.leetcode.greedy.CanSplitArray",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "KItemsWithMaximumSum",
+            "request": "launch",
+            "mainClass": "Algorithm.leetcode.greedy.KItemsWithMaximumSum",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "MinimumBoxes",
+            "request": "launch",
+            "mainClass": "Algorithm.leetcode.greedy.MinimumBoxes",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "MaximizeSum",
+            "request": "launch",
+            "mainClass": "Algorithm.leetcode.greedy.MaximizeSum",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "AnswerQueries",
+            "request": "launch",
+            "mainClass": "Algorithm.leetcode.greedy.AnswerQueries",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "MinMaxDifference",
+            "request": "launch",
+            "mainClass": "Algorithm.leetcode.greedy.MinMaxDifference",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "MinimumOperations",
+            "request": "launch",
+            "mainClass": "Algorithm.leetcode.greedy.MinimumOperations",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "MinSubsequence",
+            "request": "launch",
+            "mainClass": "Algorithm.leetcode.greedy.MinSubsequence",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "FillCups",
+            "request": "launch",
+            "mainClass": "Algorithm.leetcode.greedy.FillCups",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "ConvertTime",
+            "request": "launch",
+            "mainClass": "Algorithm.leetcode.greedy.ConvertTime",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "Maximum69Number",
+            "request": "launch",
+            "mainClass": "Algorithm.leetcode.greedy.Maximum69Number",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "RemoveDigit",
+            "request": "launch",
+            "mainClass": "Algorithm.leetcode.greedy.RemoveDigit",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "SplitNum",
+            "request": "launch",
+            "mainClass": "Algorithm.leetcode.greedy.SplitNum",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "MinimumMoves",
+            "request": "launch",
+            "mainClass": "Algorithm.leetcode.greedy.MinimumMoves",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "MinMovesToSeat",
+            "request": "launch",
+            "mainClass": "Algorithm.leetcode.MinMovesToSeat",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "LongestPalindrome",
+            "request": "launch",
+            "mainClass": "Algorithm.leetcode.greedy.LongestPalindrome",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "LargestOddNumber",
+            "request": "launch",
+            "mainClass": "Algorithm.leetcode.greedy.LargestOddNumber",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "MinOperation",
+            "request": "launch",
+            "mainClass": "Algorithm.leetcode.greedy.MinOperation",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "MaximumTime",
+            "request": "launch",
+            "mainClass": "Algorithm.leetcode.greedy.MaximumTime",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "MaximumUnits",
+            "request": "launch",
+            "mainClass": "Algorithm.leetcode.greedy.MaximumUnits",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "LargestPerimeter",
+            "request": "launch",
+            "mainClass": "Algorithm.leetcode.greedy.LargestPerimeter",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "MinTimeToType",
+            "request": "launch",
+            "mainClass": "Algorithm.leetcode.greedy.MinTimeToType",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "MinimumCost",
+            "request": "launch",
+            "mainClass": "Algorithm.leetcode.greedy.MinimumCost",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "BalancedStringSplit",
+            "request": "launch",
+            "mainClass": "Algorithm.leetcode.greedy.BalancedStringSplit",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "MinCostToMoveChips",
+            "request": "launch",
+            "mainClass": "Algorithm.leetcode.greedy.MinCostToMoveChips",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "CanJumpII",
+            "request": "launch",
+            "mainClass": "Algorithm.leetcode.greedy.CanJumpII",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "MaxProfitII",
+            "request": "launch",
+            "mainClass": "Algorithm.leetcode.greedy.MaxProfitII",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "BitwiseComplement",
+            "request": "launch",
+            "mainClass": "Algorithm.leetcode.BitwiseComplement",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "CommonChars",
+            "request": "launch",
+            "mainClass": "Algorithm.leetcode.CommonChars",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "Current File",
+            "request": "launch",
+            "mainClass": "${file}"
+        },
+        {
+            "type": "java",
+            "name": "AddStrings",
+            "request": "launch",
+            "mainClass": "Algorithm.leetcode.AddStrings",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "DeleteAndEarn",
+            "request": "launch",
+            "mainClass": "Algorithm.leetcode.DeleteAndEarn",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "DetectCapitalUse",
+            "request": "launch",
+            "mainClass": "Algorithm.leetcode.DetectCapitalUse",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "FindDispearedNumbers",
+            "request": "launch",
+            "mainClass": "Algorithm.leetcode.FindDispearedNumbers",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "FindShortestSubArray",
+            "request": "launch",
+            "mainClass": "Algorithm.leetcode.FindShortestSubArray",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "FindWords",
+            "request": "launch",
+            "mainClass": "Algorithm.leetcode.FindWords",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "JumpGame",
+            "request": "launch",
+            "mainClass": "Algorithm.leetcode.JumpGame",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "JumpGameII",
+            "request": "launch",
+            "mainClass": "Algorithm.leetcode.JumpGameII",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "LemonadeChange",
+            "request": "launch",
+            "mainClass": "Algorithm.leetcode.LemonadeChange",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "MatrixReshape",
+            "request": "launch",
+            "mainClass": "Algorithm.leetcode.MatrixReshape",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "MaxLenOfSubarrayPositiveProduct",
+            "request": "launch",
+            "mainClass": "Algorithm.leetcode.MaxLenOfSubarrayPositiveProduct",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "MinCostClimbingStairs",
+            "request": "launch",
+            "mainClass": "Algorithm.leetcode.MinCostClimbingStairs",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "MoveZero",
+            "request": "launch",
+            "mainClass": "Algorithm.leetcode.MoveZero",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "RemoveDuplicates2",
+            "request": "launch",
+            "mainClass": "Algorithm.leetcode.RemoveDuplicates2",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "RemoveElement",
+            "request": "launch",
+            "mainClass": "Algorithm.leetcode.RemoveElement",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "ReverseStr",
+            "request": "launch",
+            "mainClass": "Algorithm.leetcode.ReverseStr",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "ReverseVowels",
+            "request": "launch",
+            "mainClass": "Algorithm.leetcode.ReverseVowels",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "ReverseWords",
+            "request": "launch",
+            "mainClass": "Algorithm.leetcode.ReverseWords",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "Rob",
+            "request": "launch",
+            "mainClass": "Algorithm.leetcode.Rob",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "RotateArray",
+            "request": "launch",
+            "mainClass": "Algorithm.leetcode.RotateArray",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "ShortestToChar",
+            "request": "launch",
+            "mainClass": "Algorithm.leetcode.ShortestToChar",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "SqrtX",
+            "request": "launch",
+            "mainClass": "Algorithm.leetcode.SqrtX",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "BubbleSort",
+            "request": "launch",
+            "mainClass": "Algorithm.sort.BubbleSort",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "InsertSort",
+            "request": "launch",
+            "mainClass": "Algorithm.sort.InsertSort",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "MergeSort",
+            "request": "launch",
+            "mainClass": "Algorithm.sort.MergeSort",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "QuickSort",
+            "request": "launch",
+            "mainClass": "Algorithm.sort.QuickSort",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "SelectionSort",
+            "request": "launch",
+            "mainClass": "Algorithm.sort.SelectionSort",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "ShellSort",
+            "request": "launch",
+            "mainClass": "Algorithm.sort.ShellSort",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "ExportDBData",
+            "request": "launch",
+            "mainClass": "BigData.zExportData.ExportDBData",
+            "projectName": "MyNote_f98cd070"
+        }
+    ]
+}

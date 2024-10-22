@@ -1,0 +1,31 @@
+Hadoop
+
+1. hadoop fs -cat uri [uri]     将路径指定文件的内容输出到stdout
+2. hadoop fs -chgrp [-R] group uri [uri]    改变文件所属的组。使用 -R 将使改变在目录结构下递归进行，命令使用者是文件的所有者或者超级用户。
+3. hadoop fs -chmod [-R] uri [uri]      该变文件的权限。
+4. hadoop fs -chown [-R]        改变文件拥有者。
+5. hadoop fs -copyFromLocal <localsrc> uri      除了限定目标路径是一个本地文件外，和put命令类似，复制文件到本地文件系统。
+6. hadoop fs -copyToLocal [-ignoresrc] [-crc] url       除了限定目标路径是一个本地文件外，和get命令类似，复制文件到本地文件系统。
+7. hadoop fs -cp uri [uri] <dest>       将文件从源路径复制到目标路径，允许有多个源路径，目标路径必须是一个目录。
+8. hadoop fs -du uri [uri]      显示目录中所有文件的大小，或者当指定一个文件时，显示此文件的大小。
+9. hadoop fs -dus <args>        显示文件的大小。
+10. hadoop fs -expunge      清空回收站
+11. hadoop fs -get [-ignoresrc] [-crc] <src> <localdst>     复制文件到本地文件系统。可用 -ignoresrc 选项复制CRC校验失败的文件。使用 -crc 选项复制文件以及CRC信息。
+12. hadoop fs -getmerge <src> <localdst> [addnl]        接受一个源目录和一个目标文件作为输入，并且将源目录中所有的文件连接成本地目标文件。addnl 是可选的，用于指定在每个文件结尾添加换行符。
+13. hadoop fs -ls <args>        如果是文件，则按照如下格式返回文件信息：
+                                文件名 <副本数> 文件大小 修改日期 修改时间 权限 用户ID 组ID
+                                如果是目录，则返回它直接子文件的一个列表，就像在Unix中一样。目录返回列表的信息如下：
+                                目录名 <dir> 修改日期 修改时间 权限 用户ID 组ID
+14. hadoop fs -lsr <args>       ls命令的递归版本。
+15. hadoop fs -mkdir <paths>        接受路径指定的uri作为参数创建这些目录。
+16. hadoop fs -moveFromLocal <src> <dst>        
+17. hadoop fs -mv uri [uri] <dest>      将文件从源路径移动到目标路径。允许有多个源路径，目标路径必须是一个目录，不允许在不同的文件系统间移动文件。
+18. hadoop fs -put <localsrc> ... <dst>         从本地文件系统中复制单个或多个源路径到目标文件系统，也支持从标准输入中读取输入写入目标文件系统。
+19. hadoop fs -rm uri [uri]         删除指定的文件，只删除非空目录和文件。
+20. hadoop fs -rmr uri [uri]        删除的递归版本。
+21. hadoop fs -setrep [-R] <path>       改变一个文件的副本系数。
+22. hadoop fs -stat uri [uri]      返回指定路径的统计信息
+23. hadoop fs -tail [-f] uri        将文件尾部1k字节的内容输出到stdout。
+24. hadoop fs -test -[ezd] uri      -e 检查文件是否存在，存在返回0；-z 检查文件是否是0字节，是返回0；-d 如果路径是个目录，返回1
+25. hadoop fs -text <src>       将源文件输出为文本格式，允许的格式是zip和TextRecordInputStream。
+26. hadoop fs -touchz uri [uri]         创建一个0字节的空文件。

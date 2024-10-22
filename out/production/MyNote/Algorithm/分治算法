@@ -1,0 +1,65 @@
+分治算法
+将整个问题拆分成多个相互独立且数据量更少的小问题，通过逐一解决这些小问题，最终找到解决整个问题的方案。
+步骤：
+    分：将整个问题划分成多个相对独立、涉及数据量更少的小问题，有些小问题还可以划分成很多更小的问题，直至每个问题都不可再分。
+    治：逐个解决所有的小问题。 
+    合并：将所有小问题的解决方案合并到一起，找到解决整个问题的方案。
+
+示例一：找数组的最大值和最小值
+    {3,7,2,1}
+实现思路：不断等分数组中的元素，直至各个分组中元素的个数<=2。由于每个分组中的元素最多有2个，很容易就可以找出其中的最值，
+    然后这些最值再进行两两比较，最终找到最值就是整个数组中的最值。
+代码：
+    public class Solution{
+        public static int getMaxNum(int[] arr,int left,int right){
+            //如果数组不存在或者数组内没有元素
+            if(arr == null || arr.length == 0){
+                return -1;
+            }
+            //如果查找范围中仅有 2 个数字，则直接比较即可
+            if(right - left <= 1){
+                if(arr[left] >= arr[right]){
+                    return arr[left];
+                }else{
+                    return arr[right];
+                }
+            }
+            //等量划分成 2 个区域
+            int middle = (right - left)/2+left
+            int maxLeft = getMaxNum(arr,left,middle);
+            int maxRight = getMaxNum(arr,middle+1,right);
+            if(maxLeft >= maxRight){
+                return maxLeft;
+            }else{
+                return maxRight;
+            }
+        }
+        public static void main(String[] args){
+            int[] arr = new int[]{3,7,2,1};
+            int max = getMaxNum(arr,0,arr.length-1);
+        }
+    }
+
+示例二：汉诺塔问题
+对于n个圆盘的汉诺塔问题，移动圆盘的过程是：
+    将起始柱上的n-1个圆盘移动到辅助柱上；
+    将起始柱上遗留的1个圆盘移动到辅助柱上；
+    将辅助柱上的所有圆盘移动到目标柱上。
+代码：
+    public class Solution{
+        public static int i = 1;
+        public static void hanoi(int num,char sou,char tar,char sux){
+            if(num == 1){
+                System.out.println("第" + i + "次:从" + sou + "移动到" + tar);
+                i++;
+            } else {
+                hanoi(num-1, sou, sux, tar);
+                System.out.println("第" + i + "次:从" + sou + "移动到" + tar);
+                i++;
+                hanoi(num-1, sux, tar, sou);
+            }
+        }
+        public static void main(String[] args){
+            hanoi(3, 'A', 'B', 'C');
+        }
+    }

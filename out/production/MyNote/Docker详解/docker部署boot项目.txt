@@ -1,0 +1,48 @@
+Docker部署spring-boot项目步骤：
+    1.进入boot项目
+        cd PECommon
+
+    2.创建Dockerfile文件
+        touch Dockerfile
+
+    3.编辑Dockerfile文件
+        # 使用OpenJDK 21作为基础镜像
+        FROM openjdk:21-jdk-slim
+
+        # 将Spring Boot应用的jar包复制到容器中
+        COPY target/PECommon-0.0.1-SNAPSHOT.jar /usr/local/app/app.jar
+
+        # 设置工作目录
+        WORKDIR /usr/local/app
+
+        # 暴露应用端口 (根据你的Spring Boot应用的配置)
+        EXPOSE 8080
+
+        # 启动Spring Boot应用
+        ENTRYPOINT ["java", "-jar", "app.jar"]
+
+    4.构建Docker镜像
+        docker build -t PECommon .
+
+    5.运行Docker容器
+        docker run -d -p 8091:8091 --name PECommon pe-common
+
+
+更新jar
+    方法1：重新构建Docker镜像
+            docker build -t PECommon .
+        先停止旧的容器
+            docker stop pe-common
+        删除容器
+            docker rm pe-common
+        启动新的镜像容器
+            docker run -d -p 8091:8091 --name PECommon pe-common
+    方法2：直接替换jar文件
+            docker cp target/PECommon-0.0.1-SNAPSHOT.jar pe-common:/usr/local/app/app.jar
+        重新启动容器
+            docker restart pe-common
+
+
+
+        
+    

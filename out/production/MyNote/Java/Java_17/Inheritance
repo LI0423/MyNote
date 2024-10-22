@@ -1,0 +1,85 @@
+public class Inheritance {
+    public static void main(String[] args) {
+        var point = new Point(1, 5);
+        System.out.println(point);
+
+        var point3D = new Point3D(2, 4, 7);
+        System.out.println(point3D);
+
+        var palace = new Palace(100, 50);
+        System.out.println(palace.price(2));
+
+        Bookable hotel2 = new Hotel2(100);
+        System.out.println(hotel2.price(2));
+        Bookable palace2 = new Palace2(100, 50);
+        System.out.println(palace2.price(2));
+    }
+}
+
+class Point {
+    private final int x;
+    private final int y;
+
+    public Point(int x, int y) {
+        this.x = x;
+        this.y = y;
+    }
+
+    public String toString() {
+        return "x: " + x + " y: " + y;
+    }
+}
+
+class Point3D extends Point {
+    private final int z;
+
+    Point3D(int x, int y, int z) {
+        super(x, y);
+        this.z = z;
+    }
+
+    public String toString() {
+        return super.toString() + " z: " + z;
+    }
+}
+
+class Hotel {
+    final int roomPrice;
+
+    public Hotel(int roomPrice) {
+        this.roomPrice = roomPrice;
+    }
+
+    public int price(int rooms) {
+        return rooms * roomPrice;
+    }
+}
+
+class Palace extends Hotel {
+    private final int extra;
+
+    public Palace(int roomPrice, int extra) {
+        super(roomPrice);
+        this.extra = extra;
+    }
+
+    public int price(int rooms) {
+        return rooms * (roomPrice + extra);
+    }
+}
+
+interface Bookable {
+    int price(int rooms);
+}
+
+record Hotel2(int roomPrice) implements Bookable {
+    public int price(int rooms) {
+        return rooms * roomPrice;
+    }
+}
+
+record Palace2(int roomPrice, int extra) implements Bookable {
+    public int price(int rooms){
+        return rooms * (roomPrice + extra);
+    }
+}

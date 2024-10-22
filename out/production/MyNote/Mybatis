@@ -1,0 +1,24 @@
+一、Mybatis中的缓存
+1、一级缓存
+（1）一级缓存是SqlSession级别的缓存，每个SQLSession都有自己单独的一级缓存，多个SQLSession之间的一级缓存是相互隔离的，互不影响，
+mybatis中一级缓存是默认开启的。
+（2）原理：在同一个SQLSession中去多次执行同样的查询，每次执行会先到一级缓存中查找，如果缓存中有就直接返回，如果没有就去数据库中查找，
+然后将结果放入一级缓存中，第二次执行同样的查询的时候会直接从缓存中获取数据返回。一级缓存的存储介质是内存，用一个HashMap来存储数据，
+访问速度很快。
+（3）一级缓存失效的3种方式
+    SQLSession中执行增、删、改操作，此时SQLSession会自动清理其内部的一级缓存。
+    调用SQLSession中的clearCache方法清理其内部的一级缓存。
+    设置Mapper.xml中select元素的flushCache属性值为true，那么执行查询的时候会先清空一级缓存中的所有数据，然后去数据库中获取。
+2、二级缓存
+（1）二级缓存是mapper级别的缓存，每个mapper.xml有个namespace，二级缓存和namespace绑定的，每个namespace关联一个二级缓存，多个
+SQLSession可以共用二级缓存，二级缓存是跨SQLSession的。默认是不开启的，需要在mybatis全局配置文件中开启。
+（2）一二级缓存共存时查询原理
+    当发起一个查询的时候，mybatis会先访问namespace对应的二级缓存，如果二级缓存中有数据则直接返回，否则继续向下。
+    查询一级缓存中是否有对应的数据，有就直接返回，否则继续向下。
+    访问数据库获取需要的数据，然后放在当前SqlSession对应的二级缓存中，并在本地内存中的另外一个地方存储一份。（TransactionalCache）
+    当SQLSession关闭的时候也就是调用SQLSession的close方法的时候，此时会将TransactionalCache中的数据放到二级缓存中，并且会清空
+当前SqlSession一级缓存中的数据。
+（3）清空或者跳过二级缓存的3种方式
+    对应的mapper中执行增删改会清空二级缓存中数据。
+    select元素的flushCache属性置为true，会先清空二级缓存中的数据，然后再去数据库中查询数据，然后将数据放到二级缓存中。
+    select元素的useCache属性置为false，可以使这个查询跳过二级缓存，然后去查询数据。

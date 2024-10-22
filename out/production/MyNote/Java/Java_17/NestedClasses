@@ -1,0 +1,139 @@
+import java.util.*;
+
+import static java.util.stream.IntStream.range;
+
+public class NestedClasses {
+    public static class Result {
+        private final int count;
+        private final double sum;
+
+        private Result(int count, double sum) {
+            this.count = count;
+            this.sum = sum;
+        }
+
+        public double average() {
+            return sum / count;
+        }
+    }
+
+    public static Result findSumAndAverage(double[] array) {
+        return new Result(array.length, Arrays.stream(array).sum());
+    }
+
+    // record 在类的内部永远是静态的
+    public record Result2(int count, double sum) {
+        public double average() {
+            return sum / count;
+        }
+    }
+
+    public static Result2 findSumAndAverage2(double[] array) {
+        return new Result2(array.length, Arrays.stream(array).sum());
+    }
+
+    public static void main(String[] args) {
+        var array = range(0, 20).mapToDouble(x -> x).toArray();
+        System.out.println(NestedClasses.findSumAndAverage(array).average());
+
+        System.out.println(NestedClasses.findSumAndAverage2(array).average());
+
+        var list = new Range(2, 10).subList(2, 6);
+        System.out.println(list);
+
+        var a = new A();
+        System.out.println("a " + a);
+        var b = a.new B();
+        System.out.println("b " + b);
+        b.print();
+
+        var list2 = new Range2(2, 10).subList(2, 6);
+        System.out.println(list2);
+
+        var list3 = new Range3(2, 10).subList(2, 6);
+        System.out.println(list3);
+    }
+
+}
+
+record Range(int start, int end) {
+    private class RangeList extends AbstractList<Integer> implements RandomAccess {
+        private final int from;
+        private final int to;
+
+        public RangeList(int from, int to) {
+            this.from = from;
+            this.to = to;
+        }
+
+        public int size() {
+            return to - from;
+        }
+
+        public Integer get(int index) {
+            Objects.checkIndex(index, size());
+            return start + from + index;
+        }
+    }
+
+    public Range {
+        Objects.checkIndex(start, end);
+    }
+
+    public List<Integer> subList(int from, int to) {
+        Objects.checkFromIndexSize(from, to, end - start);
+        return this.new RangeList(from, to);
+    }
+}
+
+class A {
+    class B {
+        void print() {
+            System.out.println("this " + this);
+            System.out.println("A.this " + A.this);
+        }
+    }
+}
+
+record Range2(int start, int end) {
+    public Range2 {
+        Objects.checkIndex(start, end);
+    }
+
+    public List<Integer> subList(int from, int to) {
+        Objects.checkFromToIndex(from, to, end - start);
+        return new AbstractList<>() {
+            @Override
+            public Integer get(int index) {
+                Objects.checkIndex(index, size());
+                return start + from + index;
+            }
+
+            @Override
+            public int size() {
+                return to - from;
+            }
+        };
+    }
+}
+
+record Range3(int start, int end) {
+    public Range3 {
+        Objects.checkIndex(start, end);
+    }
+    public List<Integer> subList(int from, int to) {
+        Objects.checkFromToIndex(from, to, end - start);
+        class RangeList extends AbstractList<Integer> implements RandomAccess {
+            public int size() {
+                return to - from;
+            }
+            public Integer get(int index){
+                Objects.checkIndex(index, size());
+                return start + from + index;
+            }
+        }
+        return new RangeList();
+    }
+}
+
+

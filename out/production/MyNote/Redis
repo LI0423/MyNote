@@ -1,0 +1,153 @@
+Redis
+1.启动	redis-cli
+2.带ip和端口启动	redis-cli -h 0.0.0.0 -p 6379 -a password
+
+常用
+keys * 获取所有key
+
+一、String数据类型
+1. set key value [过期时间]      将字符串值关联到key，已关联则覆盖，无视类型，原本带有生存时间TTL则被清除
+2. get key     返回key关联的字符串值，不存在返回nil，如果存的不是字符串则返回错误
+3. mset key value key value         同时设置多个k-v键值对，如果key存在则覆盖value，如果不希望覆盖用msetnx当且仅当所有key都不存在时才会覆盖
+4. mget key key       返回多个值
+5. setex key [sec] value      设置key生存时间sec 秒，如果key已存在则覆盖旧值，设置关联与生存时间同一时间完成
+6. ttl key      获取该值的生存时间
+7. incr key         key存储的数字值+1，如果key不存在则key值被初始化为0再执行+1，如果值不能被表示为数字则返回错误
+8. decr key         key存储的数字值-1
+9. incrby key increment         将key存储的值加上增量并返回结果
+9. decrby key decrement         将key存储的值减去增量并返回结果
+
+二、Hash数据类型
+1. hset key field value     将哈希表Key中的域field的值设为value，key不存在时新创建一个hash表，如果filed已经存在，旧的值被覆盖
+2. hget key field       获取哈希表key中给定域field的值
+3. hdel key field       删除哈希表key中的一个或多个指定域，不存在的域将被忽略
+4. hexists key field        查看哈希表中指定域是否存在，存在为1，不存在为0
+5. hgetall key      返回hash表key中所有的域和值
+6. hincrby key field increment      为hash表key中指定的域加上增量incre
+7. hkeys key        返回hash表中的所有域
+8. hlen key         返回hash表key中域的数量
+9. hmget key field          返回hash表key中一个或多个给定的域，如果不存在则返回一个nil
+10. hmset key field value [field value]         同时将多个field-value对设置到hash表中，会覆盖hash表中已存在的域，key不存在空hash表会被创建并执行hmset
+11. hvals key           返回hash表中所有的域和值
+
+三、List数据类型
+1. lpush key value [value...]          将一个或多个值value插入到列表key的表头，有多个value时，按照从左到右的顺序依次插入表头，key不存在时会创建，如果key不是列表类型会返回错误
+2. lpushx key value             将value插入到列表的表头，如果key不存在时什么都不做
+3. lpop key             移除并返回列表的表头
+4. lrange key start stop            返回指定区间的元素，可以为负数，-1是列表最后一个元素，-2是倒数第二个元素，start大于列表下标最大值，返回空列表，stop大于下标最大值就会等于列表最大值
+5. lrem key count value         根据count的值，移除列表中与value相等的元素，count>0表示从头到尾搜索，移除与value相等的元素，数量为count，反之亦然，count=0时，移除所有
+6. lset key index value         将列表key下标为index的元素值设为value，index超出范围或为一个空列表时，返回错误。
+7. lindex key index         返回列表下标为index的元素
+8. linsert key before|after pivot value         将value插入列表key中，位于pivot之前或后，pivot不存在列表时不执行操作，key不存在时不执行操作
+9. llen key         返回列表的长度，key不存在时返回0
+10. ltrim key start stop            对列表进行修建，只返回指定区间内的元素，其余部分被移除
+11. rpop key            返回并移除列表尾部的元素
+12. rpoplpush source destination        在一个原子内执行两种操作，将source的最后一个元素弹出返回个客户端，并将弹出的元素插入到des的第一个位置
+13. rpushx key value            将value插入到列表的尾部，当且仅当key存在并是一个列表，key不存在什么都不做。
+
+四、Set数据类型
+1. sadd key member [member]         将一个或多个member元素加入到key中，已存在集合的member将被忽略，key不存在时将会创建并加入，如果不是集合类型将返回错误
+2. scard key            返回key对应集合中的元素数量
+3. sdiff key [key]           返回一个集合的全部成员，该集合是第一个key对应的集合和后面的key的差集
+4. sdiffstore des key [key]         与sdiff一样，只是将结果保存到des集合，如果已存在则覆盖
+5. sinter key [key]         返回一个集合的全部成员，该集合是所有给定集合的交集，不存在的key会被视为空集
+6. sinterstore des key [key]         与sinter类似，将结果保存到des集合，存在则覆盖，des可以是key本身
+7. sismember key member         判断member是否是key的成员，0不是，1是
+8. smembers key         返回key中的所有成员，不存在的key视为空集
+9. smove source destination member          原子的将member元素从sour移动到des，如果sour不包含则不执行操作，如果des包含，则source执行移除操作
+10. spop key [count]          移除并返回集合中的一个随机元素，如果count不指定则随机返回一个，count为正数切小于集合数量，返回一个count个元素的数组且其中的元素各不相同，
+    如果大于等于集合元素数量则返回整个集合，count为负数时返回一个数组，元素可能重复多次，数量为count的绝对值
+11. srandmember key count           如果key不指定，返回集合中的一个随机元素
+12. srem key member [member]            移除一个或多个元素，不存在的将被忽略
+13. sunion key [key]            返回一个集合的全部成员，该集合是所有给定集合的并集，不存在返回空集
+14. sunion des key [key]            结果保存到des，存在覆盖，des可以是key本身
+
+五、Zset数据类型
+1. zset score member [score member]         将一个或多个member元素及其score加入有序集key中，如果member存在则更新score并重新插入member保证位置正确，
+    score可以是正数也可以是双精度浮点数
+2. zcard key            返回有序集合key的元素个数
+3. zcount key min max           返回score位于min，max之间的成员数量
+4. zrange key start stop [withscores]       返回指定区间的成员，按score从小到大，具有相同score则按字典序排列，start，stop以0为底，可以为负数同上，
+    withscores可以同时返回成员，要从大到小用zrevrange
+5. zrank key member         返回有序集中member的排名，按score从小到大，zrevrank从大到小
+6. zrem key member [member]         移除有序集中一个或多个成员，不存在则被忽略，key不为有序集时返回错误
+7. zremrangebyrank key start top            移除有序集中指定排名区间的所有成员
+8. zremrangebyscore key start stop          移除有序集中score位于min，max之间的member
+
+六、key相关命令
+1. del key [key]        删除一个或多个key
+2. exists key           检查给定key是否存在
+3. expire key seconds          给key设定过期时间，单位为秒，已经存在则覆盖
+4. expireat key timestamp           同expire，单位为秒
+5. keys pattern         查找所有给定模式pattern的key，keys *  查找所有，keys h?llo  匹配h某字母llo，keys h*llo  匹配一或多个字母，keys h[ae]llo  匹配hallo，hello，特殊符号用\
+6. migrate host port key des-db timeout [copy] [replace]        原子性地将key从当前实例传送到目标实例指定的数据库上，原库key删除，阻塞进行迁移的两个实例，直到迁移成功、失败、等待
+7. move key db          将当前数据库的key移动到指定数据库中，执行成功的条件是当前数据库有key，给定数据库没有
+8. persist key          移除给定key的生存时间，将key变为持久的
+9. randomkey            从当前数据库随机返回但不删除一个key
+10. rename key newkey           将key改名为newkey，key和newkey相同或key不存在时报错，newkey已存在则覆盖
+11. ttl key             返回key的剩余生存时间，单位为秒
+12. pttl key            同上，单位为毫秒
+13. type key            返回key的类型
+
+七、Stream详解
+1. xadd key id field value [field value]        用于向stream添加消息，如果指定的stream不存在则创建一个，key是队列名称，id是消息id，用*表示redis自动生成，也可以自定义但要保证递增性
+2. xlen key         返回队列中消息的长度
+3. xrange key - +           返回队列中所有的消息，-表示最小值，+表示最大值，按id从小到排序，这个可以是具体的id，如 - id，id +
+4. xdel key id          删除队列中指定id的消息
+5. xread count 2 streams key [key] 0-0 [0-0]          同步的从一个或多个流中读取数据，只返回id大于调用者报告的最后接收到的id的条目。
+6. xread block 1000 streams key 0-0         阻塞的同一个流中获取消息，如果超时则返回nil，block 0 表示一直阻塞，直到有消息进来。$ 表示返回最后一条消息，下一次则变为最后一次的id
+7. xgroup create key consumer-group-name 0-0        创建一个与流关联的消费者组，0-0表示从头消费，$表示从最后一项开始消费，如果消费者组已存在则返回错误
+8. xgroup destory key consumer-group-name          完全销毁消费者组。
+9. xgroup createconsumer key consumer-group-name consumer-name          在指定消费者组中创建消费者。
+10. xgroup delconsumer key consumer-group-name consumer-name            移除指定消费者
+11. xgroup setid key consumer-group-name 0          设置要传递的下一条消息，如果希望消费组中的消费者重新处理所有消息，可以设为0
+12. xinfo stream key        获取strean信息
+13. xinfo stream key full       返回流的整个状态，包括条目、组、消费者
+14. xinfo groups key            只获得与流关联的所有消费者
+15. xinfo consumers key group           获得特定消费者组中每个消费者的列表
+16. xreadgroup group consumer-group-name groupconsumer [COUNT count] [BLOCK milliseconds] [NOACK] STREAMS key [key ...] ID [ID ...]         可以进行消费组的组内消费，
+    > 表示从当前消费组的最后一条消息开始读，每当消费一条消息 last_delivered_id 就会前进
+17. xack key groupconsumer id           将某条消息标记为已读
+18. xpending key group [start end count] [groupconsumer]            用来获取消费组或消费组内消费者未处理完毕的消息
+19. xclaim key group groupconsumer seconds [start end count]           将属于某消费者超过某时间的消息转移给其他消费者进行处理
+
+八、Redis分布式锁
+    学习链接    http://kaito-kidd.com/2021/06/08/is-redis-distributed-lock-really-safe/
+
+    1.定义
+        分布式锁是控制分布式系统或不同系统之间共同访问共享资源的一种锁实现，如果不同的系统或同一个系统的不同主机之间共享了某个资源时，往往需要互斥来防止彼此干扰保证一致性。
+    2.特征
+        互斥性。互斥是锁的基本特征，同一时刻只能被一个线程持有，执行临界区操作。
+        超时释放。通过超时释放可以避免死锁，防止不必要的线程等待和资源浪费。
+        可重入性。一个线程在持有锁的情况可以对其再次请求加锁，防止锁在线程执行完临界区操作之前释放。
+        高性能和高可用。加锁和释放锁的过程性能开销要尽可能的低，同时也要保证高可用，防止分布式锁意外失效。
+    3.基于Redis单机实现的分布式锁
+    （1）使用 SETNX 命令
+            只在key不存在的情况下，将key的设置为value，若key已经存在，则SETNX命令不执行操作。比如在秒杀活动中对某一商品加锁，key可以按照需要锁定的业务命名，
+        value可以为任意值，在资源使用完成后，使用DEL删除该key对锁进行释放。
+            但存在一个问题，如果获得锁的进程在业务逻辑处理过程中出现了异常，可能会导致DEL指令无法执行，锁无法释放，资源被永远锁住。所以在使用SETNX拿到锁之后，
+        需要给key设置一个过期时间，使得锁在到达一定时间后可以被自动释放。由于SETNX不支持设置过期时间，所以需要EXPIRE指令去设置过期时间。
+            这样仍然存在问题，SETNX和EXPIRE这两个操作不是原子性的，如果在执行SETNX和EXPIRE之间发生异常，SETNX成功，但EXPIRE没有执行，这把锁依然会永久锁定
+        资源，其他进程无法正常获取锁。
+    （2）使用 SET 扩展指令
+        set key NX EX 10 
+        NX表示当key对应的值不存在时才能set成功，保证只有第一个请求的客户端才能获得锁，而其他客户端在锁被释放之前都无法获得锁。
+        EX 10 表示这个锁10秒后会自动过期，可根据业务设置时间的大小。
+
+        但仍然不能解决分布式锁超时的问题：
+            锁被提前释放。假如线程A在加锁和释放锁之间的逻辑执行时间过长（或是线程A被阻塞），超过了锁的过期时间，导致线程A还没有执行完锁就被释放了，这时候线程B
+        可以获取锁，导致代码不能严格的串行执行。
+            锁被误删。假如以上A执行完后，并不知道此时B的锁持有者是B，线程A会继续执行DEL指令来删除锁，如果线程B的逻辑没有执行完，线程A实际上就释放了B的锁。
+
+        为避免以上情况，建议不要在执行时间过长的场景中使用Redis分布式锁，并在执行DEL释放锁之前对锁进行判断，验证当前锁的持有者是自己。具体实现就是加锁时，将
+        value设置唯一的值，释放前先判断是不是一致，然后再执行释放操作，确保不会错误释放其他线程持有的锁。但判断value和删除key是两个独立的操作，并不是原子性的，
+        所以需要使用Lua脚本进行处理，因为Lua脚本可以保证连续多个指令的原子性执行。
+    （3）使用 Redisson 的分布式锁
+    4.基于Redis多机实现的分布式锁 Redlock
+        获取锁的过程：
+            获取当前Unix时间，以毫秒为单位。
+            按顺序依次从5个实例使用相同的key和具有唯一性的value获取锁。当向Redis请求锁时，客户端应设置一个网络连接和响应超时时间,这个超时时间应该小于锁的失效
+        时间。可以避免服务器端Redis已经挂掉的情况下，客户端还一直等待响应结果。如果服务器端没有在规定时间内响应，客户端应该尽快尝试去另一个Redis实例请求锁。
+            客户端使用当前时间减去开始获取锁的时间就得到获取锁的时间。当且仅当从大多数（N/2+1）的Redis节点都获得锁，并且使用的时间小于锁失效的时间才算获取成功。
+            如果取到了锁，key的真正有效时间等于有效时间减去获取锁使用的时间。
+            如果因为某些原因，获取锁失败（没有在至少 N/2+1 个Redis实例取到锁或者取锁时间已经超过了有效时间），客户端应该在所有的Redis实例上进行解锁。

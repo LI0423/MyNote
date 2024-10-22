@@ -1,0 +1,646 @@
+1.java从源代码到运行的过程
+    Java的 .java 文件通过编译器编译为 .class 字节码文件，然后通过类加载器将 .class 文件加载到内存中，jvm进行解释并生成机器可执行的代码。
+
+2.基本数据类型的大小
+    char 类型是一个字节，short 类型是两个字节 ，int 类型是四个字节，long 类型是八个字节，float 类型是四个字节，double 类型是八个字节。
+
+3.重载与重写的区别
+    重载是在同一类中同一方法，不同参数列表的实现。重写是子类对继承父类方法的实现。
+
+4.String，StringBuilder，StringBuffer的不同
+    String在初始化之后是不可以改变的，如果重新对其赋值，就会生成一个新的String对象。StringBuilder和StringBuffer是可以改变的，但是StringBuilder
+    是非线程安全的，而StringBuffer的append方法是用Synchronized关键字来修饰的，所以是线程安全的。
+
+5.== 和 equals
+    == 比较的是对象地址，而equals比较的是对象内容。
+
+6.hashcode 和 equals
+    hashcode 是用来获取对象的散列值码的，用来确定对象在哈希表中的位置。在比较对象是否相等的时候，hashcode 相同的对象可能不同，在这种情况下就需要用equals
+    去比较两个对象的内容，如果equals相同的话，那么这两个对象就是相同的，否则就是不同的。所以在散列表的数据结构中用到某个类，并且会比较是否相等，必须要覆盖
+    equals方法和hashCode函数。
+
+7.程序，进程，线程
+    程序是含有指令和数据的文件，也就是静态代码。进程是程序的一次执行过程。而线程是进程的最小执行单元，一个进程可以有多个线程，并且线程间是资源共享的，而进程之间
+    是资源不共享的。
+
+8.final关键字
+    final如果用来修饰类的话，这个类是不可以被继承的。如果是用来修饰方法的话，这个方法就是不能被重写的，可以被重载。如果用来修饰变量，那么这个变量在初始化之后，
+    是不可以被修改的。
+
+9.try catch finally
+    try 是用来捕获异常的，catch 是用来处理try捕获的异常的，finally就是无论是否捕获到异常，里面的代码块都会被执行，如果在try块中有return，则finally里面的
+    代码块会提前到return之前运行。
+
+10.BIO NIO AIO
+    BIO 就是阻塞IO，每次执行io操作的时候都需要等线程执行完上一步操作。NIO 是非阻塞IO，可以同时执行多个IO操作，实现了IO多路复用中的Reactor模型，一个线程使用
+    一个selector来轮询多个channel上的事件，从而让一个线程可以处理多个事件。AIO 是异步IO，就是应用程序向操作系统注册IO监听事件，然后继续做自己的事，当操作
+    系统发生IO事件，并且准备好数据后，再主动通知应用程序，触发相应的函数
+
+11.ArrayList 和 LinkedList 的区别
+    ArrayList 底层是用数组来实现的，LinkedList 底层是用链表来实现的。ArrayList是有顺序的容器，因为是用数组实现的，所以在查找指定元素时更有优势，其时间复杂度
+    近似于O（1），而在添加和删除元素时的时间复杂度为O（n）。LinkedList因为是用链表来实现的，所以在添加和删除元素方面更具有优势，其时间复杂度为O（1），但在查找
+    的时候如果是顺序访问则会非常高效，如果是随机访问则需要遍历的，其时间复杂度为O（n）。
+
+12.ArrayList 的扩容机制
+    ArrayList是自动扩容，就是每次在添加元素的时候都会判断是否会超出当前数组的长度，如果超出了，就会进行扩容。扩容的时候就是把原来的数组copy到新的数组里，每次数组
+    的增大为原来的大小的1.5倍，这一过程是通过ensureCapacity（）方法来实现的。
+
+13.hashmap 和 hashset
+    hashmap实现了map接口，其存储的数据是k-v形式的，key可以是null，value也可以为null。hashmap中不能有重复的键，hashmap在java1.7以前是由数组加链表组成的，
+    在java1.8以后引入了红黑树，变成了数组加链表加红黑树，当链表的长度超过了8，就会转换为红黑树。hashmap有两种构造函数，一种无参的构造函数是为了创建一个数组初
+    始容量为16，负载因子为0.75的对象，另一种有参的构造函数是为了创建一个指定数组初始容量，负载因子空的hashmap。
+    hashset与hashmap基本上类似，但是hashset实现了set接口，也就是说在一个hashset中不能有重复的元素，hashset存放的是对象。
+
+14.hashmap的底层数据结构
+    hashmap的在java1.7以前是由数组加链表构成的，1.8以后是数组加链表加红黑树构成的。在链表长度超过8时，链表会转为红黑树。
+
+15.什么是红黑树
+    红黑树是一种近似平衡的二叉树，能够确保每一个节点的左右子树的高度差不会超过二者中较低的那一边。红黑树的规则是，每个节点要么是红色要么是黑色；根节点必须为黑色；
+    红色节点不能连续，也就是说红色节点的孩子和父亲都不为红色；对于每一个节点，从该节点到叶子节点的任何路径都含有相同个数的黑色节点。
+
+16.为什么hashmap底层用红黑树而不用二叉查找树
+    因为如果使用二叉查找树的话，在极端情况下，二叉查找树会变成线性结构，那就跟直接使用链表结构是一样的，而用红黑树的话，添加和删除元素的过程中，会进行旋转使得
+    结构一直保持为树状结构。
+
+17.ConcurrentHashMap 和 HashTable
+    ConcurrentHashMap和HashTable都是线程安全的，但是在并发的情况下HashTable的锁的粒度更大，是针对segment段的，而concurrenthashtable的锁的粒度更小，
+    是针对entry的，不会影响到其他segment的操作。
+
+18.HashSet 和 TreeSet 的区别
+    HashSet的底层实现是哈希表，存储的是键值对，而TreeSet底层是用红黑树来实现的，存放的是对象。hashSet中的元素是无序不可重复的，添加删除元素时间复杂度是O（1），
+    而TreeSet中的元素是有序不可重复的，添加删除元素的时间复杂度是O（logn）。
+
+19.JVM程序计数器为什么是私有的
+    jvm中的程序计数器是用来记录程序执行的位置的，当线程切换回来继续执行的时候可以找到上次执行代码的位置。程序计数器的生命周期随着线程的创建而创建，随着线程的结束而死亡。
+
+20.类的生命周期
+    加载，连接，初始化，使用，卸载。
+
+21.连接分为哪几个阶段
+    验证，准备，解析。
+    验证分为：文件格式验证，元数据验证，字节码验证，符号引用验证。文件格式验证就是验证文件是否符合class文件的格式规范，例如是否用0xCAFEBABY开头。元数据验证就是对
+    字节码描述的信息进行语义分析，以保证其符合java语法规范。字节码验证就是确定程序的语义是合法的符合逻辑的。符号引用验证就是确保解析的动作能正确执行。
+
+22.类加载机制
+    classloader加载class文件字节码，然后生成class对象。
+
+23.JVM内存模型
+    jvm内存模型包括程序计数器，堆，虚拟机栈，本地方法栈，metaspace。
+    堆中存放的是jvm生成的对象，栈中存放的是变量，本地方法栈中存放的就是jvm的native方法，metaspace存放的是类信息。
+    虚拟机栈中是一个一个的栈帧，每个栈帧中都包含局部变量表，操作数栈，动态链接，方法返回地址，附加信息。局部变量表是用来存储方法参数和定义在方法体内的局部变量，
+    包含基本数据类型对象引用和方法返回地址类型。操作数栈中存放的是方法计算过程中的结果，同时作为计算过程中变量临时存储的空间。动态连接是指向运行时常量池的方法引用。
+    方法返回地址存放方法正常退出或是异常退出的地址。
+    堆内存划分为新生代，老年代，还有元数据区（java1.7以前是永久代）。新生代又可以划分为eden区，survivor0区和survivor1区，其内存占比为8:1:1。每当对象创建的
+    时候都会优先存放在eden区，如果是大对象的话，就会存放在老年代中。
+
+24.新生代中的对象如何去到老年代中
+    在新生代中，新创建的对象经历一次gc过后会进入survivor0区，存活的对象计数器会+1，当又一次进行gc，存活的对象会进入survivor1区，再经历一次gc存活的对象会进入
+    survivor0区，接下来再进入survivor1区，依次反复，直到计数器超过了15，存活的对象才会进入老年代。
+
+25.什么样的对象会被垃圾回收，判断对象可以被回收的算法
+    没有被其他对象引用的对象会被回收。
+    引用计数法，每当对象被引用一次，计数器就加1，引用结束就减1，任何计数器为0的对象都可以被当作是可以回收的对象。
+    可达性分析法，从gcroot开始往下找，如果gcroot可以到达该对象，则该对象不能被回收，到达不了的对象就可以被回收。
+
+26.可以作为gcroot对象的有什么
+    引用栈帧中的本地变量表的所有对象；引用方法区静态属性的所有对象；引用方法区常量的所有对象；引用native方法的所有对象。
+
+27.垃圾回收算法
+    标记清除算法：从根集合进行进行扫描，对存活的对象进行标记，清除未标记的对象。会引起内存碎片化的问题。
+    复制算法：将内存分为两部分，一部分存储对象，另一部分为空，将存活的对象复制到空的内存中，清除另一部分未存活的对象。不会引起内存碎片化的问题。
+    标记整理算法：从根集合进行扫描，标记存活的对象，让存活的对象按照内存地址依次顺序排列，然后清除掉存活对象末端以后的对象。不需要一块空闲的内存。
+    分代收集算法：根据对象存活周期进行分区，不同的分区采用不同的算法。年轻代，复制算法；老年代，标记清除算法，标记整理算法。
+
+28.垃圾收集器
+    年轻代：serial收集器，parNew收集器，parallel scavenge收集器，G1收集器。
+    老年代：serial old收集器，parallel Old收集器，CMS收集器，G1收集器。
+    serial收集器使用的是复制算法，单线程收集，进行垃圾回收时必须暂停所有的工作线程。在client模式下默认为年轻代的收集器。
+    parNew收集器使用的是复制算法，多线程收集，与serial收集器的行为特点一样。在server模式下是年轻代收集器的首选，因为除了serial外，只有它能与CMS收集器配合。
+    parallel scavenge收集器使用的是复制算法，多线程收集，比起关注线程的停顿时间，更关注吞吐量（吞吐量=用户线程时间/(用户线程时间+GC时间)）。适合后台运算，不需要太多交互的任务。
+    serial old收集器使用的是标记整理算法，单线程收集，与serial收集器一样。在client模式下默认为老年代的收集器。
+    parallel old收集器，使用的是标记整理算法，多线程收集，吞吐量优先。
+    CMS收集器，使用的是标记清除算法。
+        运行步骤：初始标记，暂停所有的工作线程，标记与GCroot直接相连的对象，会STW；
+            并发标记，开启所有的用户线程，标记GCroot可达的对象；
+            重新标记，暂停虚拟机，标记在并发标记过程中引用变动的对象；
+            并发清除，开启所有的用户线程，并清除所有未标记的对象。
+    G1收集器，既可用于年轻代，也可用于老年代。G1收集器将堆内存划分为多个大小相等的区域，使得每个区域可以进行独立的垃圾回收。
+        运行步骤：初始标记；
+            并发标记；
+            最终标记，修正在并发标记期间程序继续运行而导致标记变动的记录，需要线程停顿，但可以并行进行。
+            筛选回收，对各个region回收的价值和成本进行排序，然后回收掉价值最大的region。
+
+29.垃圾回收策略
+    minorGC：发生在年轻代上，年轻代上的对象存活时间很短，因此会频繁执行，效率很高。
+    fullGC：发生在老年代上，老年代上的对象存活时间很长，很少会执行。
+
+30.fullGC的触发条件
+    老年代空间不足；java1.7以前永久代空间不足；CMSGC时出现Concurrent Mode Failure；MinorGC晋升到老年代的平均大小大于老年代的剩余空间；调用System.gc();
+
+31.java中的强引用，软引用，弱引用，虚引用。
+    强引用：使用new来创建对象，被强引用的对象不会被回收。
+    软引用：使用SoftReference类来实现，被软引用关联的对象在内存不够的情况下才会被回收。
+    弱引用：使用WeakReference类来实现，一定会被回收，只能存活到下一次垃圾回收之前。
+    虚引用：使用PhantomReference类来实现。
+
+32.Redis数据类型
+    String，List，Hash，Set，ZSet
+
+33.Redis的底层数据结构
+    简单动态字符串（SDS），它的结构有sdshdr，len，free，buf。sdshdr是头部；len是sds的长度；free存放的是buf区域尚未被占用的内存空间；buf数组存放的是sds的内容。
+    压缩表（zipList），它的结构包含zibyte，zltail，zllen，entry，zlend。zibyte保存的是整个压缩链表占用的内存字节数；zltail记录的是压缩链表的尾结点距离起始
+    节点有多少字节；entry保存的是压缩链表的内容，可以是一个字节数组，也可以是一个整数值；zlend记录了压缩链表的节点数量。
+    快表（QuickList），是一种以压缩表为结点的双端链表结构，宏观上是一个链表，微观上的结点是压缩表。head, tail分别指向头尾指针. len代表链表中的结点. count指的是
+    整个quicklist中的所有ziplist中的entry的数目. fill字段影响着每个链表结点中ziplist的最大占用空间, compress影响着是否要对每个ziplist以LZ4算法进行进一步压缩
+    以更节省内存空间。
+    字典（hashdict），它的结构包括table，size，sizemask，used。table存放的是字典内容；size记录的是哈希表的大小；sizemask记录的哈希表大小的掩码，用来计算索引；
+    used表示该哈希表已有节点的数量。
+    跳表（ZSkipList），结构包含header，tail，level，length。
+    整数集（IntSet），结构包含encoding，length，contents[]。encoding表示编码方式INTSET_ENC_INT16，INTSET_ENC_INT32，INTSET_ENC_INT64；length记录的是
+    存储的整数的个数；contents[]就是一个数组，数组中的元素按从小到大依次排列，并且数组中还不包含重复项。
+
+34.redis字符串与c字符串的区别
+    常数复杂度获取字符串长度。
+        redis字符串因为其结构中存储了字符串的长度，所以取长度的时间复杂度为O（1），而c没有存储该内容，所以需要遍历获取，时间复杂度是O（n）；
+    杜绝缓冲区溢出。
+        sds数据类型在进行字符串的修改时，会首先根据记录的len检查内存空间是否充足，如果空间不足会进行扩容，而c字符串使用的是strcat来进行字符串的拼接，
+        一旦内存空间不足就会发生溢出。
+    减少修改字符串的内存重新分配次数。
+        sds数据类型因为len和free属性的存在，sds实现了空间预分配和惰性释放空间，在修改字符串的时候不会频繁的进行内存重新分配，而c字符串因为不记录字符串的长度，所以在
+        修改字符串的时候必须进行空间的重新分配。
+    二进制安全。
+        sds的api都是以二进制的方式来处理buf里面的元素，并且sds不是以空字符来判断字符串是否结束的，而c字符串是以空字符作为字符串的结尾标志。
+    兼容部分c的字符串函数。
+
+35.为什么压缩表省内存
+    压缩表不是对数据通过特定的算法进行的压缩，而是数据按照一定的编码规则在一块连续的内存区域，也就是通过encoding字段，细化存储大小。
+
+36.redis字典是如何解决hash冲突的
+    采用的是链地址法，就是字典里面的 *next 指针指向下一个具有相同索引值的哈希表节点。
+
+37.redis字典的扩容和收缩
+    当字典中的键过多的时候，字典就会进行rehash，然后将键放入到新的索引位置，每次扩容的时候就会进行一次rehash，扩大的内存为原来hash表已使用的空间的一倍，收缩也是收缩一倍。
+    等所有的键迁移完成，原来hash表的空间就会被释放。
+
+38.redis触发扩容的条件
+    服务器目前没有执行bgsave命令或者bgrewriteaof命令，且负载因子大于等于1。
+    服务器目前正在执行bgsave命令或者bgrewriteaof命令，且负载因子大于等于5。
+    负载因子=目前hash表已保存节点数量/哈希表大小
+
+39.什么是渐进式rehash
+    也就是说扩容和收缩操作不是一次性、集中性去完成的，而是分多次渐进式完成的。如果redis中保存的键值对只有几个或几十个就可以一次性的去完成，如果有几百万、几千万那么一次性hash的
+    话就会导致redis一段时间内不能进行其他操作了，所以采用的是渐进式hash，在rehash的过程中，redis删除查找和更新键值对就会在两个hash表中进行，如果第一个表中没有，那就会去另一张表
+    中寻找，但增加操作一定会是在新hash表中。
+
+40.skiplist和平衡树，哈希表的比较。
+    skiplist和各种平衡树中的元素是有序排列的，哈希表不是有序的，所以在哈希表中不能进行范围查找，只能做单个key的查找。
+    做范围查找的时候，平衡树会比skiplist更麻烦一点，需要进行中序遍历寻找不超过大值的节点。而skiplist上的范围查找就很简单，只需要在找到小值之后，对第一层链表进行若干步的操作即可。
+    平衡树的插入和删除操作可能会引起子树的调整，逻辑复杂，而skiplist的插入和删除操作只需要修改相邻节点的指针。
+    查找单个key，skiplist和平衡树的时间复杂度都为O（logn），而hash表在保持较低的哈希值冲突的情况下，时间复杂度为O（1）。
+
+41.redis持久化的方式
+    rdb和aof
+
+42.rdb的原理
+    redis的主进程fork一个子进程来进行持久化操作，就是将数据定时写入到一个临时文件中，待持久化进程结束了，这个临时文件就会替换上一次持久化的临时文件。整个进程中是不进行io操作的，
+    这就保证了redis的高性能。redis默认的持久化方式就是rdb。
+
+43.rdb的触发机制
+    手动触发和自动触发。手动触发就是执行save命令或bgsave命令。自动触发就是在redis.conf中配置多少秒内数据有n次修改就自动触发bssave命令进行rdb操作；主从复制时，从节点需要从主节
+    点全量的复制数据，就会触发bgsave操作，生成的快照发送到从节点中；默认情况下执行shutdown操作，如果没有配置aof就会触发rdb。
+
+44.aof的原理
+    aof就是append only file，就是以日志的形式记录每个写操作，将redis所有指令记录下来，只许追加文件，不许改写文件，当redis重启的时候会读取该文件重新构建数据。aof保存的文件
+    是appendonly.aof。redis默认是不开启aof的，需要进行手动配置。
+
+45.如何实现aof
+    当aof功能打开了，服务器在执行一个写操作后，会以协议格式将被执行的写命令追加到服务器的aof_buf缓冲区。
+
+46.redis的回写策略
+    always：同步写回，每个写命令执行完，立马将日志同步写回磁盘。
+    every_sec：每秒写回，每个写命令执行完，只是将日志写入到aof文件的内存缓冲区，每隔一秒将缓冲区中的内容写入磁盘。
+    no：操作系统控制的写回，每个写命令执行完，只是将日志写入到aof文件的内存缓冲区，由操作系统决定什么时候写入磁盘。
+
+47.aof重写是否会阻塞
+    aof是由bgrewriteaof后台进程来实现的。主线程fork子线程之后，fork会把主线程的内存copy一份给子线程，这里面就包含了最新的数据，子线程在不影响主线程的情况下会把拷贝的数据写成操作，
+    然后写入aof文件中。只有在fork的过程中是会阻塞主线程的。
+
+48.aof重写日志时，有新的数据写入怎么办
+    “一个拷贝，两处日志”。在fork子进程以及重写日志的过程中，如果有新的数据写入，redis就会将命令记入两个aof缓冲区中，如果配置的回写策略是always，那么就会直接追加到原来的aof文件中，
+    即主线程使用的日志文件中，并且保存一份进入新的aof文件缓冲区，当子线程执行完日志文件的重写操作后，会提示主线程已经完成操作，主线程会将重写缓冲中的新命令追加到日志文件中。
+
+49.主线程fork出子线程是如何复制内存数据的
+    子进程会拷贝父进程的页表，即虚实映射关系（虚拟内存和物理内存的索引关系表），而不会拷贝物理内存。这个拷贝会消耗大量cpu资源，且会阻塞主进程，拷贝完成后父子线程会公用相同的内存地址空间。
+
+50.redis缓存淘汰策略
+    不淘汰：noeviction
+    对设置了过期时间的数据中进行淘汰：volatile-random，volatile-ttl，volatile-lru，volatile-lfu
+    全部数据进行淘汰：allkeys-random，allkeys-lru，random-lfu
+
+51.缓存淘汰策略详细
+    noeviction，因为设置了不淘汰，当redis内存满了，有新的请求进来时redis不再提供服务并返回错误。
+    volatile-random，随机删除，不能筛选出不再访问的数据。
+    volatile-ttl，根据过期时间排序，越早过期的数据，越早被删除。
+    volatile-lru，redis会记录每个数据最近被访问的时间戳，把lru最小的字段从缓存中删除出去。
+    volatile-lfu，为每个数据增加了一个计数器，来统计这个数据的访问次数。当使用 LFU 策略筛选淘汰数据时，首先会根据数据的访问次数进行筛选，把访问次数最低的数据淘汰出缓存。
+    如果两个数据的访问次数相同，LFU 策略再比较这两个数据的访问时效性，把距离上一次访问时间更久的数据淘汰出缓存。
+
+52.MySql的引擎
+    MyISAM 和 InnoDB。InnoDB是MySql的默认引擎。
+
+53.MyISAM 和 InnoDB 的区别
+    事务：MyISAM是不支持事务的，而InnoDB支持事务。
+    并发：MyISAM支持表级锁，InnoDB支持表级锁和行级锁。
+    外键：MyISAM不支持外键，InnoDB支持外键。
+    备份：InnoDB支持在线热备份。
+
+54.数据库事务的特性（ACID）
+    原子性，事务被视为是不可分割的最小单元，要么全部成功，要么全部失败。
+    一致性，数据在事务执行前后都保持一致性状态。
+    隔离性，一个事务所做的修改在提交前对其他事务是不可见的。
+    持久性，一旦事务提交，事务对数据所做的操作将会保存到数据库中，不会因为系统中断而丢失。
+
+55.并发访问引起的问题
+    更新丢失，脏读，不可重复读，幻读。
+    脏读：一个事务正在访问数据，并且对数据进行了修改，而这种修改还没有提交到数据库中，另一个事务也访问这个数据，然后使用了这个数据。
+    不可重复读：在一个事务内，多次读同一数据，在这个事务还没有结束时，另一个事务也访问该数据，那么在第一个事务中的两次读数据之间，由于第二个事务的修改，第一个事务两次
+        读到的数据可能是不一样的。不可重复读的重点是修改。
+    幻读：第一个事务对全表数据进行修改，第二个事务向表中插入一行新数据。幻读的重点是新增或删除。
+
+56.事务隔离级别
+    未提交读，可以避免更新丢失，但其他问题不可以避免。
+    已提交读，可以避免更新丢失和脏读，其他问题不可以避免。
+    可重复读，可以避免更新丢失，脏读，不可重复读，但不能避免幻读。
+    串行化，可以避免所有问题。
+
+57.聚簇索引和非聚簇索引的区别
+    聚簇索引就是按照每张表的主键构造一棵B+树，每个叶子结点存放了整张表的行记录数据，每张表只能拥有一个聚簇索引。
+    在聚簇索引之上创建的索引称为非聚簇索引，叶子节点存放的不再是行的位置而是主键值，通过主键值找到数据行的数据页，再通过数据页的page directory找到数据行。
+
+58.什么是回表
+    第一次搜索 B+Tree 拿到主键值后再去搜索主键索引的 B+Tree，这个过程就是所谓的回表。
+
+59.数据库锁机制
+    按锁的粒度分类：行锁，表级锁，页级锁
+    按锁的级别分类：共享锁，排它锁
+    按锁的使用方式分类：悲观锁，乐观锁
+    按加锁方式分类：自动锁，显示锁
+    按操作分类：DML锁，DDL锁
+
+60.并发三要素
+    可见性：CPU缓存引起的，一个线程对共享变量的修改另一个线程能立即看到。
+    原子性：分时复用引起的，即一个操作或多个操作要么全部执行并且执行的过程中不会被打断，要么全部不执行。
+    有序性：重排序引起的，程序执行的顺序按照代码的先后顺序执行。
+
+61.重排序的三种类型
+    编译器优化的重排序。编译器在不改变单线程程序的情况下，可以重新安排语句的执行顺序。
+    指令级并行的重排序。
+    内存系统的重排序。由于处理器使用了缓存和读/写缓冲区，这使得加载和存储操作看上去是在乱序执行。
+
+62.线程的状态
+    新建，创建后尚未启动的线程的状态
+    可运行，可能正在运行，也可能在等待CPU时间片。包含running和ready
+    无限期等待，不会被分配CPU执行时间，需要显式被唤醒。没有设置timeout参数的Objec.wait()方法和Thread.sleep()方法，LockSuppor.park()方法。
+    有限期等待，不需要显式地被其他线程唤醒。Thread.sleep()方法，设置了timeout参数的Object.wait()方法和Thread.join()方法，LockSuppor.parkNanos()方法和parkUtil()方法。
+    阻塞，等待获取一个排他锁。
+    死亡，线程任务完成后结束或是异常结束。
+
+63.线程的使用方式
+    实现Runnable接口。实现run()方法，通过Thread调用start()方法启动线程。无返回值。
+    实现Callable接口。有返回值，返回值通过FutureTask进行封装。
+    继承Thread类。同样也是需要实现run方法，因为实现了Runnable接口。调用Thread的start()方法后虚拟机会把线程放入就绪队列等待被调用。
+
+64.实现接口和继承类的区别
+    实现接口会比较好一点，因为java不支持多继承，但支持实现多个接口。
+
+65.Executor种类
+    CachedThreadPool，一个任务只创建一个线程。
+    FixedThreadPool，所有任务只能使用固定大小的线程。
+    SingleThreadExecutor，相当于大小为1的FixedThreadPool。
+
+66.Synchronized的使用
+    对象锁：代码块形式，手动指定锁对象，可以是this，也可以是自定义的锁。方法锁形式，synchronized修饰普通方法，锁对象默认是this。
+    类锁：synchronized修饰静态方法。synchronized指定锁对象为class对象。
+
+67.synchronzied的实现原理
+    synchronized的实现是要获取monitor锁，monitorenter指向同步代码块的起始地址，monitorexit指向同步代码块的结束地址。每当执行monitorenter指令的时候，
+    就是请求获取monitor的所有权，当monitor的计数器为0的时候，代表这个线程可以获取monitor锁，获取之后就将计数器加1；如果monitor计数器不为0，那么就需要等待
+    等上一个线程释放锁也就是执行monitorexit指令，计数器变为0。如果修饰的是一个方法，就没有monitorenter和monitorexit，取而代之的是ACC_SYNCHRONIZED标志，
+    表示该方法是一个同步方法。这两者之间本质上都是为了获取monitor锁的所有权。
+
+68.JVM中锁的优化
+    锁粗化：减少不必要的紧连在一起的unlock，lock操作，将连续的锁扩大为一个范围更大的锁。
+    锁消除：虚拟机即时编译器在运行时，对一些代码上要求同步，但检测到不存在共享数据竞争的锁就会将其消除。
+    轻量级锁：在java对象头中，有个字段叫mark word，在程序执行同步块之前，jvm会在当前线程的栈帧中创建一个名为lock record的空间，用于存储当前对象mark word的拷贝。
+    如果当前对象没有锁定，那么锁标志位为01，当jvm在执行同步块之前，会首先在栈帧中创建lock record，然后虚拟机使用cas操作将mark word拷贝过来，并且将mark word更新
+    为指向lock record的指针，如果更新成功，那么该线程就用了该对象的锁，并且对象头中mark word更新为00，表示对象处于轻量锁定状态。如果更新失败，jvm会检查该mark word
+    是否有指向当前线程的指针，如果有就直接调用，如果没有说明被占用，当有两条以上线程竞争轻量级锁，轻量级锁就会膨胀为重量级锁。
+    偏向锁：当线程快速访问并获取锁的时候，会在对象头和栈帧里存储偏向的线程ID，以后该线程在进入和退出同步块的时候不需要使用CAS来进行加锁和解锁，只需要试一下对象头mark word
+    里是否存储当前线程的id。
+    自旋锁：当一个线程过来获取锁的时候，如果没有获取到，那么就让这个线程进行一个忙等，也就是循环，等待持有锁的线程释放锁，该线程去获取。默认的自旋次数为10次。
+    自适应自旋锁：也就是自旋次数不固定，由线程自己来决定。判断前一次锁的拥有者，自旋等待刚刚获取过锁，那么就会增加自旋的次数，去等待所有者释放锁，如果自旋很少获取锁，那么就
+    会省略掉自旋，以免浪费资源。
+
+69.volatile是如何实现可见性的
+    volatile是作用于内存的，每个处理器通过嗅探在总线上传播的数据检查自己缓存中的数据是不是过期了，当处理器发现自己缓存行对应的内存地址被修改，就会将当前处理器的缓存行设置为
+    无效状态，当处理器读到这个缓存行的时候，发现过期了就会从内存中重新读取。
+
+70.什么是CAS
+    CAS就是Compare And Swap比较交换，是一条CPU原子指令，让CPU先进行两个值的比较，看其是否相等，如果相等就原子地更新某个位置的值。
+
+71.AQS的核心思想
+    如果当前的资源空闲，则将请求的线程设置为有效的工作线程，并且将共享资源置为锁定状态，如果当前的资源不空闲，则将请求的线程放入队列中。这个队列是CLH队列，是一个虚拟的双向队列，
+    将每个请求封装为一个节点，等待资源分配。
+
+72.AQS的资源共享方式
+    独占：只有一个线程能执行，如reentrantlock。又可分为公平锁和非公平锁，公平锁就是按照队列中的顺序依次获取资源，非公平锁就是无视队列顺序，谁抢到是谁的。
+    共享：多个线程可同时执行，如CountDownLatCh、 CyclicBarrier、ReadWriteLock。
+
+73.线程池重要参数
+    corePoolSize：线程池中的核心任务数，当提交一个任务，线程池就会创建一个任务，直到线程池中的线程数量达到corePoolSize，即使线程池中有空闲线程也会去创建新的线程。
+    workQueue：用来保存等待被执行的任务的阻塞队列。
+        ArrayBlockingQueue：基于数组结构的有界阻塞队列，按FIFO排序任务。
+        LinkedBlockingQueue：基于链表结构的阻塞队列，按FIFO排序任务，吞吐量要高于ArrayBlockingQueue。
+        SynchronousQueue：一个不存储元素的阻塞队列，每个插入操作必须等到另一个线程移除，否则一直处于阻塞状态，吞吐量要高于LinkedBlockingQueue。
+        PriorityBlockingQueue：具有优先级别的无界阻塞队列。
+            LinkedBlockingQueue比ArrayBlockingQueue在插入方面性能更优，但是两者在put()和take()操作时都需要加锁，SynchronousQueue根据任务的状态判断执行，不需要加锁。
+    maximumPoolSize：线程中允许的最大线程数，当阻塞队列满了，且有任务继续提交时就会继续创建线程，前提是线程池中的线程数小于maximumPoolSize。如果是无限阻塞队列maximumPoolSize
+        就会失效，提交的任务会不断的被放入队列中。
+    keepAliveTime：线程空闲时的存活时间，默认情况下，这个参数在线程数大于corePoolSize的情况下才会生效，超过这个时间的空闲线程将会被终止。
+    unit：keepAliveTime的单位。
+    threadFactory：自定义的线程仓库，可以给生成的线程设置一个具有识别度的线程名，默认为DefaultThreadFactory。
+    Handler：线程池的饱和策略，当阻塞队列满了且没有空闲线程，必须采用一种饱和策略处理该任务。
+        Abortpolicy：直接抛出异常，默认策略。
+        CallerRunspolicy：用线程调用者来执行这个任务。
+        DiscardOldestPolicy：丢弃阻塞队列中最靠前的任务，并执行当前任务。
+        DiscardPolicy：直接丢弃任务。
+
+74.线程池的三种类型
+    newFixedThreadPool：线程池中的线程数量达到corePoolSize，即使当前没有可执行任务，也不会释放空闲线程。由于使用的无界阻塞队列LinkedBlockingQueue，线程池里的数量不超过
+        corePoolSize时，MaximumPoolSize和KeepAliveTime就会是个无用参数。由于是无界队列，那么饱和策略就会失效。
+    newSingleThreadPool：初始化的线程池中只有一个线程，由于使用的是无界队列，则饱和策略就会失效。如果该线程因为异常失效，那么就会重新创建一个线程，单个线程保证了提交的任务顺序执行。
+    newCachedThreadPool：内部使用SynchronousQueue作为阻塞队列，与newFixedThreadPool不同的是，当线程空闲时间超过keepAliveTime时会释放空闲的线程，提交任务没有空闲线程时则会
+        自动创建，会给程序带来一定的开销。
+        执行过程：主线程调用SynchronousQueue的offer()方法放入task，如果当前线程池中有空闲的线程则调用SynchronousQueue的poll()方法读取该task，否则就创建新的线程，执行完任务
+        的线程如果空闲时间超过60s则会被释放，因此长时间空闲的CachedThreadPool不会持有任何线程资源。
+
+75.如何关闭线程池
+    遍历线程池中的所有线程，然后逐个调用线程的interrupt()方法。
+    shutdown：将线程池中的线程状态设置为SHUTDOWN，然后关闭所有没有在执行任务的线程。
+    shutdownnow：将线程的状态设置为STOP，然后停止所有正在执行或者暂停执行任务的线程，只要调用这两个关闭方法中的任意一个, isShutDown() 返回true. 当所有任务都成功关闭了, 
+    isTerminated()返回true。
+
+76.任务的执行
+    线程池的工作线程通过Worker类来实现，在ReentrantLock的锁的保证下，将worker实例加入hashset，并启动Worker中的线程。线程工厂在创建线程thread时，将Woker实例本身this作为参数传入，
+    当执行start方法启动线程thread时，本质是执行了Worker的runWorker方法。firstTask执行完成之后，通过getTask方法从阻塞队列中获取等待的任务，如果队列中没有任务，getTask方法会被阻塞
+    并挂起，不会占用cpu资源。
+
+77.线程池任务的提交
+    submit任务，等待线程池execute；执行FutureTask类的get方法时，会把主线程封装成WaitNode节点并保存在waiters链表中，并阻塞等待运行结果；FutureTask任务执行完成后，通过UNSAFE设置
+    相应的waitNode为NULL，并通过LockSupport类unpark方法唤醒主线程。
+
+78.为什么线程池不允许使用Executors去创建？
+    规避资源耗尽的风险。
+        newFixedThreadPool和newSingleThreadExecutor：主要问题是堆积的请求队列可能会耗费非常大的内存，甚至OOM。
+        newCachedThreadPool和newScheduledThreadPool：主要问题是线程数最大数是Integer.MAX_VALUE，可能会创建数量非常多的线程，甚至OOM。
+
+79.什么是CountDownLatch 
+    将一个程序分为n个互相独立的可解决任务，并创建值为n的CountDownLatch。当每一个任务完成时，都会在这个锁存器上调用countDown，等待问题被解决的任务调用这个锁存器的await，将它们自己拦住，
+    直至锁存器计数结束。
+
+80.AQS的数据结构
+    AQS底层使用CLH队列，CLH是一个虚拟的双向队列（就是不存在队列实例，仅存在结点之间的关联关系）。AQS是将每条请求共享资源的线程封装成一个CLH锁队列的一个结点来实现锁分配的。其中，
+    sync queue，即同步队列，是双向链表，包括head结点和tail结点，head主要用来做后续的调度。而Condition queue不是必须的，是一个单向链表，只有当使用condition时，才会存在此
+    单向链表。并且可能有多个condition queue。
+
+81.@Autowired和@Resource、@Inject的区别
+    @Autowired是spring自带的注解，通过AutowiredAnnotationBeanPostProcessor类实现的依赖注入，可以作用在构造函数，方法，方法参数，字段、枚举的常量，注解上，是根据类型
+    进行自动装配的，如果有多个bean的候选者，需要指定按照名称进行装配，则需要配合@Qualifier。
+    @Resource在javax.annotation包下，可以作用在接口、类、枚举、注解，字段、枚举的常量，方法上，是默认根据属性名称来进行自动装配的，如果有多个类型一样的Bean候选者，则可以
+    通过name进行指定进行注入。
+    @Inject是JSR330规范实现的，用法与@Autowired基本一样，不同的是@Inject没有一个request属性，也是根据类型来进行自动装配的，如果需要根据名称装配，则需要配合@Named。
+
+82.spring单例模式下的三级缓存
+    第一层缓存（singletonObjects）：单例对象缓存池，已经实例化并且属性赋值，这里的对象是成熟对象。
+    第二层缓存（earlySingletonObjects）：单例对象缓存池，已经实例化且属性赋值，这里的对象是半成品对象。
+    第三层缓存（singletonFactories）：单例工厂的缓存。
+
+83.OSI七层协议、TCP/IP四层模型、五层模型
+    七层：物理层、数据链路层、网络层、传输层、会话层、表示层、应用层。
+    四层：网络接口层、网际层、运输层、应用层。
+    五层：物理层、数据链路层、网络层、运输层、应用层。
+
+84.TCP协议为什么建链接要3次握手，断链接需要4次挥手？
+    对于建立连接的3次握手，主要是初始化Sequence Number的初始值。通信的双方要互相通知对方自己的初始化的Sequence Number，这个号要作为以后的数据通信的序号，以保证应用层接收到的
+    数据不会因为网络上的传输的问题而乱序。
+    对于4次挥手，因为TCP是全双工，所以发送方和接收方都需要Fin和Ack。
+
+85.TCP头格式
+    重要属性：Sequence Number是包的序号，用来解决网络包乱序问题。Acknowledgement Number就是ACK，用来解决不丢包的问题。Window又叫Advertised-Window，也就是著名的滑动窗口，
+    用于解决流控。TCP Flag，也就是包的类型，主要是用于操控TCP的状态机。
+
+85.TCP建连接时SYN超时
+    连接会处于一个中间状态，既没成功也没失败。server端如果在一定时间内没有收到TCP的响应TCP会重发SYN-ACK。在Linux下，默认重试次数为5次，重试的间隔时间从1s开始每次都翻倍，5次的重试
+    时间间隔为1s,2s,4s,8s,16s，总共31s。第五次发出后还需要等32s才知道超时了，因此断开连接需要31+32s，也就是63s。
+
+86.SYN Flood攻击
+    给服务器发送一个连接请求然后就下线了，于是服务器需要等待63s才能断开，攻击者就可以把服务器的syn队列耗尽，让正常的请求无法连接。Linux下给了一个叫tcp_syncookies的参数来应对。
+    当tcp的syn队列满了以后，tcp会通过源地址端口，目标地址端口和时间戳来打造一个特殊的Sequence Number返回去，如果是攻击者就不会有反应，如果是正常的连接就会把这个Syn cookie给
+    返回来，然后服务端可以根据syn cookie建立连接。正常的请求可以调整tcp_synack_retries来减少重试次数，调整tcp_max_syn_backlog增大连接数，调整tcp_abort_on_overflow处理
+    不过来就直接拒绝。
+
+87.TCP快速重传机制
+    不以时间驱动，而是以数据驱动。如果包没有连续到达，就ack最后那个可能被丢了的包，如果发送方连续收到3次相同的ack就重传，不需要再等timeout了再重传。
+
+88.SACK方法 
+    在TCP头里加一个SACK的东西，发送端根据回传的SACk判断哪些包到了哪些包没到。发送方也不能完全依赖SACK，还是要依赖ACK，并维护Time-Out，如果后续的ACK没有增长，那么还是要把SACK
+    的东西重传，另外，接收端这边永远不能把SACK的包标记为Ack。
+
+89.UDP特点
+    UDP无连接，时间上不存在连接需要的延迟，空间上TCP需要在端系统中维护连接状态。
+    分组首部开销小，TCP首部20字节，UDP首部8字节。
+    UDP没有拥塞控制，应用层能够更好的控制要发送的数据和发送时间，网络中的拥塞控制也不会影响主机的发送速率。
+    UDP提供最大努力交付，不保证可靠交付。
+    UDP面向报文，对应用层交下来的报文，添加首部后直接向下交付给IP层，既不合并也不拆分。
+    UDP常用一次性传输比较少量数据的网络应用。
+    UDP支持一对一、一对多、多对一和多对多的交互通信。
+
+90.cookie是什么
+    cookie是服务器发送到用户浏览器并保存在本地的一小块数据，会在浏览器之后向同一服务器再次发起请求时被带上，用于告知服务器两个请求是否来自同一浏览器。
+
+91.session维护用户登陆状态的过程itit
+    用户进行登录时，将提交包含用户名和密码的表单放入HTTP请求报文中，服务器端验证该用户名和密码，如果正确则把用户信息存储到redis中，在redis中的key称为session ID，
+    服务器返回的响应报文的Set-Cookie首部字段包含了这个SessionID，客户端收到响应后会将该Cookie值存入浏览器中，客户端之后对同一个服务器进行请求时会包含该Cookie值，
+    服务器收到之后提出SeesionID，从Redis中取出用户信息，继续之前的业务操作。
+
+92.长连接短连接
+    当浏览器访问一个包含多张图片的HTML页面，除了请求页面资源还需要请求图片资源，如果每次进行一次HTTP通信就要新建一个TCP连接，开销就会很大。
+    HTTP/1.1之前默认是短连接，如果需要开启长连接则使用Connection：Keep-Alive，HTTP/1.1开始默认是长连接，如果要断开连接需要由客户端提出断开，使用Connection：close；
+
+93.HTTPS
+    HTTPS是让HTTP先和SSL（Secure Sockets Layer）通信，再由SSL和TCP通信，也就是说HTTPS使用了隧道进行通信。通过使用SSL，HTTPS具有了加密（防窃听）、认证（防伪装）和完整性保护。
+
+94.GET和POST比较
+    GET用于获取资源，POST用于传输实体主体。
+    GET和POST的请求都能使用额外的参数，GET的参数是以查询字符串出现在URL中，而POST的参数存储在实体主体中。
+    GET方法是安全的，而POST不是，因为POST的目的是传送实体主体内容，这个内容可能是用户上传的表单数据，上传成功后服务器可能把这个数据存储到数据库中，因此状态也就发生了改变。
+        安全的HTTP方法不会改变服务器的状态，也就是说只是可读的。
+    幂等的HTTP方法同样的请求被执行一次与连续执行多次的效果是一样的，服务器的状态也是一样的，也就是幂等的方法不应该具有副作用。在正确实现的条件下，GET，HEAD，PUT 和 DELETE 
+    等方法都是幂等的，而 POST 方法不是。
+    
+95.增强for循环原理
+    增强for循环的底层使用迭代器来实现的，会定义一个临时变量，获取List的迭代器，然后判断迭代器中是否有未遍历过的元素，获取第一个未遍历的元素赋值给临时变量i，
+    输出临时变量i的值。
+    Integer i；
+    Iterator iterator = list.iterator();
+    iterator.hasNext();
+    i = (Integer)iterator.next();
+    System.out.println(i);
+
+96.如何判断链表中是否出现了环
+    单链表有环是指链表中的某个节点的next指针域指向的是链表中在它之前的某一个节点，这样在链表的尾部形成一个环形结构。最常用的方法是定义两个指针，同时从链表的头节点出发，
+    一个指针走一步，另一个指针走两步。如果走得快的指针追上了走得慢的指针，那么链表就是环形链表，如果走得快的指针走到了链表的末尾都没有追上第一个指针，那么链表就不是环
+    形链表。
+
+97.RC，RR级别下的InnoDB快照读有什么不同
+    在RR级别下的某个事务的某条记录的第一次快照读会创建一个快照及read view，将当前活跃的其他事务记录起来，此后在调用快照读的时候，还是使用的是同一个read view，所以要
+    当前事务在其他事务提交更新前使用过快照读，那么之后的快照读使用的是同一个read view，所以对之后的修改不可见。
+    在RC级别下的事务中，每次快照读都会新生成一个快照和read view，这就是在RC级别下的事务中可以看到别的事务提交的更新的原因。
+
+98.双重检验锁定
+    public class Singleton{
+        private Singleton(){}
+        private volatile static Singleton instance;
+        public Singleton getInstance(){
+            if (instance == null){
+                synchronized(Singleton.class){
+                    if (instance == null){
+                        instance = new Singleton();
+                    }
+                }
+            }
+            return instance;
+        } 
+    }
+
+99.ThreadLocal
+    而ThreadLocal则从另一个角度来解决多线程的并发访问。ThreadLocal会为每一个线程提供一个独立的变量副本，从而隔离了多个线程对数据的访问冲突。因为每一个线程都拥有
+    自己的变量副本，从而也就没有必要对该变量进行同步了。ThreadLocal提供了线程安全的共享对象，在编写多线程代码时，可以把不安全的变量封装进ThreadLocal。
+    每个线程中都有一个自己的ThreadLocalMap类对象，可以将线程自己的对象保持到其中，各管各的，线程可以正确的访问到自己的对象。将一个共用的ThreadLocal静态实例作为key，
+    将不同对象的引用保存到不同线程的ThreadLocalMap中，然后在线程执行的各处通过这个静态ThreadLocal实例的get()方法取得自己线程保存的那个对象，避免了将这个对象作为参数传递的麻烦。
+
+100.SpringBean的生命周期
+    Spring启动，查找并加载需要被Spring管理的Bean，进行Bean的实例化；
+    Bean实例化后对将Bean的引入和值注入到Bean的属性中；
+    如果Bean实现了BeanNameAware接口的话，Spring将Bean的Id传递给setBeanName()方法；
+    如果Bean实现了BeanFactoryAware接口的话，Spring将调用setBeanFactory()方法，将BeanFactory容器实例传入；
+    如果Bean实现了ApplicationContextAware接口的话，Spring将调用Bean的setApplicationContext()方法，将Bean所在应用上下文传入进来；
+    如果Bean实现了BeanPostProcesser接口，Spring将调用postProcessBeforeInitialization()方法；
+    如果Bean实现了InitializingBean接口，Spring将调用他们的afterPropertiSet()方法；
+    如果Bean实现了BeanPostProcessor接口，Spring将调用它的postProcessAfterInitialization()方法；
+    此时，Bean已经准备就绪，可以被应用程序使用了，将一直驻留在应用上下文中，直到应用上下文被销毁；
+    如果bean实现了DisposableBean接口，Spring将调用它的destory()接口方法，同样，如果bean使用了destroy-method声明销毁方法，该方法也会被调用。
+
+101.IOC容器实现
+    BeanFactory是Spring框架的基础设施，面向Spring本身；ApplicationContext面向使用Spring框架的开发者，几乎所有的应用场合都直接使用ApplicationContext而不是底层的BeanFactory。
+（1）BeanDefinitionRegistry注册表
+    Spring配置文件中每一个节点元素在Spring容器里都通过一个 BeanDefinition对象表示，描述了Bean的配置信息。而BeanDefinitionRegistry接口提供了向容器手工注册BeanDefinition对象的方法。
+（2）BeanFactory顶层接口
+    最主要的方法就是getBean（String beanName），该方法从容器中返回特定名称的Bean，BeanFactory的功能是通过其他的接口得到不断扩展。
+（3）ListableBeanFactory
+    该接口定义了访问容器中Bean基本信息的若干方法，如查看Bean的个数，获取某一类型Bean的配置名、查看容器中是否包含某一Bean等方法。
+（4）HierarchicalBeanFactory父子级联
+    父子级联Ioc容器的接口，子容器可以通过接口方法访问父容器；通过该接口Spring的IOC容器可以建立父子层级关联的容器体系，子容器可以访问父容器中的Bean，但父容器不能访问子容器的Bean。Spring
+    使用父子容器实现了很多功能，比如在SpringMVC中，展现层Bean位于一个子容器中，而业务层和持久层的Bean位于父容器中，展现层就可以引用业务层和持久层的Bean，而业务层和持久层的Bean
+    则看不到展现层的Bean。
+（5）ConfigurationBeanFactory
+    增强了IOC容器的可定制性，定义了设置类装载器、属性编辑器、容器初始化后处置处理器等方法。
+（6）AutowireCapableBeanFactory自动装配
+    定义了容器中的Bean按某种规则（如按名字匹配、按类型匹配等）进行自动装配的方法。
+（7）SingletonBeanRegistry运行期间注册单例Bean
+    定义了允许在运行期间注册单例Bean的方法，对于单实例的Bean来说，BeanFactory会缓存Bean实例，第二次使用getBean（）获取Bean时将直接从IOC容器的缓存中获取Bean实例、Spring在
+    DefaultSingletonBeanRegistry类中提供了一个用于缓存单例Bean的缓存器，它是一个用HashMap实现的缓存器，单实例的Bean以beanName为键保存在hashmap中。
+（8）依赖日志框架
+    在初始化BeanFactory时，必须为其提供一种日志框架，比如使用Log4j，即在类路径下提供Log4j配置文件，这样启动Spring容器才不会报错。
+
+    ApplicationContext由BeanFactory派生而来，提供了更多面向实际应用的功能，ApplicationContext继承了HierarchicalBeanFactory和ListableBeanFactory接口。
+（1）ClassPathXmlApplicationContext：默认从类路径加载配置文件。
+（2）FileSystemXmlApplicationContext：默认从文件系统中装载配置文件。
+（3）ApplicationEventPublisher：让容器拥有发布应用上下文事件的功能，包括容器启动事件、关闭事件等。
+（4）MessageSource：为应用提供i18n国际化消息访问的功能。
+（5）ResourcePatternResolver：所有的实现类都实现了类似于PathMatchingResourcePatternResolver的功能，可以通过带前缀的Ant风格的资源文件路径装载Spring配置文件。
+（6）LifeCycle：该接口是Spring2.0加入的，提供了start()和stop()方法，主要用于控制异步处理过程。
+（7）ConfigurationApplicationContext扩展与ApplicationContext，新增了两个主要的方法，refresh（）和close（），让ApplicationContext具有启动、刷新和关闭应用上下文的能力。
+
+102.SpringBean的作用域
+    singleton：在SpringIOC容器中仅存在一个Bean实例，Bean以单例的方式存在
+    prototype：每次容器中调用Bean时都返回一个新的实例，每次调用getBean（）时，相当于执行new xxxBean（）。
+    request：每次Http请求都会创建一个新的Bean，该作用域仅适用于WebApplicationContext环境。
+    session：同一个HttpSession共享一个Bean，不同Session使用不同Bean，仅适用于WebApplicationContext环境。
+    globalSession：该作用域仅适用于WebApplicationContext环境。
+
+103.Mybatis工作原理
+（1）读取MyBatis配置文件：mybatis-config.xml为mybatis的全局配置文件，配置了Mybatis的运行环境等信息。
+（2）加载映射文件：映射文件就是SQL映射文件，该文件中配置了操作数据库的SQL语句，需要在Mybatis配置文件mybatis-config.xml中加载，可以加载多个映射文件，每个文件对应数据库中的一张表。
+（3）构造会话工厂：通过MyBatis的环境等配置信息构建会话工厂SqlSessionFactory。
+（4）创建会话对象：由会话工厂创建SqlSession对象，该对象中包含了执行SQL语句的所有方法。
+（5）Executor执行器：MyBatis底层定义了一个Executor接口来操作数据库，根据SqlSession传递的参数动态地生成需要执行的SQL语句，同时负责查询缓存的维护。
+（6）MappedStatement对象：在Executor接口的执行方法中有一个MappedStatement类型的参数，该参数是对映射信息的封装，用于存储要映射的SQL语句中的id、参数等信息。
+（7）输入参数映射：输入参数类型可以是Map，List等集合类型，也可以是基本数据类型POJO类型。输入参数映射过程类似于JDBC对preparedStatement对象设置参数的过程。
+（8）输出结果映射：输出结果类型可以是MAP，List等集合类型，也可以是基本数据类型POJO类型。输出结果映射过程类似于JDBC对结果集的解析过程。
+
+104.进程间常见的通信方式
+    管道pipe：管道是一种半双工的通信方式，数据只能单向流动，而且只能在具有亲缘关系的进程间使用。进程的亲缘关系通常是指父子进程关系。
+    命名管道FIFO：有名管道也是半双工的通信方式，但是它允许无亲缘关系进程间的通信。
+    消息队列MessageQueue：消息队列是由消息的链表，存放在内核中并由消息队列标识符标识。消息队列克服了信号传递信息少、管道只能承载无格式字节流以及缓冲区大小受限等缺点。
+    共享存储SharedMemory：共享内存就是映射一段能被其他进程所访问的内存，这段共享内存由一个进程创建，但多个进程都可以访问。共享内存是最快的 IPC 方式，它是针对其他进程间通信方式
+    运行效率低而专门设计的。它往往与其他通信机制，如信号量，配合使用，来实现进程间的同步和通信。
+    信号量Semaphore：信号量是一个计数器，可以用来控制多个进程对共享资源的访问。它常作为一种锁机制，防止某进程正在访问共享资源时，其他进程也访问该资源。因此，主要作为进程间以及同
+    一进程内不同线程之间的同步手段。
+    套接字Socket：套解口也是一种进程间通信机制，与其他通信机制不同的是，它可用于不同及其间的进程通信。
+    信号 ( sinal ) ： 信号是一种比较复杂的通信方式，用于通知接收进程某个事件已经发生。
+
+105.JDK动态代理
+（1）通过实现InvocationHandler接口来自定义自己的InvocationHandler；
+（2）通过Proxy.getProxyClass获得动态代理类；
+（3）通过反射机制获得代理类的对象，方法签名为getConstructor(InvocationHandler.class)；
+（4）通过构造函数获得代理对象并将自定义的InvocationHandler实例对象传为参数传入；
+（5）通过代理对象调用目标对象。
+
+106.HashMap的put方法流程
+（1）put(key,value)中直接调用了内部的putVal方法，并且先对key进行hash操作。
+（2）putVal方法中，先检查HashMap数据结构中的索引数组是否为空，如果是就进行一次resize操作。
+（3）以HashMap索引数组表的长度减一与key的hash值进行与运算，得出在数组中的索引，如果索引指定位置为空，则新建一个k-v结点。如果索引指定的数组位置已经存在内容，则碰撞出现。
+（4）在上面流程走完之后，计算HashMap全局的modCount值，以便对外部并发的迭代操作提供修改的Fail-fast判断提供依据，同时增加map中的记录数，并判断记录数是否触及容量扩充的
+阈值，触及则进行一次resize操作。
+（5）如果出现碰撞，则判断key索引到的节点的hash、key是否和当前待插入的节点一致，如果一致则先保存记录下该节点，如果新旧节点内容不一致，则再看被碰撞的节点是否是树类型，
+如果是树类型，则按照树的操作去追加新节点内容；如果不是树类型，则说明当前发生的碰撞在链表中，此时进入一轮循环处理逻辑中。
+（6）循环中，先判断被碰撞节点的后继节点是否为空，为空则将新节点作为后继节点，并判断当前链表的长度是否超过最大允许链表长度8，如果大于的话，需要进行一轮是否转为树的操作；
+如果一开始后继节点不为空，则先判断后继节点是否与新节点相同，相同的话就记录并跳出循环；如果两个条件判断都满足，则继续循环，直至进入某一个条件判断然后跳出循环。
+（7）转树的操作treeifyBin，如果map的索引表为空或者当前索引表长度还小于64（最大转红黑树的索引数组表长度），那么进行resize操作，否则如果被碰撞节点不为空，那么就顺着
+被碰撞节点这条树往后新增该节点。
+（8）最后，回到被记住的被碰撞节点，如果不为空，默认情况下，新节点的值会替换被碰撞节点的值，同时返回被碰撞节点的值。
+
+107.为什么JDK动态代理只能基于接口实现，不能基于继承来实现
+    因为Java不支持多继承，而JDK动态代理在创建代理对象时，默认让代理对象继承Proxy类，所以JDK只能通过接口去实现动态代理。
+
+108.SpringMVC流程
+（1）浏览器发送Http请求到DispatcherServlet。
+（2）DispatcherServlet根据请求信息调用HandlerMapping，解析请求对应的Handler。
+（3）解析到对应的Handler（也就是Controller）。
+（4）Controller调用响应的模型处理业务（xxxService）。
+（5）处理器处理完成后会返回一个ModelAndView对象，Model是返回的数据对象，到DispatcherServlet。
+（6）ViewResolver会处理视图映射。
+（7）Dispatcher将模型数据传给View显示。
+（8）最后把View通过HTTP响应传给请求者。
+
+109.SpringBoot启动流程
+（1）执行@SpringBootApplication（包含@SpringBootConfiguration、@ComponentScan、@EnableAutoConfiguration）
+（2）执行静态方法SpringApplication.run()，会初始化SpringApplication对象，通过SpringFactoriesLoader收集加载资源。
+（3）通过SpringFactoriesLoader加载并获得SpringApplicationListeners遍历调用这些listener的starting方法。
+（4）初始化Environment，执行listener.environmentPrepared（）方法。
+（5）打印SpringBoot标识
+（6）创建并初始化ApplicationContext，并判断是否是WebApplicationContext。
+（7）再用SpringFactoriesLoader，查找并加载classpath中所有可用的ApplicationContextInitializer。
+（8）将之前通过@EnableAutoConfiguration获取的所有配置以及其他形式的IOC容器配置加载到已准备完毕的ApplicationContext。
+（9）refresh    ApplicationContext完成最终程序启动。

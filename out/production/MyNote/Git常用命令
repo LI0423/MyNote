@@ -1,0 +1,167 @@
+Git 我常用命令
+
+1.拉取新分支 
+	创建新分支	git checkout -b xxx
+	将分支推送到远端	git push origin xxx
+	可能会有		git push --set-upstream origin v4_manager
+
+	拉取远端分支	git pull
+	然后 git checkout ...
+
+2.拉取新代码
+	git pull origin xxx
+	git push
+
+3.提交代码
+	切换到要提交的分支		git checkout yyy
+	把要提交的代码合进来		git merge xxx 
+	提交		git push 
+
+4.撤销commit
+	git reset --soft HEAD^	只撤销commit，代码保留(HEAD^ 意思是上一个版本，也可以是HEAD~1，两次提交就是2)
+
+	git reset --mixed HEAD^  不删除工作空间改动代码，撤销commit，并且撤销git add . 操作
+	--soft	不删除工作空间代码，撤销commit，不撤销git add .
+	--hard	删除工作空间改动代码，撤销commit ，撤销git add .
+
+5.修改commit注释
+	git commit --amend	进入默认vim编辑器，修改注释完毕后保存就好了
+
+6.git暂存修改的代码
+	git stash		存储在本地，并将项目本次操作还原
+	git stash pop 		使用上一次暂存，并将这个暂存删除，使用该命令后，如果有冲突，终端会显示，如果有冲突需要先解决冲突（这就避			免了冲突提交服务器，将冲突留在本地，然后解决）
+	git stash list 		查看所有的暂存
+	git stash clear 	清空所有的暂存
+	git stash drop [-q|--quiet] [<stash>] 		删除某一个暂存，在中括号里面放置需要删除的暂存ID
+	git stash apply 		使用某个暂存，但是不会删除这个暂存
+
+7.查看commit提交记录详情
+	git log		查看所有的commit提交记录
+	git show			查看提交的详情
+	git show commitId			查看指定commit的所有修改
+	git show commitId fileName			查看某次commit中具体文件的修改
+
+
+
+
+
+
+
+
+
+/ready-all
+
+git branch  查看当前分支
+
+git status 查看状态
+
+git checkout -b ready-all origin/ready-all
+
+新建并切换分支，设置远端分支
+
+git pull  同步远端代码
+
+git reflog 查看代码版本日志
+
+
+——   流程
+1. 创建本地文件夹 /Library/gitwarehouse/
+1. Git init 
+2. icode 上查看分支提交历史版本
+3. 克隆代码库 复制代码
+4. 在对应文件夹内执行
+5. 进入到里面底层文件夹
+6. git branch -vv
+7. git checkout -b 分支 origin/分支
+   git checkout -b 分支
+8. git pull 
+   git pull origin 分支
+9. git reflog
+
+—   遇到问题
+https://blog.csdn.net/xlgen157387/article/details/51146949
+
+git强制覆盖：
+    git fetch --all
+    git reset --hard origin/master
+    git reset --hard HEAD^^
+    git pull
+git强制覆盖本地命令（单条执行）：
+    git fetch --all && git reset --hard origin/master && git pull
+
+强制覆盖：
+git reset --hard
+
+
+
+—— 提交文件 
+git status 查看
+git add 文件
+git commit -m 提交说明
+git push origin HEAD:refs/for/分支
+icode
+
+
+—— 撤销
+1. git add . （空格+ 点） 表示当前目录所有文件
+撤销操作
+git status 先看一下add 中的文件 
+git reset HEAD 如果后面什么都不跟的话 就是上一次add 里面的全部撤销了 
+git reset HEAD XXX/XXX/XXX.java 就是对某个文件进行撤销了
+
+
+-- 回滚
+$ git reset --hard HEAD^ 回退到上个版本
+$ git reset --hard HEAD~3 回退到前3次提交之前，以此类推，回退到n次提交之前
+$ git reset --hard commit_id 退到/进到 指定commit的sha码
+
+
+
+— git 设置用户名
+1. 查看git用户名   git config --local --list  
+
+ git 修改当前的project的用户名的命令为：git config user.name 你的目标用户名;
+ git 修改当前的project提交邮箱的命令为：git config user.email 你的目标邮箱名;
+
+ git工具： 
+ sourcetree 
+ 使用  
+   1、选择暂存文件
+   2、点击下面输入提交信息 ，点击提交
+   3、拉取（目的 查看是否有他人提交，解决冲突）
+   4、git push xxx  
+         
+
+git log  查看最近日志
+git reset 77a8951ad2f2af6ccdbea07e7f809d772c410419  还原到指定版本（后面一串为版本号）
+
+
+
+
+gerrit 添加权限：
+
+1. projects --> list  --> dap/qad/Base --> Assess -->选择一个权限 --> Dap QAD Reviewers
+
+添加公钥：
+1. 右上角 - 个人中心 - settting - ssh key 
+
+2. read 只读
+   create 创建
+   submit  管理员
+
+
+
+
+服务器添加公钥：
+http://ihelp.baidu.com/icode/20;jsessionid=q4eb810h54o2rbjmybfnbpc4
+命令 ： ssh-keygen -t rsa
+
+
+或者命令：
+ 1. ssh-keygen -t rsa -f ~/.ssh/id_rsa.chengxianming
+ 2. cd .ssh
+ 3. cat id_rsa.chengxianming.pub
+
+
+** gerrit 添加公钥
+http://gerrit.doglobal.cn/#/settings/group-memberships

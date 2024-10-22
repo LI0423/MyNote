@@ -1,0 +1,88 @@
+一、制作自定义镜像关键字：
+    FROM：选择所继承的基础镜像，可以使用各大厂商提供的，也可以直接使用原始镜像。
+
+    LABEL：给镜像添加元数据（标签），如镜像作者、版本信息等。
+
+    ENV：设置环境变量，提供配置或定义默认值。在容器内运行时可以直接访问这些变量。
+        ENV DEBIAN_FRONTEND=noninteractive
+        ENV PYTHON_VERSION=3.12.0
+
+    RUN：执行命令，并将结果保存为镜像的一层。可以用于安装软件、更新系统等。
+        RUN apt-get update && apt-get install -y build-essential
+
+    WORKDIR：设置工作目录，即后续的RUN、CMD、ENTRYPOINT等指令的运行目录。如果目录不存在，会自动创建。
+
+    COPY：复制命令，从当前宿主机中，复制文件到制作的容器中。适用于将应用程序代码或资源文件打包到镜像内。
+        COPY . /app 将当前目录（相对Dockerfile的路径）中的所有内容复制到镜像内的 /app 目录。
+
+    ADD：添加命令，和COPY相似，但更强大。可以复制文件、自动解压tar文件，甚至从URL下载文件。
+
+    EXPOSE：声明容器运行时要暴露的端口。这是用于文档化的，告诉其他开发者或工具哪些端口是应用所需的，但不会自动发布端口。
+
+    CMD：指定容器启动时的默认命令，用户可以在docker run 命令中覆盖此命令。
+        CMD ["python3", "app.py"]   该指令在容器启动时执行 python3 app.py
+        与ENTRYPOINT的区别：CMD可以被docker run的命令覆盖，而ENTRYPOINT 则是不可覆盖的，除非加上 --entrypoint。
+
+    ENTRYPOINT：指定容器启动时的主进程命令。与CMD不同，ENTRYPOINT不容易被覆盖，适合定义不可更改的主命令。
+        ENTRYPOINT ["python3", "app.py"]
+
+    VOLUME：创建一个挂载点，用于数据持久化或与宿主机共享数据。容器可以写入该挂载点，且这些数据不会随容器的销毁而丢失。
+        VOLUME ["/data"]
+
+    ARG：定义构建时的变量，可以通过docker build --build-arg指定构建时的参数。
+        ARG PYTHON_VERSION=3.12.0   该指令定义了一个构建时可传递的变量，若未提供，默认值为3.12.0。
+
+    USER：指定接下来运行的命令或服务的用户身份。可以通过非root用户来增加安全性。
+        USER appuser    该命令指定接下来的命令以appuser用户身份运行。
+
+    HEALTHCHECK：定义容器健康检查。Docker会定期执行此命令，以判断容器是否处于健康状态。
+        HEALTHCHECK CMD curl http://localhost:8000 || exit 1
+
+    SHELL：指定执行后续命令时使用的shell，默认是/bin/sh
+        SHELL ["/bin/bash", "-C"]
+
+    STOPSIGNAL：定义发送给容器的停止信号（默认为SIGTERM）
+        STOPSIGNAL SIGINT
+
+    ONBUILD：定义父镜像在其子镜像构建时执行的指令。适用于创建可扩展的基础镜像。
+        ONBUILD COPY . /app
+
+二、如何替换Docker镜像中的文件或更新镜像中的代码
+    1、使用COPY或ADD指令更新代码并重新构建镜像。
+    （1）更新本地文件
+    （2）修改Dockerfile：在Dockerfile中指定代码路径，使用COPY将本地更新内容复制到容器中。
+        # 使用基础镜像
+        FROM nginx:latest
+        # 复制本地的HTML文件到容器的指定目录
+        COPY ./html /user/share/nginx/html
+    （3）重新构建镜像：在项目的根目录下运行命令，重新构建Docker镜像。
+        docker build -t image-name
+    （4）运行新的容器：使用新的镜像运行容器
+        docker run -d -p 80:80 image-name
+
+    2、使用docker cp直接替换容器中的文件
+    （1）找到运行的容器ID：使用docker ps命令找到容器的ID。
+        docker ps
+    （2）将文件复制到容器中：使用docker cp将本地更新的文件复制到容器中。
+        docker cp ./index.html <container-id>:/usr/share/nginx/html/index.html
+    （3）检查文件是否更新：进入容器内部验证文件已经替换。
+        docker exec -it <container-id> /bin/bash
+
+    3、挂在本地目录到容器（开发环境推荐）
+    （1）运行带有挂载选项的容器：使用-v选项挂载本地的目录到容器中。
+        docker run -d -p 80:80 -v $(pwd)/html:usr/share/nginx/html nginx
+    （2）更新本地文件：在本地编辑HTML文件，保存后更改会自动反映到容器中。无需重新构建镜像或复制文件。
+
+    4、使用docker-compose配置挂载更新代码
+    （1）编辑docker-compose.yml
+            version: '3'
+            services:
+                web:
+                    image: nginx:latest
+                    ports:
+                        - "80:80"
+                    volumes:
+                        - ./html:usr/share/nginx/html
+    （2）启动容器：
+        docker-compose up
+    

@@ -6,6 +6,62 @@
     "configurations": [
         {
             "type": "java",
+            "name": "TestModal",
+            "request": "launch",
+            "mainClass": "DesignPattern.Model.TestModal",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "Test",
+            "request": "launch",
+            "mainClass": "DesignPattern.Model.Test",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "Test",
+            "request": "launch",
+            "mainClass": "DesignPattern.Proxy.JDKProxy.Test",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "Test",
+            "request": "launch",
+            "mainClass": "DesignPattern.Test",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "Test",
+            "request": "launch",
+            "mainClass": "DesignPattern.StrategyPatternFiles.Test",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "Test",
+            "request": "launch",
+            "mainClass": "DesignPattern.Strategy.Test",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "Test",
+            "request": "launch",
+            "mainClass": "DesignPattern.SimpleFactory.Test",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "Test",
+            "request": "launch",
+            "mainClass": "DesignPattern.Proxy.Test",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
             "name": "WeatherStation",
             "request": "launch",
             "mainClass": "DesignPattern.Observer.WeatherStation",
