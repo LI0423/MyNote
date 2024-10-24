@@ -1,7 +1,5 @@
 package Algorithm.leetcode;
 
-import java.util.Arrays;
-
 /**
  * 2656. K 个元素的最大和
 

@@ -12,6 +12,7 @@ public class JDKProxyFactory implements InvocationHandler{
         this.object = object;
     }
 
+    @SuppressWarnings("unchecked")
     public <T> T getProxy(){
         return (T) Proxy.newProxyInstance(Thread.currentThread().getContextClassLoader(), object.getClass().getInterfaces(), this);
     }

@@ -6,6 +6,27 @@
     "configurations": [
         {
             "type": "java",
+            "name": "RsaEncrypt",
+            "request": "launch",
+            "mainClass": "Java.DataEncrypt.RsaEncrypt",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "AESEncryption",
+            "request": "launch",
+            "mainClass": "Java.DataAuth.AESEncryption",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "MessageDigestTest",
+            "request": "launch",
+            "mainClass": "Java.DataAuth.MessageDigestTest",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
             "name": "TestModal",
             "request": "launch",
             "mainClass": "DesignPattern.Model.TestModal",
