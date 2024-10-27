@@ -1,19 +1,14 @@
 package Java.DataEncrypt;
 
-import java.security.InvalidKeyException;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.Signature;
-import java.security.SignatureException;
 import java.util.Base64;
 
-import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
 
 /**
  *  非对称加密算法
@@ -26,21 +21,9 @@ public class RsaEncrypt {
             cipher.init(Cipher.ENCRYPT_MODE, publicKey);
             byte[] encryptedBytes = cipher.doFinal(plaintext.getBytes());
             return new String(encryptedBytes);
-        } catch (NoSuchAlgorithmException e) {
+        } catch (Exception e) {
             e.printStackTrace();
-            return "NoSuchAlgorithmException";
-        } catch (NoSuchPaddingException e) {
-            e.printStackTrace();
-            return "NoSuchPaddingException";
-        } catch (InvalidKeyException e) {
-            e.printStackTrace();
-            return "InvalidKeyException";
-        } catch (IllegalBlockSizeException e) {
-            e.printStackTrace();
-            return "IllegalBlockSizeException";
-        } catch (BadPaddingException e) {
-            e.printStackTrace();
-            return "BadPaddingException";
+            return e.getMessage();
         }
     }
 
@@ -50,21 +33,9 @@ public class RsaEncrypt {
             cipher.init(Cipher.DECRYPT_MODE, privateKey);
             byte[] decryptedBytes = cipher.doFinal(ciphertext.getBytes());
             return new String(decryptedBytes);
-        } catch (NoSuchAlgorithmException e) {
+        } catch (Exception e) {
             e.printStackTrace();
-            return "NoSuchAlgorithmException";
-        } catch (NoSuchPaddingException e) {
-            e.printStackTrace();
-            return "NoSuchPaddingException";
-        } catch (InvalidKeyException e) {
-            e.printStackTrace();
-            return "InvalidKeyException";
-        } catch (IllegalBlockSizeException e) {
-            e.printStackTrace();
-            return "IllegalBlockSizeException";
-        } catch (BadPaddingException e) {
-            e.printStackTrace();
-            return "BadPaddingException";
+            return e.getMessage();
         }
     }
 
@@ -74,13 +45,7 @@ public class RsaEncrypt {
             signature.initSign(privateKey);
             signature.update(data.getBytes());
             return signature.sign();
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-            return null;
-        } catch (InvalidKeyException e) {
-            e.printStackTrace();
-            return null;
-        } catch (SignatureException e) {
+        } catch (Exception e) {
             e.printStackTrace();
             return null;
         }
@@ -92,13 +57,7 @@ public class RsaEncrypt {
             signature2.initVerify(publicKey);
             signature2.update(data.getBytes());
             return signature2.verify(signature);
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-            return false;
-        } catch (InvalidKeyException e) {
-            e.printStackTrace();
-            return false;
-        } catch (SignatureException e) {
+        } catch (Exception e) {
             e.printStackTrace();
             return false;
         }

@@ -1,7 +1,6 @@
 package Java.DataEncrypt;
 
 import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 
 /**
  *  消息摘要算法（Message Digest）
@@ -16,7 +15,7 @@ public class MessageDigestTest {
             MessageDigest digest = MessageDigest.getInstance(algorithm);
             byte[] hashedBytes = digest.digest(input.getBytes());
             return bytesToHex(hashedBytes);
-        } catch (NoSuchAlgorithmException e) {
+        } catch (Exception e) {
             e.printStackTrace();
             return null;
         }

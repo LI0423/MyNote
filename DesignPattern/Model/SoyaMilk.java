@@ -2,7 +2,10 @@ package DesignPattern.Model;
 
 public abstract class SoyaMilk {
     final void make(){
-        
+        select();
+        addCondiments();
+        soak();
+        beat();
     }
 
     void select(){
