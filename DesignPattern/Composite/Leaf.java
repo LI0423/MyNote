@@ -23,7 +23,7 @@ public class Leaf implements Component {
 
     @Override
     public void operation() {
-        System.out.println("");
+        System.out.println("树叶" + name + "被访问");
     }
     
 }

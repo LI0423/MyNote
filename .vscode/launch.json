@@ -8,6 +8,34 @@
             "type": "java",
             "name": "Test",
             "request": "launch",
+            "mainClass": "DesignPattern.ChainOfResponsibility.Test",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "Test",
+            "request": "launch",
+            "mainClass": "DesignPattern.Facade.Test",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "Test",
+            "request": "launch",
+            "mainClass": "DesignPattern.Visitor.Test",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "Test",
+            "request": "launch",
+            "mainClass": "DesignPattern.Composite.Test",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "Test",
+            "request": "launch",
             "mainClass": "DesignPattern.Singleton.Test",
             "projectName": "MyNote_f98cd070"
         },
