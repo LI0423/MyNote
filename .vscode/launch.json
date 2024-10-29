@@ -6,6 +6,20 @@
     "configurations": [
         {
             "type": "java",
+            "name": "MD5",
+            "request": "launch",
+            "mainClass": "Java.DataEncrypt.MD5",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "Test",
+            "request": "launch",
+            "mainClass": "DesignPattern.Iterator.Test",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
             "name": "Test",
             "request": "launch",
             "mainClass": "DesignPattern.ChainOfResponsibility.Test",
