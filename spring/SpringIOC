@@ -1,0 +1,166 @@
+1.IOC配置的三种方式
+（1）XML配置
+    将bean的配置信息配置到.xml文件中，通过spring加载文件创建bean。
+    <bean id="userService" class="service.UserServiceImpl">
+        <property name="userDao" ref="userDao"/>
+    </bean>
+（2）Java配置
+    将类的创建交给JavaConfig类来完成，Spring只负责维护和管理。创建一个配置类，添加@Configuration注解声明为配置类，创建方法并加上@Bean，该方法用于创建实例并返回，
+    该实例创建后会交给soring管理。
+（3）注解配置
+    通过在类上加注解的方式来声明一个类交给Spring管理，spring会自动扫描带有@Component，@Controller，@Service，@Reposity这四个注解的类。
+
+2.依赖注入的三种方式
+（1）setter方式
+    在XML配置方式中，property都是setter方式注入。本质上是两步，先new UserServiceImpl()创建对象，所以需要默认构造函数，然后调用setUserDao()函数注入userDao的值，
+    所以需要setUserDao()函数。
+（2）构造函数
+    在XML配置方式中，<constructor-arg>是通过构造函数参数注入。
+    <bean id="userService" class="service.UserServiceImpl">
+        <constructor-arg name="userDao" ref="userDao">
+    </bean>
+（3）注解注入
+    以@Autowired（自动注入）注解为例，修饰符有三个属性：Constructor，byType，byName，默认是byType。
+    constructor：通过构造方法进行自动注入，spring会匹配与构造方法参数类型一致的bean进行注入，如果有一个多参数的构造方法，一个只有一个参数的构造方法，在容器中查找到
+    多个匹配多参数构造方法的bean，Spring就会优先将bean注入到多参数的构造方法中。
+    byName：被注入的id名必须与set方法后半截匹配，并且id名称的第一个单词首字母必须小写。
+    byType：查找所有的set方法，将符合参数类型的bean注入。
+
+2.SpringBean的生命周期          https://segmentfault.com/a/1190000040365130
+
+    springbean的生命周期会经过四个阶段，实例化，属性赋值，初始化，销毁。在进行bean实例化之前会执行InstantiationAwareBeanPostProcessor.postProcessBeforeInstantiation()方法，
+    然后进行实例化，之后执行postProcessAfterInstantiation()，接下来调用执行postProcessPropertyValues()，然后再给bean设置属性值。如果bean实现了beanNameAware接口，
+    spring将bean的id传给setBeanName()方法，用来获取bean的id或者name。如果bean实现了beanfactoryaware接口的话，spring将调用setBeanFactory()方法将beanfactory容器实例
+    传入，用来获取当前环境中的beanfactory。如果bean实现了ApplicationContext接口的话，spring将调用setApplicationContext()方法，将bean所在的上下文传进来，用来获取当前
+    环境中的applicationContext，获取到ioc容器后可以对bean进行修改操作。如果bean实现了beanPostProccessor接口，spring将调用postProcessBeforeInitialization()方法，
+    可以通过beanName来筛选出我们需要进行个性化定制的bean。如果bean实现了initializingBean接口，spring将调用afterPropertiSet()方法，在属性注入完成后调用。接下来bean进行初始化操作，
+    然后spring将调用postProcessAfterInitialization()方法。在此之后bean已经准备就绪，如果bean的作用域是singleton，spring将返回bean给用户并存入缓存池。
+    如果是prototype将返回bean给用户，剩下的生命周期由用户控制。如果bean实现了DisposableBean接口，Spring将调用它的destory()接口方法，同样，如果bean使用了destroy-method声
+    明销毁方法，该方法也会被调用，最后进行销毁操作。
+
+    SpringBean的作用域
+        singleton：唯一bean实例，Spring中的bean默认都是单例的。
+        prototype：每次请求都会创建一个新的bean实例。
+        request：每一次HTTP请求都会产生一个新的bean，该bean仅在当前HTTP request内有效。
+        session：每一次HTTP请求都会产生一个新的bean，该bean仅在当前HTTP session内有效。
+        global-session：全局session作用域，仅仅在基于Portlet的web应用中才有意义。
+    
+    实例化 Instantiation
+    属性赋值 Populate
+    初始化 Initialization
+    销毁 Destruction
+
+    Spring启动，查找并加载需要被Spring管理的Bean，将Bean解析成Spring内部的BeanDefinition结构，进行Bean的实例化；
+    Bean实例化后对将Bean的引入和值注入到Bean的属性中；
+    如果Bean实现了BeanNameAware接口的话，Spring将Bean的Id传递给setBeanName()方法，用来获取bean的id或者name；
+    如果Bean实现了BeanFactoryAware接口的话，Spring将调用setBeanFactory()方法，将BeanFactory容器实例传入，用来获取当前环境中的BeanFactory；
+    如果Bean实现了ApplicationContextAware接口的话，Spring将调用Bean的setApplicationContext()方法，将Bean所在应用上下文传入进来，用来获取当前环境中的ApplicationContext，获取到IOC容器之后，可以对beans进行修改操作；
+    如果Bean实现了BeanPostProcessor接口，Spring将调用postProcessBeforeInitialization()方法，我们可以通过 beanName 来筛选出我们需要进行个性化定制的 bean。；
+    如果Bean实现了InitializingBean接口，Spring将调用他们的afterPropertiSet()方法，在属性注入完成后调用；
+    如果Bean实现了BeanPostProcessor接口，Spring将调用它的postProcessAfterInitialization()方法，我们可以通过 beanName 来筛选出我们需要进行个性化定制的 bean。；
+    此时，Bean已经准备就绪，可以被应用程序使用了，将一直驻留在应用上下文中，直到应用上下文被销毁；
+    如果bean实现了DisposableBean接口，Spring将调用它的destory()接口方法，同样，如果bean使用了destroy-method声明销毁方法，该方法也会被调用。
+
+（1）springbean元信息配置阶段
+            spring容器启动的过程中会将bean解析成spring内部的beanDefinition结构，里面包含了bean定义的各种信息，如bean对应的class、scope、lazy信息、
+        dependson信息、autowireCandidate（是否是候选对象）、primary（是否是主要的候选者）等信息。
+        public class ApiBeanMetaDataConfigDemo{
+            public static class void main(String[] args){
+                //创建注解相关的上下文
+                AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();
+                //创建GenericBeanDefinition
+                GenericBeanDefinition beanDefinition = new GenericBeanDefinition();
+                //设置BeanClass
+                beanDefinition.setBeanClass(User.class);
+                //设置属性
+                MutablePropertyValues propertyValues = new MutablePropertyValues();
+                propertyValues.addPropertyValue("name","小明");
+                propertyValues.addPropertyValue("age",18);
+                propertyValues.setPropertyValues(propertyValues);
+                //注册BeanDefinition
+                context.registerBeanDefinition("user",beanDefinition);
+                //刷新IOC容器
+                context.refresh();
+                //获取Bean
+                User user = context.getBean("user",User.class);
+                context.close();
+            }
+        } 
+（2）springbean元信息解析阶段
+        将各种方式定义的bean配置信息解析为BeanDefinition对象。
+（3）springbean注册阶段
+        需要用到一个非常重要的接口：BeanDefinitionRegistry。将BeanDefin配置元信息保存到BeanDefinitionRegistry的ConcurrentHashMap中。
+        public class BeanDefinitionRegistryTest{
+            public void test(){
+                //创建一个bean工厂，这个默认实现了BeanDefinitionRegisty接口，所以是一个bean注册器
+                DefaultListableBeanFactory factory = new DefaultListableBeanFactory();
+                //定义一个bean
+                GenericBeanDefinition nameBdf = new GenericBeanDefinition();
+                nameBdf.setBeanClass(String.class);
+                nameBdf.getConstructorArgumentValues().addIndexedArgumentValue(0,"小明");
+                //将bean注册到容器中
+                factory.registerBeanDefinition("name",nameBdf);
+                //别名相关方法
+                factory.registerAlias("name","alias-name-1");
+            }
+        }
+（4）spring BeanDefinition合并阶段
+    定义的Bean可能存在层次性关系，需要将它们进行合并，合并的时候进行递归合并，存在相同配置则覆盖父属性，最终生成一个RootBeanDefinition。
+（5）Bean Class加载阶段
+    将bean的class名称转换为Class类型的对象。
+（6）Bean实例化前阶段，org.springframework.beans.factory.config.InstantiationAwareBeanPostProcessor.postProcessBeforeInstantiation
+    applyBeanPostProcessorsBeforeInstantiation()这个方法是在bean实例化之前可以创建一个对象作为bean实例，而跳过spring内部实例化bean的过程。
+（7）Bean实例化阶段：调用构造方法创建对象
+    通过反射来调用bean的构造器来创建bean的实例，具体要使用哪个构造器，spring为开发者提供了一个接口，允许开发者自己来判断用哪个构造器。
+    public class MySmartInstantiationAwareBeanPostProcessor implements MySmartInstantiationAwareBeanPostProcessor{
+        @Nullable
+        @Override
+        public Constructor<?>[] determineCandidateConstructors(Class<?> beanClass,String beanName) throws BeanException{
+            Constructor<?>[] declareConstructors = beanClass.getDeclaredConstructors();
+            if(declareConstructors != null){
+                //获取有指定注解的构造器列表
+                List<Constructor<?>> collect = Arrays.stream(declareConstructors).
+                        .filter(constructor -> constructor.isAnnotationPresent(MyAnnotation.class))
+                        .collect(Collectors.toList);
+                Constructor[] constructors = collect.toArray(new Constructor[collect.size()]);
+                return constructors.length != 0 ? constructors : null;
+            } else {
+                return null;
+            }
+        }
+    }
+（8）对合并后的RootBeanDefinition进行处理，org.springframework.beans.factory.support.MergedBeanDefinitionPostProcessor.postProcessMergedBeanDefinition
+    postProcessMergedBeanDefinition有两个实现类：
+        org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor在postProcessMergedBeanDefinition方法中对@Autowired、@Value标注的方法、字段进行缓存。
+        org.springframework.context.annotation.CommonAnnotationBeanPostProcessor在postProcessMergedBeanDefinition方法中对@Resource标注的字段、方法、@PostConstruct标注的字段、
+    @PreDestroy标注的方法进行缓存。
+（9）Bean属性赋值阶段
+    在Spring实例化后，需要对其相关属性进行赋值，注入依赖的对象。首先获取该对象所有属性与属性值的映射，可能已定义，也可能需要注入，在这里都会进行赋值（反射机制）。依赖注入的实现是
+    通过CommonAnnotationBeanPostProcessor（@Resource、@PostConstruct、@PreDestroy）和AutowiredAnnotationBeanPostProcessor（@Autowired、@Value）两个处理器实现
+（10）Aware接口回调阶段
+    依次调用9个Aware接口
+        BeanNameAware       //将bean的名称注入进去
+        BeanClassLoaderAware        //将BeanClassLoader注入进去
+        BeanFactoryAware        //将BeanFactory注入进去
+        EnvironmentAware
+        EmbeddedValueResolverAware
+        ResourceLoaderAware
+        ApplicationEventPublisherAware
+        MessageSourceAware
+        ApplicationContextAware
+（11）SpringBean初始化阶段
+    调用SpringBean配置的初始化方法，执行顺序：
+        调用BeanPostProcessor接口的postProcessBeforeInitialization方法
+        调用@PostConstruct标注的所有方法
+        调用InitializingBean接口的afterPropertiesSet方法
+        调用bean自定义的初始化方法
+（12）SpringBean初始化完成阶段
+    在所有的Bean（不是抽象、单例模式、不是懒加载方式）初始化后，Spring会再次遍历所有初始化好的单例Bean对象，如果是SmartInitializingSingleton类型则调用afterSingletonInstantiated()方法。
+（13）SpringBean销毁阶段
+    当Spring应用上下文关闭或者主动销毁某个bean时进入bean销毁阶段，依次执行以下操作
+        调用org.springframework.beans.factory.config.DestructionAwareBeanPostProcessor接口的postProcessBeforeDestruction方法
+        调用@PreDestroy标注的所有方法
+        调用DisposalBean接口的destroy方法
+        调用自定义的销毁方法
+（14）Spring垃圾回收阶段（GC）
+    

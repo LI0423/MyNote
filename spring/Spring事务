@@ -1,0 +1,358 @@
+1.事务的属性
+    原子性（automicity）：一个事务是一个不可分割的工作单位，事务中包括的操作，要么都做要么都不做。
+    一致性（consistency）：事务必须是使数据库从一个一致性状态变成另一个一致性状态。
+    隔离性（isolation）：一个事务的执行不能被其他事务干扰。即一个事务内部的操作及使用的数据对并发的其他事务是隔离的，并发执行的各个事务不能互相干扰。
+    持久性（durability）：一个事务一旦提交，它对数据库中数据的改变就是永久性的。
+
+2.Transactional基本用法
+    @Transactional 可以用在方法上和类上。
+    用在方法上此方法具有事务属性，只有public修饰的方法才生效。protected、private和default修饰的方法不生效。
+    用在类上时，该类所有的public方法都会具有事务属性。
+
+3.配置详解
+（1）value 和 transactionManagement
+    两个是一样的，当配置多个事务管理器时，可以用该属性指定哪个事务管理器。
+（2）propagation
+    事务的传播行为，默认值为 Propagation.REQUIRED
+（3）isolation
+    事务的隔离级别，默认值为 isolation.DEFAULT
+（4）timeout
+    事务的超时时间，默认值-1。如果超过时间限制但事务还没完成，则自动回滚事务。
+（5）readOnly
+    指定事务是否为只读事务，默认值为false。为了忽略那些不需要事务的方法，比如读取数据，可以设置read-only为true。
+（6）rollbackFor
+    用于指定能够触发事务回滚的异常类型，可以指定多个异常类型。
+（7）noRollbackFor
+    抛出指定的异常类型，不回滚事务，也可以指定多个异常类型。
+
+4.传播机制
+    public void A(){
+        insert()
+    }
+
+    public void B(){
+        insert()
+    }
+
+（1）REQUIRED
+    表示当前方法必须运行在一个事务环境当中，如果当前方法已处于事务环境中，则可以直接使用该事务；否则会开启一个新事务后执行该方法。
+    所有事务都处于同一个事务下，出现异常，不管是否捕获所有事务都回滚。
+    例一：
+    public void mainTest(){
+        A();
+        childTest();
+    }
+
+    @Transactional(propagation = Propagation.REQUIRED)
+    public void childTest(){
+        B();
+        throw new RunTimeException();
+    }
+    因为mainTest没有事务，而childTest新建了一个事务，所以A()插入成功，B()因为childTest抛出了异常而进行了回滚，插入失败。
+
+    例二：
+    @Transactional(propagation = Propagation.REQUIRED)
+    public void mainTest(){
+        A();
+        childTest();
+    }
+
+    @Transactional(propagation = Propagation.REQUIRED)
+    public void childTest(){
+        B();
+        throw new RunTimeException();
+    }
+    因为REQUIRED的传播属性，如果存在事务，就加入到当前事务。因为mainTest已经有了事务，在mainTest中调用childTest时，childTest就会
+    加入mainTest的事务中，当发生异常，则全部都回滚。
+
+（2）SUPPORTS
+    如果当前方法处于事务环境中，则使用当前事务，否则不使用事务。
+    例一：
+    public void mainTest(){
+        A();
+        childTest()
+    }
+
+    @Transactional(propagation = Propagation.SUPPORTS)
+    public void childTest(){
+        B();
+        throw new RunTimeException();
+    }
+    如果没有事务，就以非事务的方式运行。表明两个方法都没有使用事务，没有事务的话，A、B都能添加成功。
+
+    例二：
+    @Transactional(propagation = Propagation.REQUIRED)
+    public void mainTest(){
+        A();
+        childTest();
+    }
+
+    @Transactional(propagation = Propagation.SUPPORTS)
+    public void childTest(){
+        B();
+        throw new RunTimeException();
+    }
+    如果处于事务环境中，就加入到当前事务中。mainTest和childTest都同属于一个事务，而childTest抛出异常，A、B都会回滚。
+
+（3）MANDATORY
+    表示调用该方法的线程必须处于当前事务环境中，否则将抛异常。
+    例一：
+    public void mainTest(){
+        A();
+        childTest();
+    }
+
+    @Transactional(propagation = Propagation.MANDATORY)
+    public void childTest(){
+        B();
+        throw new RunTimeException();
+    }
+    因为MANDATORY要求该方法必须处于事务环境中，而mainTest没有事务环境，所以会直接报错。
+
+    例二：
+    @Transactional(propagation = Propagation.REQUIRED)
+    public void mainTest(){
+        A();
+        childTest();
+    }
+
+    @Transactional(propagation = Propagation.MANDATORY)
+    public void childTest(){
+        B();
+        throw new RunTimeException();
+    }
+    如果存在事务就加入当前事务，childTest抛出异常，A、B都会回滚。
+
+（4）REQUIRES_NEW
+    要求方法在新的事务环境中执行。如果当前方法已在事务环境中，则先暂停当前事务，在启动新的事务后执行该方法；如果当前方法不在事务
+    环境中，则会启动一个新的事务后执行方法。
+    例一：
+    public void mainTest(){
+        A();
+        childTest();
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void childTest(){
+        B();
+        throw new RunTimeException();
+    }
+    mainTest不存在事务，A会添加成功，childTest创建一个新事务，抛出异常后，B会回滚。
+
+    例二：
+    @Transactional(propagation = Propagation.REQUIRED)
+    public void mainTest(){
+        A();
+        childTest();
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void childTest(){
+        B();
+        throw new RunTimeException();
+    }
+    mainTest创建了一个事务，childTest新建了一个事务，在childTest中抛出异常，B会回滚，然后异常抛到mainTest，A也会回滚。
+
+    例三：
+    @Transactional(propagation = Propagation.REQUIRED)
+    public void mainTest(){
+        A();
+        try {
+            childTest();
+        } catch(Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void childTest(){
+        B();
+        throw new RunTimeException();
+    }
+    如果不想让childTest抛出的异常影响到mainTest，就用try-catch将异常捕获，异常捕获后就不会影响到事务，所以A添加成功，B会回滚。
+
+    例四：
+    @Transactional(propagation = Propagation.REQUIRED)
+    public void mainTest(){
+        A();
+        childTest();
+        throw new RunTimeException();
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void childTest(){
+        B();
+    }
+    childTest是一个新建的事务，只要不抛出异常就不会回滚，所以B添加成功，而mainTest抛出异常，A就会进行回滚。
+    REQUIRES_NEW传播属性如果有异常，只会从被调用方影响调用方，而调用方不会影响被调用方，即childTest抛出异常会影响mainTest，
+    而mainTest抛出异常不会影响到childTest。
+
+（5）NOT_SUPPORTED
+    不支持当前事务，总是以非事务状态执行。如果调用该方法的线程处于事务环境中，则先暂停当前事务，然后执行该方法。
+    例一：
+    public void mainTest(){
+        A();
+        childTest();
+    }
+
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
+    public void childTest(){
+        B();
+        throw new RunTimeException();
+    }
+    NOT_SUPPORTED是以非事务的方式执行，childTest不存在事务，B添加成功，而mainTest也没有事务，A也添加成功。
+
+    例二：
+    @Transactional(propagation = Propagation.REQUIRED)
+    public void mainTest(){
+        A();
+        childTest();
+    }
+
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
+    public void childTest(){
+        B();
+        throw new RunTimeException();
+    }
+    childTest是以非事务的方式执行，B添加成功，而mainTest存在事务，报错后A会回滚。
+
+（6）NEVER
+    不支持当前事务。如果调用该方法的线程处于事务环境中，将抛异常。
+    例一：
+    public void mainTest(){
+        A();
+        childTest();
+    }
+
+    @Transactional(propagation = Propagation.NEVER)
+    public void childTest(){
+        B();
+        throw new RunTimeException();
+    }
+    childTest不存在事务，mainTest也不存在事务，所以A、B都会添加成功。
+
+    例二：
+    @Transactional(propagation = Propagation.REQUIRED)
+    public void mainTest(){
+        A();
+        childTest();
+    }
+
+    @Transactional(propagation = Propagation.NEVER)
+    public void childTest(){
+        B();
+        throw new RunTimeException();
+    }
+    因为NEVER不支持使用事务，所以childTest会报错，B添加失败，而mainTest有事务，A会回滚。
+
+（7）NESTED
+    即使当前执行的方法处于事务环境中，依然会启动一个新的事务，并且方法在嵌套的事务里执行；即使当前执行的方法不在事务环境中，也会
+    启动一个新事务，然后执行该方法。
+    例一：
+    public void mainTest(){
+        A();
+        childTest();
+    }
+
+    @Transactional(propagation = Propagation.NESTED)
+    public void childTest(){
+        B();
+        throw new RunTimeException();
+    }
+    childTest设置NESTED传播属性，相当于新建一个事务，所以childTest抛出异常后，B会回滚，mainTest没有事务，A添加成功。
+
+    例二：
+    @Transactional(propagation = Propagation.REQUIRED)
+    public void mainTest(){
+        A();
+        childTest();
+        throw new RunTimeException();
+    }
+
+    @Transactional(propagation = Propagation.NESTED)
+    public void childTest(){
+        B();
+    }
+    childTest是一个嵌套事务，当主事务抛出异常，嵌套事务也会受到影响，A、B都会添加失败。
+    NESTED和REQUIRES_NEW的区别：
+        REQUIRES_NEW是开启一个新的事务，与调用方无关，调用方发生回滚，不会影响到被调用方。
+        NESTED是嵌套事务，是调用方的子事务，如果调用方发生回滚，被调用方也会回滚。
+
+    例三：
+    @Transactional(propagation = Propagation.REQUIRED)
+    public void mainTest(){
+        A();
+        try {
+            childTest();
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    @Transactional(propagation = Propagation.NESTED)
+    public void childTest(){
+        B();
+        throw new RunTimeException();
+    }
+    childTest是子事务，报错之后B会回滚，而在mainTest中将异常捕获了，就不会受到影响，A添加成功。
+
+    例四：
+    @Transactional(propagation = Propagation.REQUIRED)
+    public void mainTest(){
+        A();
+        try {
+            childTest();
+        } catch(Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    @Transactional(propagation = Propagation.REQUIRED)
+    public void childTest(){
+        B();
+        throw new RunTimeException();
+    }
+    mainTest和childTest同处一个事务中，如果有一个方法报错回滚，并且被捕获。整个事务如果还有数据添加就会抛出
+    ‘Transaction rolled back because it has been marked as rollback-only’，同一个事务不能出现有的回滚了，有的不回滚，
+    要么一起回滚，要么一起执行成功，所以A、B都添加失败。
+    NESTED和REQUIRED的区别：
+        REQUIRED表明调用方和被调用方都是使用同一个事务，被调用方出现异常，无论异常是否被捕获，因为属于同一个事务，只要发生异常，事务都会回滚。
+        NESTED被调用方出现异常，只要异常被捕获，只有被调用方事务回滚，调用方事务不受影响。
+
+5.事务传播机制分类
+（1）支持当前事务的传播机制
+    REQUIRED：如果当前存在事务，方法将在该事务中运行，否则，将创建一个新的事务。
+    SUPPORTS：如果当前存在事务，方法将在该事务中运行，否则，以非事务的方式运行。
+    MANDATORY：方法必须在一个已存在的事务中运行，否则将抛出异常。
+（2）不支持当前事务的传播机制
+    REQUIRES_NEW：方法将创建一个新的事务，并在自己的事务中运行，如果当前存在事务，则将其挂起。
+    NOT_SUPPORTED：方法将以非事务的方式运行，如果当前存在事务，则将其挂。
+    NEVER：方法不能在一个已存在的事务中运行，否则将抛出异常。
+（3）嵌套事务的传播机制
+    NESTED：嵌套事务是外部事务的一部分，可以独立地进行提交或回滚。
+
+6.隔离级别
+    隔离级别是数据库自带的，目的是当存在多个事务时，如果这些事务访问到了共同的资源，该怎么处理事物间的数据隔离。
+（1）DEFAULT
+    用数据库的设置隔离级别，数据库设置的是什么就用什么。
+（2）UNCOMMITTED
+    读未提交，最低隔离级别、事务未提交前，就可被其他事务读取。
+（3）COMMITTED
+    读已提交，一个事务提交后才能被其他事务读取到。
+（4）REPETABLE_READ
+    可重复读，本事务会建立快照，在快照建立前其他事务提交的内容可见，快照后提交的内容不可见。
+（5）SERIALIZABLE
+    序列化，事务必须一个执行完才允许建下一个事务，隔离级别最高。
+
+    数据库事务的隔离级别有两种，一种是全局的，一种是会话的，与数据库建立连接后，可以为本会话设置隔离级别。如果不设置，则会使用数据库
+    的隔离级别。这也是Spring能指定隔离级别的原因，其实际上指定的是当前会话的隔离级别。
+
+7.超时时间
+    @Transactional注解上可以填写超时时间，单位是秒。timeout的设置只适用于以下两种传播规则：REQUIRED 和 REQUIRED_NEW，其他的
+    传播机制只允许超时默认值-1，否则会抛出异常。超时时间其实是在判断最后一个SQL执行前是否超时。
+
+8.启用事务与创建代理
+    使用@Transactional注解来启用事务，使用该注解后，Spring会创建一个针对事务增强的Advisor，该Advisor可以扫描标注有@Transactional的
+    地方。同时，Spring还启用一个可以利用Advisor来创建代理的后置处理器，在Bean被创建时，后置处理器发挥作用，开始搜寻所有Advisor，最终为
+    这个Bean创建出代理对象，这个代理对象，就能进行事务的配置。
+

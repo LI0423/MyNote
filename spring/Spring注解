@@ -1,0 +1,319 @@
+1.自定义注解
+
+    public @interface MyAnnotation {
+        [public] 参数类型 参数名称() [default 参数默认值];
+    }
+    注解有没有参数都可以。
+    访问修饰符必须为public，不写默认为public。
+    参数的类型只能是基本数据类型、String、Class、枚举类型、注解类型、注解类型以及数组。
+    参数名称一般定义为名词，如果注解只有一个元素，名字定义为value会使用更便利。
+    参数名称后面的括号只是特殊语法。
+
+（1）指定注解的使用范围：@Target
+    @Target(value={ElementType.TYPE,ElementType.METHOD})
+
+    TYPE：类、接口、枚举、注解上面
+    FIELD：字段上
+    METHOD：方法上
+    PARAMETER：方法的参数上
+    CONSTRUCTOR：构造函数上
+    LOCAL_VARIABLE：本地变量上
+    ANNOTATION_TYPE：注解上
+    PACKAGE：包上
+    TYPE_PARAMETER：类型参数上
+    TYPE：类型名称上
+
+（2）指定注解的保留策略：@Retention
+    @Retention(RetentionPolicy.SOURCE)
+
+    SOURCE：注解只保留在源码中，编译为字节码之后就丢失了，也就是class文件中就不存在了。
+    CLASS：注解只保留在源码和字节码中，运行阶段会丢失。
+    RUNTIME：源码、字节码、运行期间都存在。
+
+（3）综合示例：
+    @Target(value={
+        ElementType.TYPE,
+        ElementType.METHOD,
+        ElementType.FIELD,
+        ElementType.PARAMETER,
+        ElementType.CONSTRUCTOR,
+        ElementType.LOCAL_VARIABLE
+    })
+    @Retention(RetentionPolicy.RUNTIME)
+    public @interface Ann {
+        String value();
+
+        ElementType elementType();
+    }
+
+    @Ann(value="用在类上",elementType = ElementType.TYPE)
+    public class UseAnn {
+        @Ann(value="用在属性上",elementType = ElementType.FIELD)
+        private String a;
+
+        @Ann(value="用在构造方法上",elementType = ElementType.CONSTRUCTOR)
+        public UseAnn(@Ann(value = "用在参数上",elementType = ElementType.PARAMETER)String a){
+            this.a = a;
+        }
+
+        @Ann(value="用在普通方法上",elementType = ElementType.METHOD)
+        public void method(){
+            @Ann(value="用在本地变量上",elementType = ElementType.LOCAL_VARIABLE)
+            String arg;
+        }
+    }
+
+2.@Configuration 和 @Bean
+（1）@Configuration
+    加在类上让这个类的功能等同于一个bean.xml配置文件
+（2）@Bean
+    用在方法上表示通过方法来定义一个bean，默认将方法名称作为bean名称，将方法返回值作为bean对象，注册到spring容器中。
+（3）@Configuration加不加的区别
+    有没有@Configuration注解，@Bean都会生效，都会将修饰的方法作为bean注册到容器中。
+    被@Configuration修饰的类，spring容器中会通过cglib给这个类创建一个代理，代理会拦截所有被@Bean修饰的方法，默认情况下
+保证这些方法只被调用一次，确保是单例的。
+
+3.@ComponentScan 和 @ComponentScans
+（1）@ComponentScan
+    会让spring去扫描某些包及其子包中所有的类，然后将满足一定条件的类作为bean注册到spring容器中。
+    通过value、basePackages、basePackageClasses这3个参数来扫描指定的包，并且会递归下面子包，得到一批类的数组。
+    通过useDefaultFilters、includeFilters、excludeFilters来控制过滤器，剩下的类会被注册到容器中。
+    指定包名的方式配置扫描范围存在的隐患，包名被重命名之后会导致扫描失效，所以我们在需要扫描的包中可以创建一个标记的接口或者类，
+作为basePackageClasses的值，通过这个来控制包的扫描范围。
+
+4.@EnableAsync 和 @Async
+（1）用法
+    需要异步执行的方法上面使用@Async注解标注，若bean中所有的方法都需要异步执行，可以直接将@Async加载类上。
+    将@EnableAsync添加在spring配置类上，此时@Async注解才会起效。
+（2）无返回值的
+    方法返回值不是Future类型的，被执行时会立即返回并且无法获取方法返回值。
+    
+    @Component
+    public class LogService{
+        @Async
+        public void log(String msg) throws InterruptedException{
+        }
+    }
+（3）获取异步返回值
+    如果需要获取异步执行结果，方法返回值必须为Future类型，使用spring提供的静态方法org.springframework.scheduling
+    .annotation.AsyncResult.forvalue创建返回值。
+    public Future<String> getGoodsInfo(long goodsId) throws InterruptedException{
+        return AsyncResult.forValue(String.format("商品%基本信息！",goodsId));
+    }
+（4）自定义异步处理的线程池
+    方法一： 在spring容器中定义一个线程池类型的bean，bean名称必须是taskExecutor
+    @Bean
+    public Executor taskExecutor(){
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        executor.setCorePoolSize(10);
+        executor.setMaxPoolSize(100);
+        executor.setThreadNamePrefix("myThread");
+        return executor;
+    }
+    方法二： 定义一个bean，实现AsyncConfigurer接口中的getAsyncExecutor方法，需要返回自定义的线程池。
+    @EnableAsync
+    public class MainConfig {
+        @Bean
+        public LogService logService(){
+            return new LogService();
+        }
+
+        //定义一个AsyncConfigurer类型的bean，实现getAsyncExecutor方法，返回自定义的线程池
+        @Bean
+        public AsyncConfigurer asyncConfigurer(@Qualifier("logExecutors") Executor executor){
+            return new AsyncConfigurer(){
+                @Nullable
+                @Override
+                public Executor getAsyncExecutor(){
+                    return executor;
+                }
+            }
+        }
+
+        //定义一个线程池，用来异步处理日志方法调用
+        @Bean
+        public Executor logExecutors(){
+            ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+            executor.setCorePoolSize(10);
+            executor.setMaxPoolSize(100);
+            executor.setThreadNamePrefix("myThread");
+            return executor;
+        }
+    }
+（5）自定义异常处理
+    情况一： 返回值为Future类型，通过try...catch来捕获异常。
+    情况二： 无返回值异常处理，当返回值不是Future时，可以自定义一个bean，实现AsyncConfigurer接口中的
+getAsyncUncaughtExceptionHandler方法，返回自定义的异常处理器，当目标方法执行过程中抛出异常的时候，
+会自动回调AsyncUncaughtExceptionHandler.handlerUncaughtException这个方法。
+    @Bean
+    public AsyncConfigurer asyncConfigurer(){
+        return new AsyncConfigurer(){
+            @Nullable
+            @Override
+            public AsyncUncaughtExceptionHandler getAsyncUncaughtExceptionHandler(){
+                return new AsyncUncaughtExceptionHandler(){
+                    @Override
+                    public void handlerUncaughtException(Throwable ex, Method method,Object... params){
+                        //当目标方法执行过程中抛出异常的时候，此时会自动回调这个方法，可以在此处理异常
+                    }
+                }
+            }
+        }
+    }
+（6）线程池隔离
+    
+    @Component
+    public class RechargeService {
+    //模拟异步充值
+        @Async(MainConfig.RECHARGE_EXECUTORS_BEAN_NAME)
+        public void recharge() {
+            System.out.println(Thread.currentThread() + "模拟异步充值");
+        }
+    }
+    
+    @Component
+    public class CashOutService {
+        //模拟异步提现
+        @Async(MainConfig.CASHOUT_EXECUTORS_BEAN_NAME)
+        public void cashOut() {
+            System.out.println(Thread.currentThread() + "模拟异步提现");
+        }
+    }
+    
+    @EnableAsync
+    @ComponentScan
+    public class MainConfig {
+        //充值业务线程池bean名称
+        public static final String RECHARGE_EXECUTORS_BEAN_NAME = "rechargeExecutors";
+        //提现业务线程池bean名称
+        public static final String CASHOUT_EXECUTORS_BEAN_NAME = "cashOutExecutors";
+
+        //充值的线程池
+        @Bean(RECHARGE_EXECUTORS_BEAN_NAME)
+        public Executor rechargeExecutors(){
+            ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+            executor.setCorePoolSize(10);
+            executor.setMaxPoolSize(100);
+            executor.setThreadNamePrefix("recharge-thread-");
+            return executor;
+        }
+
+        //提现的线程池
+        @Bean(CASHOUT_EXECUTORS_BEAN_NAME)
+        public Executor cashOutExecutors(){
+            ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+            executor.setCorePoolSize(10);
+            executor.setMaxPoolSize(100);
+            executor.setThreadNamePrefix("cashOut-thread-");
+            return executor;
+        }
+
+    }
+
+5.@Scheduled 和 @EnableScheduling
+@Scheduled配置定时规则
+（1）cron
+    秒 分 时 日 月 周 年(非必填)
+    * 表示所有值，例如在分上设置表示每一分钟都会触发。
+    ? 表示不指定值
+    - 表示区间，例如在小时上设置 10-12 ，表示10，11，12都会触发。
+    , 表示指定多个值，例如在周字段上设置“MON,WED,FRI”表示周一、三、五触发。
+    / 表示递增触发，例如在秒上设置 5/15 表示从5秒开始，每增15秒触发（5，20，35，50），在日字段上设置 1/3 表示每月1号开始，每隔三天触发一次。
+    L 表示最后的意思，例如在日字段上设置表示当月的最后一天。在周字段上设置表示星期六，相当于7或者SAT，在L前加数字表示该数据的最后一个，周上设置6L表示本月最后一个周五。
+    W 表示离指定日期最近的工作日
+    '#' 表示每月的第几个周几，例如周字段上设置 '6#3' 表示每月的第三个周六。
+
+    示例
+    每隔5秒执行一次： */5 * * * * ?
+    每隔1分钟执行一次： 0 */1 * * * ?
+    每天23点执行一次： 0 0 23 * * ?
+    每天凌晨1点执行一次： 0 0 1 * * ?
+    每月1号凌晨1点执行一次： 0 0 1 1 * ?
+    每月最后一天23点执行一次： 0 0 23 L * ?
+    每周星期六凌晨1点执行一次： 0 0 1 ? * L
+    在26分、29分、33分执行一次： 0 26,29,33 * * * ?
+（2）fixedDelay
+    上一次执行完毕时间点之后多长时间再执行。
+    @Scheduled(fixedDelay = 5000)   上一次执行完毕时间点之后5秒再执行
+（3）fixedDelayString
+    与fixedDelay意思相同，只是使用字符串的形式，支持占位符。
+    @Scheduled(fixedDelayString = "5000")   上一次执行完毕时间点之后5秒再执行
+    @Scheduled(fixedDelayString = "${time.fixedDelay}")
+（4）fixedRate
+    上一次开始执行时间点之后多长时间再执行。
+    @Scheduled(fixedRate = 5000)    上一次开始执行时间点之后5秒再执行
+（5）fixedRateString
+    与fixedRate意思相同，只是使用字符串的形式，支持占位符。
+（6）initialDelay
+    第一次延迟多长时间再执行。
+    @Scheduled(initialDelay = 1000, fixedRate = 5000)   第一次延迟1秒后执行，之后按fixedRate的规则每5秒执行一次
+（7）initialDelayString
+    与initialDelay意思相同，只是使用字符串的形式，支持占位符。
+为定时器定义线程池
+    @Bean
+    public ScheduledExecutorService taskExecutor(){
+        int corePoolSize = 20;
+        return new ScheduledThreadPoolExecutor(corePoolSize);
+    }
+
+6.@Qualifier
+    在依赖注入查找候选者的过程中对候选者进行过滤。
+（1）用在类上
+    限定符为tag时，进行bean注入的时候只会将类上限定符为tag的bean注入进来。
+    @Component
+    @Qualifier("tag")
+    public class Service implements IService{
+    }
+
+    @Component
+    public class test{
+        @Autowired
+        @Qualifier("tag")
+        private Map<String,IService> service;
+    }
+（2）@Autowired结合@Qualifier指定注入的bean
+    如果类上没有使用@Qualifier注解，在注入的时候bean的名称就是限定符的值。
+    @Component
+    public class test{
+        @Autowired
+        @Qualifier("service1")
+        private Map<String,IService> service;
+    }
+（3）用在方法参数上
+    public class test{
+        private IService s1;
+        private IService s2;
+
+        @Autowired
+        public void testInject(@Qualifier("service1") IService s1,@Qualifier("service2") IService s2){
+        }
+    }
+7.@Primary
+    注入依赖的过程中，如果有多个候选者，可以指定哪个候选者为主要的候选者。
+（1）用在类上
+    @Component
+    @Primary
+    public class Service implements IService{
+    }
+（2）用在方法上，接合@Bean使用
+    public class Service2 implements IService{
+    }
+
+    @Configuration
+    public class MainConfig{
+        @Bean
+        public IService service1(){
+            return new Service1();
+        }
+        @Bean
+        @Primary
+        public IService service2(){
+            return new Service2();
+        }
+    }
+
+    public class InjectTest(){
+        @Autowired
+        private IService service1;
+    }
+
