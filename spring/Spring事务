@@ -38,29 +38,47 @@
     表示当前方法必须运行在一个事务环境当中，如果当前方法已处于事务环境中，则可以直接使用该事务；否则会开启一个新事务后执行该方法。
     所有事务都处于同一个事务下，出现异常，不管是否捕获所有事务都回滚。
     例一：
-    public void mainTest(){
-        A();
-        childTest();
-    }
+    @Service
+    public class Main{
+        @Resource
+        Child child;
 
-    @Transactional(propagation = Propagation.REQUIRED)
-    public void childTest(){
-        B();
-        throw new RunTimeException();
+        public void mainTest(){
+            A();
+            child.childTest();
+        }
+    }
+    
+    @Service
+    public class Child{
+        @Transactional(propagation = Propagation.REQUIRED)
+        public void childTest(){
+            B();
+            throw new RunTimeException();
+        }
     }
     因为mainTest没有事务，而childTest新建了一个事务，所以A()插入成功，B()因为childTest抛出了异常而进行了回滚，插入失败。
 
     例二：
-    @Transactional(propagation = Propagation.REQUIRED)
-    public void mainTest(){
-        A();
-        childTest();
+    @Service
+    public class Main{
+        @Resource
+        Child child;
+
+        @Transactional(propagation = Propagation.REQUIRED)
+        public void mainTest(){
+            A();
+            child.childTest();
+        }
     }
 
-    @Transactional(propagation = Propagation.REQUIRED)
-    public void childTest(){
-        B();
-        throw new RunTimeException();
+    @Service
+    public class Child{
+        @Transactional(propagation = Propagation.REQUIRED)
+        public void childTest(){
+            B();
+            throw new RunTimeException();
+        }
     }
     因为REQUIRED的传播属性，如果存在事务，就加入到当前事务。因为mainTest已经有了事务，在mainTest中调用childTest时，childTest就会
     加入mainTest的事务中，当发生异常，则全部都回滚。
@@ -68,58 +86,94 @@
 （2）SUPPORTS
     如果当前方法处于事务环境中，则使用当前事务，否则不使用事务。
     例一：
-    public void mainTest(){
-        A();
-        childTest()
-    }
+    @Service
+    public class Main{
+        @Resource
+        Child child;
 
-    @Transactional(propagation = Propagation.SUPPORTS)
-    public void childTest(){
-        B();
-        throw new RunTimeException();
+        public void mainTest(){
+            A();
+            child.childTest()
+        }
+    }
+    
+    @Service
+    public class Child{
+        @Transactional(propagation = Propagation.SUPPORTS)
+        public void childTest(){
+            B();
+            throw new RunTimeException();
+        }
     }
     如果没有事务，就以非事务的方式运行。表明两个方法都没有使用事务，没有事务的话，A、B都能添加成功。
 
     例二：
-    @Transactional(propagation = Propagation.REQUIRED)
-    public void mainTest(){
-        A();
-        childTest();
-    }
+    @Service
+    public class Main{
+        @Resource
+        Child child;
 
-    @Transactional(propagation = Propagation.SUPPORTS)
-    public void childTest(){
-        B();
-        throw new RunTimeException();
+        @Transactional(propagation = Propagation.REQUIRED)
+        public void mainTest(){
+            A();
+            child.childTest();
+        }
+    }
+    
+    @Service
+    public class Child{
+        @Transactional(propagation = Propagation.SUPPORTS)
+        public void childTest(){
+            B();
+            throw new RunTimeException();
+        }
     }
     如果处于事务环境中，就加入到当前事务中。mainTest和childTest都同属于一个事务，而childTest抛出异常，A、B都会回滚。
 
 （3）MANDATORY
     表示调用该方法的线程必须处于当前事务环境中，否则将抛异常。
     例一：
-    public void mainTest(){
-        A();
-        childTest();
-    }
+    @Service
+    public class Main{
+        @Resource
+        Child child;
 
-    @Transactional(propagation = Propagation.MANDATORY)
-    public void childTest(){
-        B();
-        throw new RunTimeException();
+        public void mainTest(){
+            A();
+            child.childTest();
+        }
+    }
+    
+    @Service
+    public class Child{
+        @Transactional(propagation = Propagation.MANDATORY)
+        public void childTest(){
+            B();
+            throw new RunTimeException();
+        }
     }
     因为MANDATORY要求该方法必须处于事务环境中，而mainTest没有事务环境，所以会直接报错。
 
     例二：
-    @Transactional(propagation = Propagation.REQUIRED)
-    public void mainTest(){
-        A();
-        childTest();
+    @Service
+    public class Main{
+        @Resource
+        Child child;
+
+        @Transactional(propagation = Propagation.REQUIRED)
+        public void mainTest(){
+            A();
+            child.childTest();
+        }
     }
 
-    @Transactional(propagation = Propagation.MANDATORY)
-    public void childTest(){
-        B();
-        throw new RunTimeException();
+    @Service
+    public class Child{
+        @Transactional(propagation = Propagation.MANDATORY)
+        public void childTest(){
+            B();
+            throw new RunTimeException();
+        }
     }
     如果存在事务就加入当前事务，childTest抛出异常，A、B都会回滚。
 
@@ -127,61 +181,97 @@
     要求方法在新的事务环境中执行。如果当前方法已在事务环境中，则先暂停当前事务，在启动新的事务后执行该方法；如果当前方法不在事务
     环境中，则会启动一个新的事务后执行方法。
     例一：
-    public void mainTest(){
-        A();
-        childTest();
-    }
+    @Service
+    public class Main{
+        @Resource
+        Child child;
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void childTest(){
-        B();
-        throw new RunTimeException();
+        public void mainTest(){
+            A();
+            child.childTest();
+        }
+    }
+    
+    @Service
+    public class Child{
+        @Transactional(propagation = Propagation.REQUIRES_NEW)
+        public void childTest(){
+            B();
+            throw new RunTimeException();
+        }
     }
     mainTest不存在事务，A会添加成功，childTest创建一个新事务，抛出异常后，B会回滚。
 
     例二：
-    @Transactional(propagation = Propagation.REQUIRED)
-    public void mainTest(){
-        A();
-        childTest();
-    }
+    @Service
+    public class Main{
+        @Resource
+        Child child;
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void childTest(){
-        B();
-        throw new RunTimeException();
+        @Transactional(propagation = Propagation.REQUIRED)
+        public void mainTest(){
+            A();
+            child.childTest();
+        }
+    }
+    
+    @Service
+    public class Child{
+        @Transactional(propagation = Propagation.REQUIRES_NEW)
+        public void childTest(){
+            B();
+            throw new RunTimeException();
+        }
     }
     mainTest创建了一个事务，childTest新建了一个事务，在childTest中抛出异常，B会回滚，然后异常抛到mainTest，A也会回滚。
 
     例三：
-    @Transactional(propagation = Propagation.REQUIRED)
-    public void mainTest(){
-        A();
-        try {
-            childTest();
-        } catch(Exception e){
-            e.printStackTrace();
+    @Service
+    public class Main{
+        @Resource
+        Child child;
+
+        @Transactional(propagation = Propagation.REQUIRED)
+        public void mainTest(){
+            A();
+            try {
+                child.childTest();
+            } catch(Exception e){
+                e.printStackTrace();
+            }
         }
     }
-
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void childTest(){
-        B();
-        throw new RunTimeException();
+    
+    @Service
+    public class Child{
+        @Transactional(propagation = Propagation.REQUIRES_NEW)
+        public void childTest(){
+            B();
+            throw new RunTimeException();
+        }
     }
     如果不想让childTest抛出的异常影响到mainTest，就用try-catch将异常捕获，异常捕获后就不会影响到事务，所以A添加成功，B会回滚。
 
     例四：
-    @Transactional(propagation = Propagation.REQUIRED)
-    public void mainTest(){
-        A();
-        childTest();
-        throw new RunTimeException();
-    }
+    @Service
+    public class Main{
+        @Resource
+        Child child;
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void childTest(){
-        B();
+        @Transactional(propagation = Propagation.REQUIRED)
+        public void mainTest(){
+            A();
+            child.childTest();
+            throw new RunTimeException();
+        }
+    }
+    
+    @Service
+    public class Child{
+        @Transactional(propagation = Propagation.REQUIRES_NEW)
+        public void childTest(){
+            B();
+        }
     }
     childTest是一个新建的事务，只要不抛出异常就不会回滚，所以B添加成功，而mainTest抛出异常，A就会进行回滚。
     REQUIRES_NEW传播属性如果有异常，只会从被调用方影响调用方，而调用方不会影响被调用方，即childTest抛出异常会影响mainTest，
@@ -190,58 +280,94 @@
 （5）NOT_SUPPORTED
     不支持当前事务，总是以非事务状态执行。如果调用该方法的线程处于事务环境中，则先暂停当前事务，然后执行该方法。
     例一：
-    public void mainTest(){
-        A();
-        childTest();
-    }
+    @Service
+    public class Main{
+        @Resource
+        Child child;
 
-    @Transactional(propagation = Propagation.NOT_SUPPORTED)
-    public void childTest(){
-        B();
-        throw new RunTimeException();
+        public void mainTest(){
+            A();
+            child.childTest();
+        }
+    }
+    
+    @Service
+    public class Child{
+        @Transactional(propagation = Propagation.NOT_SUPPORTED)
+        public void childTest(){
+            B();
+            throw new RunTimeException();
+        }
     }
     NOT_SUPPORTED是以非事务的方式执行，childTest不存在事务，B添加成功，而mainTest也没有事务，A也添加成功。
 
     例二：
-    @Transactional(propagation = Propagation.REQUIRED)
-    public void mainTest(){
-        A();
-        childTest();
-    }
+    @Service
+    public class Main{
+        @Resource
+        Child child;
 
-    @Transactional(propagation = Propagation.NOT_SUPPORTED)
-    public void childTest(){
-        B();
-        throw new RunTimeException();
+        @Transactional(propagation = Propagation.REQUIRED)
+        public void mainTest(){
+            A();
+            child.childTest();
+        }
+    }
+    
+    @Service
+    public class Child{
+       @Transactional(propagation = Propagation.NOT_SUPPORTED)
+        public void childTest(){
+            B();
+            throw new RunTimeException();
+        }
     }
     childTest是以非事务的方式执行，B添加成功，而mainTest存在事务，报错后A会回滚。
 
 （6）NEVER
     不支持当前事务。如果调用该方法的线程处于事务环境中，将抛异常。
     例一：
-    public void mainTest(){
-        A();
-        childTest();
-    }
+    @Service
+    public class Main{
+        @Resource
+        Child child;
 
-    @Transactional(propagation = Propagation.NEVER)
-    public void childTest(){
-        B();
-        throw new RunTimeException();
+        public static void mainTest(){
+            A();
+            child.childTest();
+        }
+    }
+    
+    @Service
+    public class Child{
+        @Transactional(propagation = Propagation.NEVER)
+        public void childTest(){
+            B();
+            throw new RunTimeException();
+        }
     }
     childTest不存在事务，mainTest也不存在事务，所以A、B都会添加成功。
 
     例二：
-    @Transactional(propagation = Propagation.REQUIRED)
-    public void mainTest(){
-        A();
-        childTest();
-    }
+    @Service
+    public class Main{
+        @Resource
+        Child child;
 
-    @Transactional(propagation = Propagation.NEVER)
-    public void childTest(){
-        B();
-        throw new RunTimeException();
+        @Transactional(propagation = Propagation.REQUIRED)
+        public void mainTest(){
+            A();
+            child.childTest();
+        }
+    }
+    
+    @Service
+    public class Child{
+        @Transactional(propagation = Propagation.NEVER)
+        public void childTest(){
+            B();
+            throw new RunTimeException();
+        }
     }
     因为NEVER不支持使用事务，所以childTest会报错，B添加失败，而mainTest有事务，A会回滚。
 
@@ -249,29 +375,47 @@
     即使当前执行的方法处于事务环境中，依然会启动一个新的事务，并且方法在嵌套的事务里执行；即使当前执行的方法不在事务环境中，也会
     启动一个新事务，然后执行该方法。
     例一：
-    public void mainTest(){
-        A();
-        childTest();
-    }
+    @Service
+    public class Main{
+        @Resource
+        Child child;
 
-    @Transactional(propagation = Propagation.NESTED)
-    public void childTest(){
-        B();
-        throw new RunTimeException();
+        public void mainTest(){
+            A();
+            child.childTest();
+        }
+    }
+    
+    @Service
+    public class Child{
+        @Transactional(propagation = Propagation.NESTED)
+        public void childTest(){
+            B();
+            throw new RunTimeException();
+        }
     }
     childTest设置NESTED传播属性，相当于新建一个事务，所以childTest抛出异常后，B会回滚，mainTest没有事务，A添加成功。
 
     例二：
-    @Transactional(propagation = Propagation.REQUIRED)
-    public void mainTest(){
-        A();
-        childTest();
-        throw new RunTimeException();
-    }
+    @Service
+    public class Main{
+        @Resource
+        Child child;
 
-    @Transactional(propagation = Propagation.NESTED)
-    public void childTest(){
-        B();
+        @Transactional(propagation = Propagation.REQUIRED)
+        public void mainTest(){
+            A();
+            child.childTest();
+            throw new RunTimeException();
+        }
+    }
+    
+    @Service
+    public class Child{
+        @Transactional(propagation = Propagation.NESTED)
+        public void childTest(){
+            B();
+        }
     }
     childTest是一个嵌套事务，当主事务抛出异常，嵌套事务也会受到影响，A、B都会添加失败。
     NESTED和REQUIRES_NEW的区别：
@@ -279,38 +423,56 @@
         NESTED是嵌套事务，是调用方的子事务，如果调用方发生回滚，被调用方也会回滚。
 
     例三：
-    @Transactional(propagation = Propagation.REQUIRED)
-    public void mainTest(){
-        A();
-        try {
-            childTest();
-        } catch (Exception e){
-            e.printStackTrace();
+    @Service
+    public class Main{
+        @Resource
+        Child child;
+
+        @Transactional(propagation = Propagation.REQUIRED)
+        public void mainTest(){
+            A();
+            try {
+                child.childTest();
+            } catch (Exception e){
+                e.printStackTrace();
+            }
         }
     }
-
-    @Transactional(propagation = Propagation.NESTED)
-    public void childTest(){
-        B();
-        throw new RunTimeException();
+    
+    @Service
+    public class Child{
+        @Transactional(propagation = Propagation.NESTED)
+        public void childTest(){
+            B();
+            throw new RunTimeException();
+        }
     }
     childTest是子事务，报错之后B会回滚，而在mainTest中将异常捕获了，就不会受到影响，A添加成功。
 
     例四：
-    @Transactional(propagation = Propagation.REQUIRED)
-    public void mainTest(){
-        A();
-        try {
-            childTest();
-        } catch(Exception e){
-            e.printStackTrace();
+    @Service
+    public class Main{
+        @Resource
+        Child child;
+
+        @Transactional(propagation = Propagation.REQUIRED)
+        public void mainTest(){
+            A();
+            try {
+                child.childTest();
+            } catch(Exception e){
+                e.printStackTrace();
+            }
         }
     }
-
-    @Transactional(propagation = Propagation.REQUIRED)
-    public void childTest(){
-        B();
-        throw new RunTimeException();
+    
+    @Service
+    public class Child{
+        @Transactional(propagation = Propagation.REQUIRED)
+        public void childTest(){
+            B();
+            throw new RunTimeException();
+        }
     }
     mainTest和childTest同处一个事务中，如果有一个方法报错回滚，并且被捕获。整个事务如果还有数据添加就会抛出
     ‘Transaction rolled back because it has been marked as rollback-only’，同一个事务不能出现有的回滚了，有的不回滚，
@@ -356,3 +518,138 @@
     地方。同时，Spring还启用一个可以利用Advisor来创建代理的后置处理器，在Bean被创建时，后置处理器发挥作用，开始搜寻所有Advisor，最终为
     这个Bean创建出代理对象，这个代理对象，就能进行事务的配置。
 
+9.Spring事务失效
+（1）同一类中方法的调用
+    当一个类中的一个方法调用同类中的另一个方法时，如果调用的方法带有@Transactional注解，但这个调用是直接的内部方法调用（不是通过代理对象调用的），
+    Spring事务不会生效。因为内部方法调用不通过Spring生成的代理类进行调用，而是直接在当前对象中执行，因此Spring无法介入处理事务。
+    @Service
+    public class TransactionService{
+
+        @Transactional
+        public void mainTest(){
+            A();
+            // 事务在这里生效
+            this.childTest();
+        }
+
+        @Transactional
+        public void childTest(){
+            // 事务在这里失效，因为是通过内部调用的
+            B();
+            throw new RunTimeException();
+        }
+    }
+
+    解决办法
+        方法一：通过Spring容器重新获取代理对象。
+        
+        @Service
+        public class TransactionService{
+            @Autowired
+            private ApplicationContext context;
+
+            @Transactional
+            public void publicMethod(){
+                // 从Spring容器中获取代理对象
+                TransactionService proxy = context.getBean(TransactionService.class);
+                proxy.internalMethod(); // 通过代理对象调用方法，事务生效
+            }
+
+            @Transactional
+            public void internalMethod(){
+                // 事务在这里生效
+            }
+        }
+        当@Transactional注解标记在某个方法上时，Spring会为这个类创建一个代理对象，并将该代理对象注册到
+        ApplicationContext中。使用ApplicationContext.getBean(TransactionService.class)获取到的
+        是代理对象，而不是目标类的原始对象。
+
+        方法二：将事务性方法抽取到另一个类中。
+        @Service
+        public class TransactionService{
+            @Autowired
+            private AnotherService anotherService;
+
+            public void publicMethod(){
+                // 调用另一个类中的方法，事务生效
+                anotherService.internalMethod();
+            }
+        }
+
+        @Service
+        public class AnotherService{
+            @Transactional
+            public void internalMethod(){
+                // 事务在这里生效
+            }
+        }
+
+        方法三：使用AOP编程手动管理事务
+        @Service
+        public class TransactionService{
+            @Autowired
+            private PlatformTransactionManager transactionManager;
+
+            public void publicMethod(){
+                DefaultTransactionDefinition def = new DefaultTransactionDefinition();
+                TransactionStatus status = transactionManager.getTransaction(def);
+
+                try {
+                    internalMethod();
+                    transactionManager.commit(status);
+                } catch(Exception e){
+                    transactionManager.rollback(status);
+                    throw e;
+                }
+            }
+
+            @Transactional
+            public void internalMethod(){
+                // 事务生效
+            }
+        }
+
+        方法四：使用@EnableAspectJAutoProxy(proxyTargetClass = true, exposeProxy = true)
+        使用该方法可以在内部调用时获取当前的代理对象，并通过代理对象调用方法。
+        @Configuration
+        @EnableAspectJAutoProxy(exposeProxy = true)
+        public class AppConfig(){}
+
+        @Service
+        public class TransactionService{
+            @Transactional
+            public void publicMethod(){
+                // 获取代理对象
+                TransactionService proxy = (TransactionService) AppContext.currentProxy();
+                proxy.internalMethod(); // 通过代理对象调用方法
+            }
+
+            @Transactional
+            public void internalMethod(){
+                // 事务生效
+            }
+        }
+（2）static和final关键字的使用
+    a.final关键字
+        CGLIB代理无法重写final方法：CGLIB代理通过生成类的子类并重写方法来实现代理。如果某个方法是final的，那么CGLIB无法
+        重写该方法，也就无法对该方法进行代理。由于Spring的事务管理依赖代理，如果目标是final的，事务切面无法应用到该方法上。
+        CGLIB无法代理final类：由于CGLIB代理需要通过继承目标来创建代理对象，如果类本身是final的，CGLIB无法继承这个类，从
+        而无法创建代理对象，导致事务功能无法应用到该类中。
+
+        @Service
+        public class TransactionService{
+            @Transactional
+            public final void performTransaction(){
+                // 事务管理将无法应用于此方法
+            }
+        }
+    b.static关键字
+        Spring的AOP代理是基于对象的，通过代理对象的实例方法来拦截和管理切面逻辑。static方法是属于类本身的，而不是类的实例。
+
+        @Service
+        public class TransactionService{
+            @Transactional
+            public static void performStaticTransaction(){
+                // 事务管理将无法应用于此静态方法
+            }
+        }
