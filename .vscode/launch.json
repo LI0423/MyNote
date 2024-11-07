@@ -8,6 +8,27 @@
             "type": "java",
             "name": "Test",
             "request": "launch",
+            "mainClass": "DesignPattern.Interpreter.Test",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "Test",
+            "request": "launch",
+            "mainClass": "DesignPattern.Prototype.Test",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "Test",
+            "request": "launch",
+            "mainClass": "DesignPattern.Flyweight.Test",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "Test",
+            "request": "launch",
             "mainClass": "DesignPattern.Command.Test",
             "projectName": "MyNote_f98cd070"
         },
