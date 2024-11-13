@@ -1,6 +1,568 @@
-1、静态内部类加载时机
+一、基础概念与常识
+1、JVM JDK JRE
+    JVM
+        java虚拟机，是运行java字节码的虚拟机。jvm有针对不同系统的特定实现，目的是实用相同的字节码都会给出相同的结果。
+        字节码和不同系统的JVM是实现Java语言“一次编译，随处运行的关键所在”。不同的编程语言通过各自的编译器编译成.class文件，
+        并最终通过JVM在不同平台上运行。
+    JDK和JRE
+        JDK是一个功能齐全的Java开发工具包，供开发者使用，用于创建和编译Java程序。包含了JRE，以及编译器javac和其他工具。
+        JRE是运行已编译Java程序所需的环境，包含JVM和Java基础类库。
+        从JDK9开始就不区分JDK和JRE的关系了，取而代之的是模块系统（JDK被重新组织成94个模块）+ jlink工具。Java应用可以通过
+        jlink工具，创建出只包含所依赖的JDK模块的自定义运行时镜像，可以减小Java运行时环境的大小。
+2、字节码、字节码的好处？
+    JVM可以理解的代码叫做字节码（扩展名为.class文件），它不面向任何特定的机器，只面向虚拟机。
+    Java程序从源代码到的运行过程：
+        .java -> javac编译 -> .class -> 解释器&JIT -> 机器码 -> 应用
+    在.class -> 机器码 这一步，JVM类加载器首先加载字节码文件，然后通过解释器逐行执行，执行速度相对较慢，而且有些方法和代码块
+    是经常需要被调用的（也就是热点代码），后面引进了JIT编译器，JIT编译器属于运行时编译，当JIT编译器完成第一次编译后，其会将字节码
+    对应的机器码保存下来，下次可以直接使用。
+        .java -> javac编译 -> .class -> 热点代码 -> yes -> JIT -> 应用
+                                                    no -> 解释器 -> 应用
+3、为什么说Java语言“编译与解释并存”？
+    编译型：编译型语言会通过编译器将源代码一次性翻译成该平台执行的机器码。一般情况下，编译语言的执行速度比较快，开发效率比较低。C、C++、Go、Rust。
+    解释型：解释型语言会通过解释器一句一句的将代码解释为机器代码后再执行。解释型语言开发效率比较快，执行速度比较慢。Python、JavaScript、PHP。
+    Java程序需要先经过编译步骤，生成字节码（.class文件），这种字节码必须由Java解释器来解释执行。
+4、AOT有什么优点？
+    JDK引入了一种新的编译模式AOT。这种编译模式会在程序被执行前就将其编译成机器码，属于静态编译。AOT避免了JIT预热等各方面的开销，可以提高Java程序的
+    启动速度，避免预热时间长。AOT还能减少内存占用和增强Java程序的安全性（AOT编译后的代码不容易被反编译和修改）。
+    AOT的主要优势在于启动时间、内存占用和打包体积。JIT的主要优势在于具备较高极限处理能力，可以降低请求的最大延迟。
+    AOT更适合当下的云原生场景，对微服务架构支持也比较友好，但无法支持Java的动态特性，如反射、动态代理、动态加载、等。
+5、Java和C++的区别
+    Java和C++都是面向对象的语言，都支持封装、继承和多态。
+    Java不提供指针来直接访问内存，程序内存更安全。
+    Java的类是单继承的，C++支持多重继承；虽然Java的类不可以多继承，但是接口可以多继承。
+    Java有自动内存管理垃圾回收机制（CG），不需要程序员手动释放无用内存。
+
+二、基本数据类型
+1、基本数据类型
+    6种数字类型：
+        4种整数型：byte、short、int、long
+        2种浮点型：float、double
+    1种字符类型：char
+    1种布尔型：boolean
+2、基本类型和包装类型的区别
+    用途：除了定义一些常量和局部变量之外，在其他地方很少使用基本类型来定义变量。并且包装类型可以用于范型，而基本类型不可以。
+    存储方式：基本数据类型的局部变量存放在Java虚拟机栈中的局部变量表中，基本数据类型的成员变量（未被static修饰）存放在Java虚拟机堆中。
+    包装类型属于对象类型，对象实例都存在于堆中。
+    占用空间：相比于包装类型，基本数据类型占用空间非常小。
+    默认值：成员变量包装类型不赋值就是null，而基本类型有默认值且不是null。
+    比较方式：对于基本数据类型，==比较的是值。对与包装数据类型，==比较的是对象的内存地址。所有的包装类型对象比较用的是equals()。
+3、为什么说是几乎所有对象实例都存在于堆中？
+    因为HotSpot虚拟机引入JIT优化后，会对对象进行逃逸分析，如果发现某一个对象没有逃逸到方法外部，那么可以通过标量替换来实现栈上分配，
+    而避免堆上分配内存。
+    基本数据类型的存储位置取决于它们的作用域和声明方式。如果是局部变量，那么会存放在栈中；如果是成员变量，那么会存放在堆、方法区、元空间中。
+4、包装类型的缓存机制
+    Java基本数据类型的包装类型的大部分用到了缓存机制来提升性能。Byte，short，Integer，Long这4种包装类默认创建了数值[-128,127]的相应类型的缓存数据，
+    Charcter创建了数值在[0,127]范围的缓存数据，Boolean直接返回True or False。
+5、自动装箱与拆箱
+    装箱：将基本类型用它们对应的引用类型包装起来；
+    拆箱：将包装类型转换为基本数据类型；
+    装箱调用了包装类的valueOf()方法，拆箱其实是调用了xxxValue()方法。如果频繁拆装箱的话，也会严重影响系统的性能。
+6、为什么浮点数运算的时候会有丢失精度的风险
+    和计算机保存浮点数的机制有关系，计算机是二进制的，而且计算机在表示一个数字时，宽度是有限的，无限循环小数存储在计算机时，只能被截断，所以会导致小数精度
+    发生损失的情况。
+7、如何解决浮点数运算的精度丢失问题
+    BigDecimal可以实现对浮点数的运算，不会造成精度丢失。
+
+三、变量
+1、成员变量与局部变量的区别
+    存储方式：从变量在内存中存储方式来看，如果成员变量是使用static修饰的，那么成员变量是属于类的，如果没有使用static修饰，这个成员变量是属于实例的。
+    而对象存在于堆内存中，局部变量则存在栈内存。
+    生存时间：从变量在内存中的生存时间上看，成员变量是对象的一部分，随着对象的创建而存在，而局部变量随着方法的调用而自动生成，随着方法的调用而结束。
+    默认值：从变量是否有默认值来看，成员变量如果没有赋初始值，则会自动以类型的默认值而赋值（一种情况例外：被final修饰的成员变量也必须显式地赋值），
+    而局部变量则不会自动赋值。
+2、静态变量的作用
+    静态变量可以被类的所有实例共用，无论一个类创建多少个实例对象，它们都共享同一个静态变量。也就是静态变量只会分配一次内存，可以节省空间。
+3、静态内部类加载时机
 （1）当外部类第一次使用到该静态内部类时。如果只定义了静态内部类而没有对其进行任何操作或引用，那么该静态内部类不会被加载。
 （2）当通过反射调用静态内部类的构造函数创建对象时。可以使用Class.forName()来获取并实例化静态内部类。
 （3）当直接访问静态内部类的成员变量、方法或者静态属性时。
 （4）当静态内部类与外部存在相互关联（比如静态内部类持有外部类的引用）时，也会导致静态内部类的加载。
 （5）当静态内部类被序列化或反序列化时，需要确保静态内部类已经被加载。
+
+四、方法
+1、静态方法为什么不能调用非静态成员
+    静态方法是属于类的，在类加载的时候就会分配内存，可以通过类名直接访问，而非静态成员是属于实例对象的，需要对象实例化之后才存在，需要通过实例对象进行访问。
+    在类的非静态成员不存在的时候静态方法已经存在了，此时调用内存中还不存在非静态成员，属于非法操作。
+2、重载和重写的区别
+    重载发生在同一个类中（或者父类和子类之间），方法名必须相同，参数类型不同、个数不同、顺序不同，方法返回值和访问修饰符可以不同。
+    重写发生在运行期间，是子类对父类的允许访问的方法的实现过程进行重写。
+        方法名、参数列表必须相同，子类方法返回值类型应比父类返回值类型更小或相等，抛出的异常范围小于等于父类，访问修饰符范围大于等于父类。
+        如果父类方法访问修饰符为 private/final/static 则子类就不能重写该方法，但是被static修饰的方法能够被再次声明。
+        构造方法无法被重写。
+3、什么是可变长参数
+    允许在调用方法时传入不定长度的参数，可变参数只能作为函数的最后一个参数，前面可以有也可以没有任何其他参数。
+    可变参数编译后会被转换成一个数组。
+
+五、面向对象
+1、对象实体与对象引用的不同
+    new创建对象实例（在堆中），对象引用指向对象实例（在栈中）。
+    一个对象引用可以指向0个或1个对象，一个对象可以有n个引用指向它。
+2、对象的相等和引用相等的区别
+    对象的相等一般比较的是内存中存放的内容是否相等。
+    引用相等一般比较的是指向内存地址是否相等。
+3、接口和抽象类的区别
+    目的：接口主要用于对类的行为进行约束，实现了某个接口就会拥有对应的行为。抽象类主要用来代码复用，强调的是所属关系。
+    继承和实现：一个类只能继承一个类，但一个类可以实现多个接口，一个接口也可以继承多个其他接口。
+    成员变量：接口中的成员变量只能是public static final类型的，不能被修改且必须有初始值。抽象类的成员变量可以有任何修饰符（private，protected，public），
+        可以在子类中被重新定义或赋值。
+    方法：在Java8以前，接口中的默认方法是public abstract，也就是只能有方法声明。自Java8开始，可以在接口中定义default方法和static方法。Java9开始，
+        接口可以包含private方法。抽象类可以包含抽象方法和非抽象方法。抽象方法没有方法体，必须在子类中实现。非抽象方法有具体实现，可以直接在抽象类中使用
+        或在子类中重写。
+4、default、static方法
+    Java8引入的default方法用于提供接口方法的默认实现，可以在实现类中被覆盖，就可以在不修改实现类的情况下向现有接口添加新功能，增强接口的扩展性和兼容性。
+    Java8引入的static方法无法在实现类中被覆盖，只能通过接口名直接调用，类似于类中的静态方法。static方法通常用于定义通用的、与接口相关的工具方法。
+
+4、深拷贝、浅拷贝、引用拷贝
+    浅拷贝：会在堆上创建一个新的对象，如果原对象内部的属性是引用类型的话，浅拷贝会直接复制内部对象的引用地址，也就是说浅拷贝和原对象共用一个内部对象。
+        public class Address implements Cloneable{
+            private String name;
+            @Override
+            public Address clone(){
+                try {
+                    return (Address) super.clone();
+                } catch(CloneNotSupportedException e){
+                    throw new AssertionError();
+                }
+            }
+        }
+
+        public class Person implements Cloneable{
+            private Address address;
+            @Override
+            public Person clone(){
+                try {
+                    Person person = (Person) super.clone();
+                    return person;
+                } catch (CloneNotSupportedException e){
+                    throw new AssertionError();
+                }
+            }
+        }
+        
+        public class Test{
+            public static void main(String[] args){
+                Person person1 = new Person();
+                Person person2 = person1.clone();
+                System.out.println(person1.getAddress() == person2.getAddress()); // true
+            }
+        }
+    深拷贝：会完全复制整个对象，包括这个对象所包含的内部对象。
+        public class Person implements Cloneable{
+            private Address address;
+            @Override
+            public Person clone(){
+                try {
+                    Person person = (Person) super.clone();
+                    person.setAddress(person.getAddress().clone());
+                    return person;
+                } catch (CloneNotSupportedException e){
+                    throw new AssertionError();
+                }
+            }
+        }
+    引用拷贝：就是两个不同的引用指向同一个对象。
+
+六、Object
+1、==和quals()的区别
+    对于基本数据类型来说，==比较的是值。对于引用对象来说，==比较的是对象的内存地址。
+    equals()不能用于判断基本数据类型的变量，只能用来判断两个对象是否相等。如果类没有重写equals()方法，通过equals()比较该类的两个对象时，等价于==比较。
+    如果重写了equals()，就是用来比较两个对象中的属性是否相等。
+    String类中的equals()方法是重写过的，因为Object中的equals比较的是对象的内存地址，而String中的equals方法比较的是对象的值。
+2、hashCode()的作用
+    hashCode()的作用是获取哈希码，也称为散列码。哈希码的作用是确定该对象在哈希表中的索引位置。
+3、为什么两个对象有相同的hashCode值，也不一定相等
+    哈希算法可能会发生碰撞。
+    如果两个对象的hashCode值相等，那这两个对象不一定相等（哈希碰撞）。
+    如果两个对象的hashCode值相等并且equals()方法也返回true，两个对象相等。
+    如果两个对象的hashCode值不相等，那么就可以认为这两个对象不相等。
+4、为什么重写equals()时必须重写hashCode()方法
+    因为两个相等的对象的hashCode值必须是相等的，也就是如果equals方法判断两个对象是相等的，那么两个对象的hashCode值也要相等。
+    如果重写equals时没有重写hashCode，可能会导致equals方法判断是相等的两个对象，hashCode值却不相等。
+
+七、String
+1、String、StringBuffer、StringBuilder的区别
+    可变性：String是不可变的，StringBuffer和StringBuilder都继承自AbstractStringBuilder类，在这个抽象类中使用字符数组保存字符串，不过没有使用
+        final和private关键字修饰，并且提供了很多修改字符串的方法，比如append。
+    线程安全性：String中的对象是不可变的，也就可以理解为常量，线程安全。AbstractStringBuilder中定义了一些字符串的基本操作，比如expendCapacity、
+        append、insert、indexOf等公共方法。StringBuffer对方法加了同步锁或者对调用的方法加了同步锁，所以是线程安全的。StringBuilder并没有对
+        方法进行加同步锁，所以是非线程安全的。
+    性能：每次对String类型进行改变的时候都会生成一个新的String对象，然后将指针指向新的String对象。StringBuffer每次会对本身进行操作，而不是生成
+        新的对象并改变对象的引用。
+    操作少量的数据适用String；单线程操作字符串缓冲区下操作大量数据适用StringBuilder；多线程操作字符串缓冲区下操作大量数据适用StringBuffer。
+2、String为什么是不可变的
+    被final关键字修饰的类不能被继承，修饰的方法不能被重写，修饰的变量是基本数据类型则不能改变，修饰的变量是引用类型则不能再指向其他对象。
+    String真正不可变的原因：保存字符串的字符数组被final修饰且为私有的，并且String类没有提供修改这个字符串的方法。String被final修饰不能
+    被继承，避免了子类破坏String不可变。
+    Java9之后，String、StringBuilder、StringBuffer改用byte数组存储字符串。
+3、Java9为何要将String的底层实现由char[]改成byte[]
+    新版的String支持两个编码方案：Latin-1和UTF-16。如果字符串中包含的汉字没有超过Latin-1可表示范围内的字符，那么就会使用Latin-1作为编码方案。
+    byte占一个字节（8位），char占用2个字节（16位），byte相较char节省一半的内存空间。
+4、字符串拼接用 + 还是 StringBuilder
+    字符串对象通过“+”的字符串拼接，实际上是通过StringBuilder调用append()方法实现的，拼接完成后调用toString()得到一个String对象。
+    在循环中使用“+”进行字符串拼接的话，编译器不会创建单个StringBuilder以复用，会导致创建过多的StringBuilder对象。
+5、字符串常量池
+    字符串常量池是JVM为了提升性能和减少内存消耗针对字符串（String类）专门开辟的一块区域，主要目的是为了避免字符串的重复创建。
+    String s = new String("abc")会创建几个字符串对象？
+        会创建1或2个字符串对象。
+        字符串常量池中不存在“abc”：会创建2个字符串对象。一个在字符串常量池中，由ldc指令触发创建。一个在堆中，由new String()创建，并使用常量池
+        中的“abc”进行初始化。
+        字符串常量池中已存在“abc”：会创建1个字符串对象。该对象在堆中，由new String()创建，并使用常量池中的“abc”进行初始化。
+6、ldc（load constant）指令
+    从常量池中加载各种类型的常量，包括字符串常量、整数常量、浮点数常量，甚至类引用等。对于字符串常量，ldc指令的行为如下：
+        从常量池加载字符串：ldc首先检查字符串常量池中是否已经有内容相同的字符串对象。
+        复用已有字符串对象：如果字符串常量池中已经存在内容相同的字符串对象，ldc会将该对象的引用加载到操作数栈上。
+        没有则创建新对象并加入常量池：如果字符串常量池中没有相同内容的字符串对象，JVM会在常量池中创建一个新的字符串对象，并将其引用加载到操作数栈中。
+7、String.intern()
+    是一个native（本地）方法，用来处理字符串常量池中的字符串对象引用。工作流程可以概括为以下两种情况：
+        常量池中已有相同内容的字符串对象：如果字符串常量池中已经有一个与调用intern()方法的字符串内容相同的String对象，intern()方法会直接返回常量池
+        中的该对象的引用。
+        常量池中没有相同内容的字符串对象：如果字符串常量池中没有一个与调用intern()方法的字符串内容相同的对象，intern()方法会将当前字符串对象的引用
+        添加到字符串常量池中，并返回该引用。
+    intern()方法的主要作用是确保字符串引用在常量池中的唯一性。
+        # s1指向字符串常量池中的“java”对象
+        String s1 = "java";
+        # s2指向字符串常量池中的“java”对象，跟s1是同一个对象
+        String s2 = s1.intern();
+        # s3在堆上创建一个新的“java”对象，s3指向它
+        String s3 = new String("java");
+        # s4指向字符串常量池中的“java”对象，和s1是同一个对象
+        String s4 = s3.intern();
+8、String类型的变量和常量做“+”运算发生了什么
+    对于编译期可以确定值的字符串，也就是常量字符串，jvm会将其存入字符串常量池。并且字符串常量拼接得到的字符串常量在编译阶段就已经被存放字符串常量池。
+9、常量折叠（Constant folding）
+    在编译过程中，javac编译器会进行一个常量折叠的代码优化。常量折叠会把常量表达式的值求出来作为常量嵌在最终生成的代码中。
+    并不是所有的常量都会进行折叠，只有编译器在程序编译期就可以确定值的常量才可以。
+        基本数据类型（byte、short、char、 int、long、float、double）以及字符串常量。
+        final修饰的基本数据类型和字符串常量。
+        字符串通过“+”拼接得到的字符串、基本数据类型之间算数运算（加减乘除）、基本数据类型的位预算（<<、>>、>>>）
+    引用的值在程序编译期是无法确定的，编译期无法对其进行优化。
+
+八、异常
+1、Exception和Error的区别
+    Java中所有的异常都有一个共同的祖先java.lang包中的Throwable类。Throwable类有两个重要的子类：
+        Exception：程序本身可以处理的异常，可以通过catch来进行捕获。Exception又可以分为CheckedException（受检查异常，必须处理）和UncheckedException（不受检查异常，可以不处理）。
+        Error：属于程序无法处理的错误，例如Java虚拟机运行错误（Virtual MachineError）、虚拟机内存不够错误（OutOfMemoryError）、类定义错误（NoClassDeffoundError）等。发生这些
+        异常时，Java虚拟机会选择线程终止。
+2、Checked Exception和Unchecked Exception的区别
+    CheckedException即受检查异常，Java代码在编译过程中如果受检查异常没有被catch或者throws关键字处理的话，就没办法通过编译。
+    UncheckedException即不受检查异常，Java代码在编译过程中，即使不处理不受检查异常也可以正常通过编译。
+        RuntimeException及其子类都统称为非受检查异常：
+            NullPointerException、IllegalArgumentException、NumberFormatException、ArrayIndexOutOfBoundsException。。。
+3、Throwable类常用方法有哪些
+    String getMessage()：返回异常发生时的详细信息
+    String toString()：返回异常发生时的简要描述
+    String getLocalizedMessage()：返回异常对象的本地化信息。使用Throwable德子类覆盖这个方法，可以生成本地化信息。如果子类没有覆盖，则该方法返回的信息与getMessage()返回的结果相同。
+4、不在finally语句块中使用return
+    当try语句和finally语句块中都有return语句时，try语句块中的return会被忽略。因为try语句块中的return返回值会被暂存在一个本地变量中，当执行到finally语句中的retrun之后，这个本地变量
+    的值就变成了finally语句中的return返回值。
+5、如何使用try-with-resources代替try-catch-finally？
+    适用范围：任何实现java.lang.AutoCloseable或者java.io.Closeable的对象
+    关闭资源和finally块的执行顺序：在try-with-resources语句中，任何catch或finally块在声明的资源关闭后运行。
+    Java中类似于InputStream、OutputStream、Scanner、PrintWriter等的资源都需要我们调用close()方法来手动关闭，通常是适用try-catch-finally来实现的。
+    使用try-with-resources改造：
+        try(Scanner scanner = new Scanner(new File("text.txt"))){
+            while(scanner.hasNext()){
+                System.out.println(scanner.nextLine());
+            }
+        } catch(FileNotFoundException fnfe){
+            fnfe.printStackTrace();
+        }
+    多个资源进行关闭：
+        try(BufferedInputStream bin = new BufferedInputStream(new FileInputStream(new File("test.txt")));
+            BufferedOutputStream bout = new BufferedOutputStream(new FileOutputStream(new File("out.txt")))){
+                int b;
+                while((b = bin.read()) != -1){
+                    bout.write(b);
+                }
+        } catch (IOException e){
+            e.printStackTrace();
+        }
+
+九、范型
+1、范型的使用方式
+    范型类：
+        public class Generic<T>{
+            private T key;
+
+            public Generic(T key){
+                this.key = key;
+            }
+
+            public T getKey(){
+                return key;
+            }
+        }
+        Generic<Integer> genericInteger = new Generic<Integer>(123456);
+    范型接口：
+        public interface Generator<T>{
+            public T method();
+        }
+        # 实现范型接口，不指定类型
+        public GeneratorImpl implements Generator<T>{
+            @Override
+            public T method(){
+                return null;
+            }
+        }
+        # 实现范型接口，指定类型
+        public GeneratorImpl implements Generator<String>{
+            @Override
+            public String method(){
+                return "hello";
+            }
+        }
+    范型方法：
+        public static <E> void printArray(E[] inputArray){
+            for(E element : inputArray){
+                System.out.println("%s", element);
+            }
+            System.out.println();
+        }
+        Integer[] intArray = {1, 2, 3};
+        String[] stringArray= {"Hello", "World"};
+        printArray(inputArray);
+        printArray(stringArray);
+    在Java中范型只是一个占位符，必须在传递类型后才能使用。类在实例化时才能真正的传递类型参数，由于静态方法的加载先于类的实例化，
+    也就是说类中的范型还没有传递真正的类型参数，静态方法的加载就已经完成了，所以静态范型方法是没有办法使用类上声明的范型的。只能使用自己的。
+
+十、反射
+    赋予了我们在运行时分析类以及执行类中方法的能力。通过反射可以获取任意一个类的所有属性和方法。
+1、反射的应用场景
+（1）在框架中使用了动态代理，而动态代理的实现也依赖于反射。
+    public class DebugInvocationHandler implements InvocationHandler{
+        private final Object object;
+        public DebugInvocationHandler(Object object){
+            this.object = object;
+        }
+        public Object invoke(Object proxy, Method method, Object[] args) throws InvocationHandler{
+            System.out.println("before method " + method.getName());
+            Object result = method.invoke(target, args);
+            System.out.println("after method " + method.getName());
+            return result;
+        }
+    }
+（2）在注解中也用到了反射
+    在spring中使用@Component可以获取到Spring Bean，使用@Value可以获取配置文件中的值，都是基于反射分析类，然后获取到类/属性/方法/方法的参数上的注解。
+2、反射机制的优缺点
+    优点：让代码更灵活，为各种框架提供开箱即用的功能提供了便利。
+    缺点：增加了安全问题。比如可以无视范型参数的安全检查（范型参数的安全价差发生在编译时）。反射的性能也要稍差点。
+3、反射实战
+（1）获取Class对象
+    知道具体类：
+        Class class = TargetObject.class;
+    通过Class.forName()传入类的全路径获取：
+        Class class = Class.forName("cn.java.TargetObject");
+    通过对象实例instance.getClass()获取：
+        TargetObject o = new TargetObject();
+        Class class = o.getClass();
+    通过类加载器xxxClassLoader.loadClass()传入类路径获取：
+        ClassLoader.getSystemClassLoader().loadClass("cn.java.TargetObject");
+        通过类加载器获取Class对象不会进行初始化，意味着不进行包括初始化等一系列步骤，静态代码块和静态对象不会得到执行。
+（2）基本操作
+    public class TargetObject{
+        private String value;
+
+        public TargetObject(){
+            value = "java";
+        }
+
+        public void publicMethod(String s){
+            System.out.println("I love " + s);
+        }
+
+        private void privateMethod(){
+            System.out.println("value is " + value);
+        }
+    }
+
+    public class Test{
+        public static void main(String[] args) throws ClassNotFoundException, NoSuchMethodException, 
+            IllegalAccessException, InstantiationException, InvocationTargetException, NoSuchFieldException{
+            # 通过传入类路径来获取目标类，然后进行实例化
+            Class<?> targetClass = Class.forName("cn.java.TargetObject");
+            TargetObject targetObject = (TargetObject)targetClass.newInstance();
+
+            # 获取TargetObject类中定义的所有方法
+            Method[] methods = targetClass.getDeclaredMethods();
+            for(Method method: methods){
+                System.out.println(method.getName());
+            }
+
+            # 获取指定方法并调用
+            Method publicMethod = targetClass.getDeclaredMethod("publicMethod", String.class);
+            publicMethod.invoke(targetObject, "java");
+
+            # 获取指定参数并对参数进行修改
+            Field field = targetClass.getDeclaredField("value");
+            # 为了对类中的参数进行修改，需要取消安全检查
+            field.setAccessible(true);
+            field.set(targetObject, "java")
+
+            # 调用private方法
+            Method privateMethod = targetClass.getDeclaredMethod("privateMethod");
+            # 调用private方法需要取消安全检查
+            privateMethod.setAccessible(true);
+            privateMethod.invoke(targetObject);
+        }
+    }
+4、Java代理模式
+    使用代理对象来替换真实对象，可以在不修改真实对象的前提下，提供额外的功能操作，扩展目标对象的功能。
+（1）JDK动态代理
+    Java动态代理机制中InvocationHandler接口和Proxy类是核心。
+    Proxy类中使用频率最高的方法是：newProxyInstance()，这个方法主要用来生成一个代理对象。
+        # loader：类加载器，用于加载代理对象。
+        # interfaces：被代理类实现的一些接口。
+        # h：实现了InvocationHandler接口的对象。
+        public static Object newPorxyInstance(ClassLoader loader, Class<?>[] interfaces, InvocationHandler h) throws IllegalArgumentException{
+        }
+    然后实现InvocationHandler来自定义处理逻辑。当使用动态代理对象调用一个方法时，方法的调用还需要转发到实现InvocationHandler的invke方法来调用。
+        public interface InvocationHandler{
+            # proxy：动态生成的代理类。
+            # method：与代理类对象调用的方法相对应。
+            # args：当前method方法的参数。
+            public Object invoke(Object proxy, Method method, Object[] args) throws Throwable
+        }
+    使用步骤：
+        定义一个接口及其实现类；
+        自定义InvocationHandler并重写invoke方法，在invoke方法中我们会调用原生方法（被代理类的方法）并自定义一些处理逻辑；
+        通过Proxy.newPorxyInstance(ClassLoader classLoader, Class<?>[] interfaces, InvocationHandler h)来创建代理对象。
+（2）CGLIB动态代理
+    CGLIB动态代理中MethodInterceptor接口和Enhancer类是核心。
+    需要自定义MethodInterceptor并重写intercept方法，intercept用于拦截增强被代理类的方法。
+        public interface MethodInterceptor extends Callback{
+            # obj：被代理的对象（需要增强的对象）
+            # method：被拦截的方法（需要增强的方法）
+            # args：方法入参
+            # proxy：用于调用原始方法
+            public Object intercept(Object obj, java.lang.reflect.Method method, Object[] args, MethodProxy proxy) throws Throwable;
+        }
+    使用步骤：
+        定义一个类；
+        自定义MethodInterceptor并重写intercept方法，intercept用于拦截增强被代理类的方法，和JDK动态代理中的invoke方法类似；
+        通过Enhancer类的create()创建代理类。
+5、JDK动态代理和CGLIB动态代理对比
+    JDK动态代理只能代理实现了接口的类或者直接代理接口，而CGLIB可以代理未实现任何接口的类。CGLIB动态代理是通过生成一个被代理类的子类来拦截被代理类的方法调用，
+    因此不能代理声明为final类型的类和方法。
+6、静态代理和动态代理的对比
+    灵活性：动态代理更加灵活，不需要必须实现接口，可以直接代理实现类，并且可以不需要针对每个目标类都创建一个代理类。静态代理中接口一旦新增方法，目标对象和代理对象都要进行修改。
+    JVM层面：静态代理在编译时就将接口、实现类、代理类都变成一个一个的class文件。而动态代理是在编译过程中动态生成类字节码并加载到JVM中的。
+        
+十一、序列化、反序列化
+1、什么是序列化、反序列化
+    序列化：将数据结构或对象转换成可以存储或传输的形式，通常是二进制字节流，也可以是JSON、XML等文本格式。
+    反序列化：将在序列化过程中所生成的数据转换为原始数据结构或者对象的过程。
+2、应用场景：
+    对象在进行网络传输（比如远程方法调用RPC的时候）之前需要先被序列化，接收到序列化的对象之后进行反序列化。
+    将对象存储到文件之前需要进行序列化，将对象从文件中读取出来需要进行反序列化。
+    将对象存储到数据库（如Redis）之前需要用到序列化，将对象从缓存数据库中读取出来需要反序列化。
+    将对象存储到内存需要进行序列化，从内存读取出来之后需要进行反序列化。
+    总结：序列化的主要目的是通过网络传输对象或者将对象存储到文件系统、数据库、内存中。
+3、序列化协议对应TCP/IP 4层模型中的那一层
+    在7层模型中，表示层做的事就是要对应用层的用户数据进行处理转换为二进制流。反过来就是将二进制流转换成应用层的用户数据。
+    OSI7层模型中的应用层、表示层、会话层对应的事TCP/IP4层模型中的应用层，所以序列化协议属于应用层的一部分。
+4、如果有些字段不想进行序列化
+    对于不想进行序列化的变量，使用transient关键字修饰。
+    transient关键字的作用是：阻止实例中那些用此关键字修饰的变量序列化；当对象被反序列化时，被transient修饰的变量不会被持久化和恢复。
+    transient只能修饰变量，不能修饰类和方法；transient修饰的变量，在反序列化后变量值将会被置成类型的默认值。例如，int类型会变成0。
+    static变量不属于任何对象，无论有没有被transient修饰，都不会被序列化。
+5、JDK自带的序列化方式
+    只需要实现java.io.Serializable接口即可。
+（1）serialVersionUID的作用
+    序列化号serialVersionUID属于版本控制的作用。反序列化时，会检查serialVersionUID是否和当前类的serialVersionUID一致。如果不一致
+    则会抛出InvalidClassException异常。如果没有手动指定serialVersionUID，那么编译器会动态生成默认的serialVersionUID。
+（2）serialVersionUID被static修饰，为什么还会被序列化？
+    static修饰的变量是静态变量，属于类而非类的实例，本身是不会被序列化的。然而serialVersionUID是特例，做了特殊处理，当一个对象被序列化时，
+    serialVersionUID会被写入到序列化的二进制流中。serialVersionUID只是用来被JVM识别，实际并没有被序列化。
+6、为什么不推荐使用JDK自带的序列化？
+    不支持跨语言调用：如果调用的是其他语言开发的服务就不支持了。
+    性能差：相比其他序列化框架性能更低，主要原因是序列化之后的字节数组体积较大，导致传输成本加大。
+    存在安全问题：序列化反序列化不存在问题。但当输入的反序列化的数据可以被用户控制，攻击者就可以构建恶意输入，让反序列化产生非预期对象。
+
+十二、I/O
+1、什么是IO流
+    数据输入到计算机内存的过程就是输入，反之输出到外部存储（比如数据库，文件，远程主机）的过程就是输出。
+    JavaIO流的40多个类都是从4个抽象类派生出来的：
+        InputStream/Reader：所有的输入流的基类，前者是字节流，后者是字符流。
+        OutputStream/Writer：所有输出流的基类，前者是字节流，后者是字符流。
+
+十三、Java值传递
+1、形参、实参
+    实参：用于传递给函数、方法的参数，必须有确定的值。
+    形参：用于定义函数、方法的参数，接收实参，不需要有确定的值。
+    String hello = "Hello!"; 
+    # hello 为实参
+    sayHello(hello);
+    # str 为形参
+    void sayHello(String str){ 
+        System.out.println(str);
+    }
+2、值传递、引用传递
+    值传递：方法接收的是实参值的拷贝，会创建副本。
+    引用传递：方法接收的是实参所引用的对象在堆中的地址，不会创建副本，对形参的修改将影响到实参。
+2、Java为什么是值传递
+    如果参数是基本类型，传递的就是基本类型的字面量值的拷贝，会创建副本。
+    如果参数是引用类型，传递的就是实参所引用的对象在堆中地址值的拷贝，同样也会创建副本。
+
+十四、Java语法糖
+    语法糖对语言的功能没有影响，主要是方便开发人员使用。
+    Java虚拟机并不支持这些语法糖。语法糖在编译阶段就会被还原成简单的基础语法结构，这个过程就是解语法糖。
+1、常见的语法糖
+（1）switch支持String与枚举
+    Java的switch自身原本就支持基本类型，比如int、char等。int类型直接进行数值的比较，char类型则是比较ascii码。
+    所以对于编译器来说，switch其实只能使用整型，任何类型都需要转换成整型。
+    字符串的switch是通过equals()和hashCode()实现的。进行switch的实际是hashCode，然后通过equals进行安全检查。
+（2）范型
+    一个编译器处理范型有两种方式，Code specialization 和 Code sharing，Java使用的是Code sharing。
+    Code sharing方式为每一个范型类型创建唯一的字节码表示，并且将该范型类型的实例都映射到唯一的字节码表示上。将多种范型类型
+    实例映射到唯一的字节码表示是通过范型擦除（type erasue）实现的。
+    对于Java虚拟机来说，根本不认识Map<String, String> map这样的语法，需要在编译阶段通过类型擦除的方式进行解语法糖。
+    主要过程：
+        将所有的范型参数用其最左边界（最顶级的父类型）类型替换；移除所有的类型参数。
+        Map<String, String> map = new HashMap<String, String>();
+        解语法糖后变成
+            Map map = new HashMap();
+        public static <A extends Comparable<A>> A max(Collection<A> xs){}
+        解语法糖后变成
+            public static Comparable max(Collection xs){}
+（3）自动装箱与拆箱
+（4）可变长参数
+（5）枚举
+    public enum T{
+        SPRING, SUMMER;
+    }
+    通过反编译后实际是
+    public final class T extends Enum{}，这个类是不能被继承的，所以枚举类不能被继承。
+（6）内部类
+    内部类仅仅是一个编译时的概念，经过编译后会生成两个完全不同的.class文件，分别是outter.class和outer$inner.class。
+    所以内部类名字可以和外部类名字相同。
+（7）for-each
+    for-each的实现原理其实就是用了普遍的for循环和迭代器。
+（8）try-with-resources
+    没有做的关闭资源的操作，编译器都做了。
+（9）Lamabda表达式
+    Lambada表达式的实现其实是依赖了一些底层的api，在编译阶段，编译器会把lambda表达式进行解糖，转换成内部api的方式。
+2、可能遇到的坑
+（1）范型
+    范型遇到重载，编译通不过。
+        public class GenerticTypes{
+            public static void method(List<String> list){
+                System.out.println();
+            }
+            public static void method(List<Integer> list){
+                System.out.println();
+            }
+        }
+    范型遇到catch。异常处理是由JVM在运行时刻进行的，由于类型信息被擦除，JVM是无法区分的。
+（2）增强for循环
+    for(Student stu: studentList){
+        if (stu.getId() == 2){
+            studentList.remove(stu);
+        }
+    }
+    会抛出ConcurrentModificationException异常。
+    Iterator是工作在一个独立的线程中，并且拥有一个mutex锁。Iterator被创建后会建立一个指向原来对象的单索引链表，当原来的对象
+    发生数量变化时，这个索引表的内容不会同步改变，所以当索引指针往后移动的时候就找不到要迭代的对象，就会抛出异常。
+    Iterator在工作时候是不允许迭代的对象被改变的，但可以用Iterator本身的remove()来删除对象，这个方法会在删除当前迭代对象的
+    同时维护索引的一致性。
+    

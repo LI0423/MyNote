@@ -180,3 +180,6 @@ class Person {
             ArrayList::new // 返回List
         )
     ));
+
+14.并行流
+    list.parallelStream.forEach(s -> {});

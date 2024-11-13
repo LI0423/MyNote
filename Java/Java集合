@@ -1,0 +1,88 @@
+一、集合
+1、Java集合
+    Java集合也叫容器，主要是两大接口派生而来的，一个是Collection接口，主要用来存放单一元素；另一个是Map接口，
+    主要用于存放键值对。Collection接口，有三个主要的子接口List、Set、Queue。
+2、如何选用集合
+    需要根据键值获取元素值时就选用Map接口下的集合，需要排序时选择TreeMap，不需要排序时就选HashMap，需要保证线程安全就选用ConcurrentHashMap。
+    只需要存放元素值时，就选择Collection接口下的集合，需要保证元素唯一时选择实现Set接口的集合，比如TreeSet或HashSet，不需要就选择List接口的，
+    比如ArrayList或LinkedList。
+
+二、List
+1、ArrayList和Array（数组）的区别
+    ArrayList会根据实际存储的元素动态的扩容或缩容，而Array被创建后就不能改变它的长度了。
+    ArrayList允许使用范型来确保类型安全，Array不可以。
+    ArrayList只能存储对象。对于基本数据类型要使用它的包装类型。Array可以直接存储基本数据类型，也能存储对象。
+    ArrayList支持插入、删除、遍历等常见操作，并且提供了丰富的API操作方法。Array是一个固定长度的数组，只能按照下标来访问元素，不具备动态、添加删除的能力。
+    ArrayList创建时不需要指定大小，而Array创建时必须指定大小。
+2、ArrayList和Vector的区别
+    ArrayList是List的实现类，底层使用Object[]存储，适用于频繁的查找工作，线程不安全。
+    Vector也是List的实现类，底层使用Object[]存储，线程安全。
+3、ArrayList可以添加null吗？
+    可以存储任何类型的对象，包括null值，只是没有意义，还容易造成空指针异常。
+4、ArrayList插入和删除的时间复杂度
+（1）插入
+    头部插入：需要将所有元素都依次向后移动一个位置，时间复杂度时O(n)。
+    尾部插入：当ArrayList的容量未达到极限时，往列表的尾部插入元素的时间复杂度是O(1)。如果容量达到极限会触发扩容，需要执行一次O(n)的操作将原数组
+        复制到新的更大的数组中，然后执行O(1)的添加操作。
+    指定位置插入：需要将原目标位置之后的元素都向后移一位，然后把新元素插入指定位置。这个过程平均需要移动n/2个元素，时间复杂度是O(n)。
+（2）删除
+    头部删除：需要将所有的元素依次向前移动一个位置，时间复杂度是O(n)。
+    尾部删除：当删除的元素位于列表末尾时，时间复杂度是O(1)。
+    指定位置删除：需要将原目标位置之后的元素都向前移一位，以填补被删除的空白位置，平均需要移动n/2个元素，时间复杂度是O(n)。
+5、LinkedList插入和删除的时间复杂度
+    头部插入/删除：只需要修改头结点的指针即可完成操作，时间复杂度是O(1)。
+    尾部插入/删除：只需要修改尾结点的指针即可完成操作，时间复杂度是O(1)。
+    指定位置插入/删除：需要先移动到指定位置，再修改指定节点的指针完成操作，由于有头尾指针，可以从较近的位置出发，平均需要移动n/4个节点，时间复杂度是O(n)。
+6、LinkedList为什么不能实现RandomAccess接口？
+    RandomAccess接口是一个标记接口，用来表明该接口的类支持随机访问（可以通过索引快速访问元素）。LinkedList底层是链表，内存地址不连续，只能通过指针来定位，
+    不支持随机快速访问，所以不能实现RandommAccess接口。
+6、ArrayList和LinkedList的区别
+    是否线程安全：ArrayList和LinkedList都是不同步的，也就是不保证线程安全。
+    底层数据结构：ArrayList底层使用Object数组，LinkedList底层使用双向链表。
+    插入和删除是否受元素位置影响：
+        ArrayList采用数组存储，所以插入和删除元素的时间复杂度受元素位置影响。
+        LinkedList采用链表存储，在头尾插入和删除原的时间复杂度不受元素位置影响，时间复杂度是O(1)，在指定位置插入和删除的话时间复杂度是O(n)。
+    是否支持快速随机访问：LinkedList不支持高效的随机元素访问，而ArrayList（实现了RandomAccess接口）支持。
+    内存空间占用：ArrayList的空间浪费主要体现在list列表的结尾会预留一定的容量空间，而LinkedList的空间花费体现在每个元素都要消耗比ArrayList更多的空间
+        （存放直接前驱和直接后继以及数据）。
+7、ArrayList详解
+    ArrayList继承于AbstractList，实现了List，RandomAccess，cloneable，Serializable接口。
+    List：表明是一个列表，支持添加、删除、更新、查找等操作，并且可以通过下标访问。
+    RandomAccess：表明这个接口List集合是支持快速随机访问的。即可以通过元素的序号快速获取元素对象。
+    Cloneable：表明具有拷贝能力，可以进行深拷贝和浅拷贝。
+    Serializable：表明可以进行序列化操作，也就是可以将对象转换为字节流进行持久化存储或网络传输。
+8、ArrayList扩容机制
+    默认初始容量为10，如果以无参构造器创建ArrayList，即没有指定初始容量或没有传入指定容器则默认创建一个空列表，当进行添加元素时才真正分配容量，扩容为10。
+    如果指定了初始容量则创建指定容量大小的空列表。
+
+    public void ensureCapacity(int minCapacity) {
+        if (minCapacity > elementData.length
+            && !(elementData == DEFAULTCAPACITY_EMPTY_ELEMENTDATA
+                 && minCapacity <= DEFAULT_CAPACITY)) {
+            modCount++;
+            grow(minCapacity);
+        }
+    }
+    ArrayList每次扩容之后容量都会变为原来的1.5倍左右（oldCapacity为偶数就是1.5倍，否则是1.5倍左右）。
+9、LinkedList详解
+    LinkedList继承了AbstractSequentialList，而AbastracSequentialList又继承于AbstractList。
+    List：表明是一个列表，支持添加、删除、更新、查找等操作，并且可以通过下标访问。
+    Deque：继承自Queue接口，具有双端队列的特性，支持从两端插入和删除元素，方便实现栈和队列等数据结构。
+    Cloneable：表明具有拷贝能力，可以进行深拷贝和浅拷贝。
+    Serializable：表明可以进行序列化操作，也就是可以将对象转换为字节流进行持久化存储或网络传输。
+
+三、Set
+1、Comparable和Comparator
+    Comparable和Comparator接口都是Java接口都是Java中用于排序的接口：
+        Comparable接口出自java.lang包，有一个compareTo(Object obj)方法用来排序；
+        Compartor接口出自java.util包，有一个compare(Object obj1, Object obj2)方法用来排序。
+
+2、无序性和不可重复性的含义是什么
+    无序性不等于随机性，无序性是指存储的数据在底层数组中并非按照数组索引的顺序添加，而是根据数据的哈希值决定的。
+    不可重复性是指添加的元素按照equals()判读时，返回false，需要同时重写equals()方法和hashCode()方法。
+3、比较HashSet、LinkedHashSet和TreeSet
+    HashSet、LinkedHashSet和TreeSet都是Set接口的实现类，都能保证元素唯一，并且都不是线程安全的。
+    HashSet、LinkedHashSet和TreeSet的主要区别在于底层数据结构不同。HashSet的底层数据结构是哈希表（基于HashMap实现）。LinkedHashSet的
+    底层是链表和哈希表，元素的插入和取出顺序满足FIFO。TreeSet底层结构是红黑树，元素是有序的，排序的方式有自然排序和定制排序。
+    HashSet用于不需要保证元素插入和取出顺序的场景，LinkedHashSet用于保证元素的插入和取出顺序满足FIFO的场景，TreeSet用于支持对元素自定义
+    排序的场景。
