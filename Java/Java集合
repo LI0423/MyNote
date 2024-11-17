@@ -54,8 +54,8 @@
 8、ArrayList扩容机制
     默认初始容量为10，如果以无参构造器创建ArrayList，即没有指定初始容量或没有传入指定容器则默认创建一个空列表，当进行添加元素时才真正分配容量，扩容为10。
     如果指定了初始容量则创建指定容量大小的空列表。
-
     public void ensureCapacity(int minCapacity) {
+        # 最小容量 > 现在list的容量 && 非 （现在list是空 && 最小容量 < 默认容量）
         if (minCapacity > elementData.length
             && !(elementData == DEFAULTCAPACITY_EMPTY_ELEMENTDATA
                  && minCapacity <= DEFAULT_CAPACITY)) {
@@ -86,3 +86,153 @@
     底层是链表和哈希表，元素的插入和取出顺序满足FIFO。TreeSet底层结构是红黑树，元素是有序的，排序的方式有自然排序和定制排序。
     HashSet用于不需要保证元素插入和取出顺序的场景，LinkedHashSet用于保证元素的插入和取出顺序满足FIFO的场景，TreeSet用于支持对元素自定义
     排序的场景。
+
+四、Queue
+1、Queue和Deque的区别
+    Queue是单端队列，只能从一段插入元素，另一段删除元素，遵循先进先出（FIFO）。
+    Deque时双端队列，在队列两端都能进行插入和删除元素。
+2、ArrayDeque和LinkedList的区别
+    ArrayDeque和LinkedList都实现了Queue接口。
+    ArrayDeque底层是基于可变长数组和双指针来实现的，而LinkedList底层是基于链表实现的。
+    ArrayDeque不支持null存储，而LinkedList支持。
+    ArrayDeque可能存在扩容操作，而LinkedList不需要扩容，但每次插入都需要申请新的空间。
+3、PriorityQueue
+    与Queue的区别在于元素的出队顺序，是与优先级相关的，总是优先级高的元素先出队。
+    PriorityQueue利用了二叉堆来实现，底层是用可变长的数组来存储数据。
+    PriorityQueue通过堆元素的上浮和下沉，实现了在O(logn)的事件复杂度内插入元素和删除堆顶元素。
+    PriorityQueue是非线程安全的，且不支持NULL和non-comparable的对象。
+    PriorityQueue默认是小顶堆，可以接收一个Comparator作为构造参数来自定义优先级的顺序。
+4、BlockingQueue
+    BlockingQueue是一个接口，继承自Queue。BlockingQueue阻塞的原因是其支持当队列没有元素时一直阻塞，直到有元素；如果队列已满，一直等到队列
+    可以放入新元素时再放入。
+    BlockingQueue常用于生产者-消费者模型中，生产者线程会向队列中添加数据，而消费者线程会从队列中取出数据进行处理。
+5、BlockingQueue的实现类有哪些
+    ArrayBlockingQueue：使用数组实现的有界阻塞队列。在创建时需要指定容量大小，并支持公平和非公平两种方式的锁访问机制。
+    LinkedBlcokingQueue：使用单向链表实现的可选有界阻塞队列。在创建时可以指定容量大小，如果不指定则默认为Integer.MAX_VALUE。支持非公平的锁访问机制。
+    PriorityBlockingQueue：支持优先级排序的无界阻塞队列。元素必须实现Comparable接口或者在构造函数中传入Compartor对象，并不能插入null对象。
+    SynchronousQueue：同步队列，是一种不存储元素的阻塞队列。每个插入操作都必须等待对应的删除操作，反之删除操作也必须等待插入操作。
+        SynchronousQueue通常用线程之间的直接传递数据。
+    DelayQueue：延迟队列，其中的元素只有到了指定的延迟时间，才能够从队列中出队。
+6、ArrayBlockingQueue和LinkedBlockingQueue有什么区别？
+    ArrayBlockingQueue和LinkedBlockingQueue都是线程安全的。
+    底层实现：ArrayBlockingQueue基于数组实现，而LinkedBlockingQueue基于链表实现。
+    是否有界：ArrayBlockingQueue是有界队列，必须在创建时指定容量大小。LinkedBlockingQueue创建时可以不指定容量大小，默认是Integer.MAX_VALUE，
+        也就是无界的，但也可以指定队列大小，从而成为有界的。
+    锁是否分离：ArrayBlockingQueue中的锁是没有分离的，即生产和消费用的是一个锁；LinkedBlockingQueue中的锁是分离的，即生产用的是putLock，
+        消费是takeLock，这样可以防止生产者和消费者线程之间的锁争夺。
+    内存占用：ArrayBlockingQueue需要提前分配数组内存，而LinkedBlockingQueue，则是动态分配链表节点内存。ArrayBlockingQueue在创建时就会
+        占用一定的内存空间，且往往申请的内存比实际所用的内存更大，而LinkedBlockingQueue则是根据元素的增加而逐渐占用内存空间。
+
+五、Map
+1、HashMap和Hashtable的区别
+    线程是否安全：HashMap是非线程安全的，Hashtable是线程安全的。因为Hashtable内部的方法基本都经过synchronized修饰。
+    效率：因为线程安全的问题，HashMap要比Hashtable效率高。（Hashtable基本被淘汰）
+    对Null key和Null value的支持：HashMap可以存储null的key和value，但null作为键只能有一个，null作为值可以有多个；
+        Hashtable不允许有null键和null值，否则会抛出NullPointerException。
+    初始容量大小和每次扩充容量大小不同：
+        创建时如果不指定容量初始值，Hashtable默认的初始大小为11，之后每次扩充，容量变为原来的2n+1。HashMap默认的初始大小为16，之后每次扩充，
+        容量变为原来的2倍。
+        创建时如果指定容量初始值，那么Hashtable会直接使用你给定的大小，而HashMap会将其扩充为2的幂次方大小。
+    底层数据结构：
+        JDK1.8以后的HashMap当链表长度大于阈值（默认为8）时，将链表转化为红黑树（将链表转换为红黑树前会判断，如果当前数组长度小于64，那么会选择
+        先进行数组扩容，而不是转换为红黑树），以减少搜索时间。Hashtable没有这样的机制。
+    哈希函数实现：HashMap对哈希值进行了高位和低位的混合扰动处理以减少冲突，而Hashtable直接使用键的hashCode()。
+2、HashMap和HashSet区别
+    HashSet底层就是基于HashMap实现的。
+    HashMap实现了Map接口，HashSet实现了Set接口。
+    HashMap是存储键值对，HashSet仅存储对象。
+    HashMap使用键（Key）计算hashcode，HashSet使用成员对象来计算hashcode值，对于两个对象来说hashcode可能相同，所以equals方法用来判断对象的相等性。
+3、HashMap和TreeMap区别
+    TreeMap和HashMap都继承自AbstractMap，TreeMap还实现了NavigableMap接口和SortedMap接口。
+    实现NavigableMap接口让TreeMap有对集合内元素的能力。该接口提供了丰富的方法来探索和操作键值对：
+        定向搜索：ceilingEntry()，floorEntry()，higherEntry()和lowerEntry()等方法可以用于定位大于等于、小于等于、严格大于、严格小于
+            给定键的最接近的键值对。
+        子集搜索：subMap()，headMap()和tailMap()方法可以创建原集合的子集视图，而无需复制整个集合。
+        逆序视图：descendingMap()方法返回一个逆序的NavigableMap视图，使得可以反向迭代整个TreeMap。
+        边界操作：firstEntry()，lastEntry()，pollFirstEntry()和pollLastEntry()等方法可以访问和移除边界元素。
+    这些方法都是基于红黑树数据结构的属性，红黑树保持平衡状态，从而保证了搜索操作时间复杂度为O(logn)
+    TreeMap<Person, String> treeMap = new TreeMap<>(new Comparator<Person>(){
+        @Override
+        public int compare(Person person1, Person person2){
+            int num = person1.getAge() - person2.getAge();
+            return Integer.compare(num, 0);
+        }
+    })
+    TreeMap<Person, String> treeMap = new TreeMap<>((person1, person2) -> {
+        int num = person1.getAge() - person2.getAge();
+        return Integer.compare(num, 0);
+    })
+4、HashSet如何去重
+    在向hashSet中添加元素的时候，会先计算对象的hashCode值，寻找对象的插入位置，并拿着hashCode与其他对象的hashCode值进行比较，判断是否有hashCode
+    相同的元素，如果有，则用equals()方法进行比较对象是否真的相同，如果是同一对象就插入失败，如果不是就直接插入。
+5、HashMap底层实现
+（1）在jdk1.8之前，hashMap的底层实现是数组+链表，结合在一起也就是链表散列。用key的hashCode经过扰动函数得到hash值，然后通过(n-1)&hash判断当前元素
+    的存放位置（n是数组长度），如果当前位置存在元素就判断hash值以及key是否相同，相同的话直接覆盖，不相同就通过拉链法解决冲突。HashMap中的hash()是用
+    来优化哈希值的分布，通过对原始的hashCode()进行额外处理，扰动函数可以减小由于糟糕的hashCode()实现导致的碰撞，提高数据的均匀分布。
+（2）在jdk1.8之后，当链表长度大于阈值（默认为8），将链表转换成红黑树之前会判断，如果当前数组的长度小于64，那么会先进行数组扩容，如果大于64将链表转化为
+    红黑树，减少搜索时间。
+6、HashMap长度为什么是2的幂次方
+    长度是2的幂次方可以让hashMap在扩容的时候更均匀。
+（1）位运算效率更高：位运算（&）比取余运算（%）更高效。当长度为2的幂次方时，hash%length 等价于 hash&(lenght-1)。
+（2）可以更好地保证哈希值的均匀分布：扩容后在旧数组元素hash值比较均匀的情况下，新数组元素也会被分配的比较均匀，最好的情况是会有一半在新数组的前半部分，
+    一半在新数组后半部分。
+（3）扩容机制变得简单和高效：扩容后只需检查哈希值高位的变化来决定元素的新位置，要么不变（高位为0），要么就是移动到新位置（高位为1，原索引位置+原容量）。
+7、HashMap多线程操作导致死循环问题
+    jdk1.7以前，HashMap在多线程环境下扩容操作可能存在死循环问题，由于当一个桶位中有多个元素需要进行扩容时，多个线程同时对链表进行操作，头插法可能
+    会导致链表中的节点指向错误的位置，从而形成一个环形链表，进而使得查询元素的操作陷入死循环无法结束。
+    jdk1.8采用了尾插法而不是头插法来避免链表导致，使得插入的节点永远都是放在链表的末尾，避免了链表中的环形结构。在多线程下使用HashMap还是会存在
+    数据覆盖的问题。
+8、HashMap为什么线程不安全
+    在jdk1.7以前，多线程环境下HashMap扩容时会造成死循环和数据丢失的问题。
+    jdk1.8以后，在HashMap中，多个键值对可能会被分配到同一个桶（bucket），并以链表或红黑树的形式存储。多个线程对HashMap的put操作会导致线程不安全，
+    可能会造成数据覆盖的问题。
+（1）两个线程1，2同时进行put操作，并且发生了哈希冲突，不同的线程可能在不同的时间片获得CPU执行的机会，当前线程1执行完哈希冲突判断后，由于时间片
+    耗尽挂起。线程2完成了插入操作。随后线程1获得时间片，由于之前已经执行过hash碰撞的判断，此时直接进行插入，导致线程2插入的数据被线程1覆盖。
+（2）两个线程同时put操作导致size的值不正确，进而导致数据覆盖。
+    线程1执行if(++size > threshold)判断时，假设获得size值为10，由于时间片耗尽挂起。线程2也执行if(++size > threshold)判断，获得size的值
+    也是10，并将元素插入到该桶位中，并将size的值更新为11。随后线程1获得时间片，也将元素放入桶位中，并将size的值更新为11。线程1、2都执行了一次
+    put操作，但是size的值只增加了1，也就导致实际上只有一个元素被添加到了HashMap中。
+9、ConcurrentHashMap和Hashtable的区别
+    主要体现在实现线程安全的方式上不同。
+    底层数据结构：
+        jdk1.7的CocurrentHashMap底层采用分段的数组+链表实现，jdk1.8采用的数据结构跟HashMap1.8的结构一样，数组+链表/红黑二叉树。
+        Hashtable和jdk1.8之前的HashMap的底层数据结构类似都是采用数组+链表的形式。
+    实现线程安全的方式：
+        jdk1.7的时候，ConcurrentHashMap对整个桶数组进行了分割分段（Segment，分段锁），每一把锁只锁容器其中一部分数据，多线程访问容器里不同数据段的数据，
+        就不会存在锁竞争，提高并发访问率。jdk1.8的时候，ConcurrentHashMap已经摒弃了Segment的概念，而是直接用Node数组+链表+红黑树的数据结构来实现，
+        并发控制使用synchronized和CAS来操作。
+        Hashtable使用synchronized来保证线程安全，效率非常低下。当一个线程访问同步方法时，其他线程也访问同步方法，可能会进入阻塞或轮询状态，
+        如果使用put添加元素，另一个线程不能使用put添加元素，也不能使用get，竞争会越来越激烈。
+10、ConcurrentHashMap线程安全的具体实现方式
+（1）jdk1.8以前
+    首先将数据分为一段一段（Segment）存储，然后每一段数据配一把锁，当一个线程占用锁访问其中一个段数据时，其他段的数据也能被其他线程访问。
+    ConcurrentHashMap是由Segment数组结构和HashEntry数组结构组成。Segment继承了ReentrantLock，所以Segment是一种可重入锁，扮演锁的角色。
+    HashEntry用于存储键值对数据。
+    一个ConcurrentHashMap里包含一个Segment数组，Segment的个数一旦初始化就不能改变，Segment数组的大小默认是16，也就是默认可以同时支持16个
+    线程并发。Segment的结构和HashMap类似，是一种数组和链表结构，一个Segment包含一个HashEntry数组，每个HashEntry是一个链表结构的元素，每个
+    Segment守护着一个HashEntry数组里的元素，当对HashEntry数组的数据进行修改时，必须首先获得对应的Segment的锁。也就是说，同一个Segment的并发
+    写入会被阻塞，不同Segment的写入是可以并发执行的。
+（2）jdk1.8
+    ConcurrentHashMap取消了Segment锁，采用Node+CAS+synchronized来保证并发安全。数据结构跟HashMap1.8的结构类似，数组+链表/红黑二叉树。在
+    链表长度超过阈值8时将链表（寻址时间复杂度为O(N)）转换为红黑树（寻址时间复杂度为O(logn)）。
+    锁粒度更细，synchronized只锁定当前链表或红黑二叉树的首节点，只要hash不冲突，就不会产生并发，就不影响其他Node的读写，效率大幅提升。
+11、JDK1.7和JDK1.8的ConcurrentHashMap实现有什么不同
+    线程安全实现方式：
+        JDK1.7采用Segment分段锁来保证安全，Segment是继承自ReentrantLock。JDK1.8放弃了Segment分段锁的设计，采用Node+CAS+synchronized
+        来保证并发安全，锁粒度更细，synchronized只锁定当前链表或红黑二叉树的首节点。
+    Hash碰撞解决方法：JDK1.7采用拉链法，JDK1.8采用拉链法结合红黑树（链表长度超过一定阈值时，将链表转换为红黑树）。
+    并发度：JDK1.7最大并发度是Segment的个数，默认是16。JDK1.8最大并发度是Node数组的大小，并发度更大。
+12、ConcurrentHashMap为什么key和value不能为null
+    ConcurrentHashMap的key和value不能为null主要是为了避免二义性。null是一个特殊值，表示没有对象或没有引用。如果用null作为键，那么就无法区分
+    这个键是否存在于ConcurrentHashMap中，还是根本没有这个键。同样，如果用null作为值，那么无法区分这个值是否真的存在于ConcurrentHashMap中，
+    还是因为找不到对应的键而返回的。
+    拿get方法取值来说，返回的结果为null存在两种情况：值没有在集合中；值本身就是null。
+13、ConcurrentHashMap能保证复合操作的原子性吗？
+    ConcurrentHashMap是线程安全的，意味着可以保证多个线程同时对它进行读写操作时，不会出现数据不一致的情况，也不会导致jdk1.7及之前版本的HashMap
+    多线程操作导致死循环问题。
+    复合操作是指由多个基本操作（put、get、remove、containsKey等）组成的操作，例如先判断某个键是否存在containsKey，然后根据结果进行插入或更新
+    put操作。这种操作在执行过程中可能会被其他线程打断，导致结果不符合预期。
+    ConcurrentHashMap提供了一些原子性的复合操作，如putIfAbsent、compute、computeIfAbsent、computeIfPresent、merge等。这些方法都可以
+    接受一个函数作为参数，根据给定的key和value来计算一个新的value，并且将其更新到map中。
+        map.putIfAbsent(key, value);
+        map.computeIfAbsent(key, k -> value);

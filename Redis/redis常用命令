@@ -1,6 +1,6 @@
 Redis
 1.启动	redis-cli
-2.带ip和端口启动	redis-cli -h 0.0.0.0 -p 6379 -a password
+2.带ip和端口启动	redis-cli -h 0.0.0.0 -p 6379 -a 123456
 
 常用
 keys * 获取所有key

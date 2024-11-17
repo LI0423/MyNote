@@ -176,3 +176,101 @@
     insert into {table_new} select * from {table_old};
 （3）创建表并复制数据（表结构来自select，不含索引等约束）
     create table {table_new} select * from {table_old};
+
+11、ON DUPLICATE KEY UPDATE
+    在插入新数据时，当表中如果没有原来的记录，就执行插入操作，如果遇到唯一键冲突（即已存在相同的唯一键值），则会执行更新操作，而不是抛出异常或忽略该条数据。
+（1）用法总结
+    on duplicate key update 语句根据主键id或唯一键来判断当前插入是否已存在。
+    记录已存在时只会更新on duplicate key update 之后的字段。
+    如果同时传递了主键和唯一键，以主键为判断存在依据，唯一键字段的内容可以被修改。
+    唯一键大小写敏感时，大小写不同的值被认为是两个值，执行插入。不敏感时会被认为是同一个值，执行更新。
+（2）使用
+    insert into student(id, name, age, gender) values(1, 'zhangsan', 10, 1)
+    on duplicate key update name = values(name), age = values(age), gender = values(gender)
+    当values中存在主键索引时，on duplicate key update 根据主键索引判读当前插入是否存在，并且唯一键字段的内容是可以被修改的。
+    当values中不存在主键索引，但是存在唯一索引时，根据唯一索引判断当前插入是否存在。
+（3）update 后面使用values
+    如果在update后面没有使用values，如name = 'lisi'则会一直更新为'lisi'；再如 name = name 则name会保持数据库中的值，不会更新。
+    如果在update后面使用了values，才会更新为上下文中传入的值。
+（4）与mybatis联合使用
+    <insert id="insert">
+        insert into student(id, namge, age, gender)
+        values
+            <foreach collection="list" item = "item" seperator=",">
+                (#{item.id}, #{item.name}, #{item.age}, #{item.gender})
+            </foreach>
+        on duplicate key update
+        name = values(name)
+        age = values(age)
+        gender = values(gender)
+    </insert>
+    <insert id="insert">
+        insert into student(id, name, age, gender) values(#{id}, #{name}, #{age}, #{gender})
+        on duplicate key update
+        name = #{name}
+        age = #{age}
+        gender = #{gender}
+    </insert>
+（5）缺点
+    每次更新导致自增id不连续。
+    原理：在Mysql innodb引擎中有一个innodb_autoinc_lock_mode变量，控制着自增值的锁定机制。有三个可设置的值：
+        0（traditional传统模式）
+            在这种模式下，InnoDB使用表级锁来维护自增值的连续性。在插入新纪录时，InnoDB会锁定整个表，以确保自增值的唯一性和连续性。
+            在高并发情况下会造成性能瓶颈。
+        1（consecutive连续模式）
+            在这种模式下，InnoDB仍然保持自增值的连续性，使用了一种轻量级锁，只在需要生成新的自增值时锁定自增值的计数器，而不是整个表。
+            减少了锁竞争，提高了并发性能。如果事务回滚，已经分配但未被使用的自增值将丢失，导致自增值出现“空洞”。
+            MySQL5.7.28为默认模式。
+        2（interleaved交错模式）
+            MySQL5.6以上版本引入的模式。在这种模式下，InnoDB允许不同的插入操作在不同的自增值区间内并发进行，从而减少了锁竞争。这样
+            可能导致自增值出现“空洞”。
+            MySQL8.0.18为默认模式不会锁表，来一个处理一个，并发性能最高。
+    如何设置：
+        查看：show variables like 'innodb_autoinc_lock_mode';
+        要修改的话可以在mysql的配置文件中设置，或者在mysql服务启动时通过命令行参数指定。
+（6）死锁
+    insert...on duplicate key在执行时，innodb引擎会先判断插入的行是否产生重复key错误，如果存在，对该现有的行加上S（共享）锁，如果返回该行
+    数据给mysql，mysql执行duplicate后的update操作，然后对该行加上X（排他）锁，最后进行update写入。
+    在执行insert...on duplicate key语句时，如果不对同一个表进行并发的insert或者update，基本不会造成死锁。即insert...on duplicate key时
+    尽量单线程串行进行新增或更新。
+    
+12、REPLACE INTO
+    在插入新数据时，如果发现表中已有该条记录（根据主键或唯一键判断），则先删除此条数据，再执行插入操作；如果没有该条记录就直接执行插入操作。
+（1）使用
+    replace into student(id, name, age, gender) values(1, 'zhangsan', 10, 1);
+    类似于insert into...
+    replace into student(id, name, age, gender) select id, name, age, gender from student2;
+    类似于insert select，不要求列名匹配，只需要列的位置对应。
+    replace into student set name = 'lisi', age = 11, gender = 2;
+    类似于update set...
+（2）注意事项
+    插入数据的表必须有主键或唯一索引，否则replace into会直接插入数据，将导致表中出现重复数据。
+    如果数据库里有这条数据，则直接修改该记录；如果没有则直接插入。
+    在有外键的情况下，对主表进行这样操作，因为如果主表存在一条记录，被从表所用时，直接使用会报错。
+（3）binlog事件
+    当表没有主键和唯一键时：
+        相当于普通的insert，binlog记录事件为insert，返回影响行数为insert的数量。
+    当表有主键没有唯一键时：
+        当插入记录与主键冲突时会进行delete+insert操作，binlog记录事件为update，返回影响行数为delete+insert的数量。
+        如果主键自增，则AUTO_INCREMENT值不变。
+    当表没有主键有唯一键时：
+        插入记录与唯一键冲突时会进行delete+insert操作，binlog记录事件为update，返回影响行数为delete+insert的数量。
+    当表有主键有唯一键时：
+        插入记录与主键冲突时会进行delete+insert操作，binlog记录事件为delete+insert，返回影响行数为delete+insert的数量。
+        如果主键自增，则AUTO_INCREMENT值不变。
+        插入记录与唯一键冲突时会进行delete+insert操作，binlog记录事件为update，返回影响行数为delete+insert的数量。
+        如果主键自增，则新插入这条记录的主键会变成最新AUTO_INCREMENT的值，而对应的AUTO_INCREMENT会+1.
+        插入记录与主键和唯一键都冲突时会进行delete+insert操作，binlog记录事件为delete+insert，返回影响行数为delete*2+insert的数量。
+（4）replace into和on duplicate key update的区别
+    操作流程：
+        replace into发现主键或唯一键冲突时，会先删除原有的冲突行，然后插入新纪录，本质是delete+insert操作。
+        on duplicate key update发现主键或唯一键冲突时，将会触发更新操作，不会插入新纪录，本质是update操作。
+    数据处理：
+        replace into会更新整个记录，不仅仅是冲突的字段。如果新纪录没有指定某些字段的值，这些字段将使用默认值或NULL，原有的数据被完全覆盖。
+        on duplicate key update允许指定哪些列在冲突发生时进行更新，以及如何更新。意味着可以只修改部分字段而保留其他字段的原有值。
+    资源消耗：
+        replace into可能会消耗更多的资源，因为涉及到删除旧记录和插入新纪录两个操作。
+        on duplicate key update由于不涉及删除记录，在处理冲突时相对节省资源。但如果更新涉及大量字段或并发操作可能会影响性能。
+    适用场景：
+        replace into适用于需要确保每个唯一键对应的记录完全替换的场景。
+        on duplicate key update适用于在插入时检查记录是否存在，并根据情况更新某些字段。
