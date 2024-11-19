@@ -1,0 +1,45 @@
+一、service文件
+    Linux中.service文件是某项服务对应的配置文件，可用于systemd管理和控制的服务的设置。
+1、组成
+    通常包含3个模块。
+        [Unit] 控制单元，表示启动顺序和依赖关系；
+        [Service] 服务，表示服务的定义；
+        [Install] 安装，表示如何安装配置文件。
+2、文件存放位置
+    .service文件配置的服务常用systemd管理。然而，systemd有系统和用户区分；
+    系统（/usr/lib/systemd/system/）、用户（/etc/lib/systemd/user/）。
+    一般系统管理员手工创建的单元文件建议存放在/etc/systemd/system/目录下面，文件放到该目录下后需要执行 
+        systemctl daemon-reload
+3、新建service文件
+    [Unit]
+    Description=dragonfly   #当前配置文件的描述信息
+    ConditionFileIsExecutable=/etc/dragonflyDB/dragonfly  #文件执行条件
+    [Service]
+    ExecStart=/etc/dragonflyDB/dragonfly --logtostderr --requirepass=123456 --cache_mode=true --dbnum 4 --bind 0.0.0.0 --port 7000 --snapshot_cron "*/10 * * * *" --maxmemory=2gb --dbfilename dump --dir /etc/dragonflyDB
+        #定义服务的启动命令
+    ExecReload=     #定义服务重启时执行的命令
+    ExecStop=       #定义服务关闭时执行的命令
+    Restart=always  #表示在服务挂掉时无论其返回值都重启
+    RestartSec=120  #定义服务重启的间隔
+    StartLimitIntervalSec=0 #表示在服务挂掉后会一直重启（默认尝试5次后放弃重启）
+    [Install]
+    WantedBy=multi-user.target  #表示多用户命令行状态
+4、systemctl常用命令
+    当新增或修改service单元文件时，需要系统重新加载所有修改过的配置文件
+        systemctl daemon-reload
+    设置为开机自动启动
+        systemctl enable dragonfly.service
+    关掉开机启动
+        systemctl disable dragonfly.service
+    启动服务
+        systemctl start dragonfly.service
+    重启服务
+        systemctl restart dragonfly.service
+    关闭服务
+        systemctl stop dragonfly.service
+    查看服务状态
+        systemctl status dragonfly.service
+    查看服务是否开机启动
+        systemctl is-enabled dragonfly.service
+    显示所有已启动的服务
+        systemctl list-unit-files | grep enabled

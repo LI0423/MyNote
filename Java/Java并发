@@ -60,5 +60,147 @@
 2、同步和异步的区别
     同步：发出一个调用后，在没有得到结果之前，该调用就不可以返回，一直等待。
     异步：调用在发出之后，不用等待返回结果，该调用直接返回。
-3、为什么要使用多线程
-    
+
+三、死锁
+1、产生死锁的四个必要条件
+    互斥条件：该资源任意一个时刻只由一个线程占用。
+    请求与保持条件：一个线程因请求资源而阻塞时，对已获得的资源保持不放。
+    不剥夺条件：该线程已获得的资源在为使用完之前不能被其他线程强行剥夺，只有自己使用完毕后才释放资源。
+    循环等待条件：若干线程之间形成一种头尾相接的循环等待资源关系。
+2、如何检测死锁
+    使用jmap、jstack等命令查看JVM线程栈和堆内存的情况。如果有死锁，jstack的输出中通常会有Found one Java-level deadlock的字样，后面会
+    跟着死锁相关的线程信息。实际项目中还可以搭配使用top、df、free等命令查看操作系统的基本情况，出现死锁可能会导致CPU、内存等资源消耗过高。
+3、如何预防线程死锁
+    破坏请求与保持条件：一次性申请所有的资源。
+    破坏不剥夺条件：占用部分资源的线程进一步申请其他资源时，如果申请不到，可以主动释放占有的资源。
+    破坏循环等待条件：靠按序申请资源来预防。按某一顺序申请资源，释放资源则反序释放。
+
+四、volatile关键字
+1、如何保证变量的可见性
+    volatile关键字可以保证变量的可见性，如果将变量声明为volatile，指示JVM这个变量是共享且不稳定的，每次使用它都到主存中进行读取。
+2、如何禁止指令重排序
+    volatile关键字除了可以保证变量的可见性，还有一个重要的作用就是防止JVM的指令重排序。如果将变量声明为volatile，在对这个变量进行读写操作的时候，
+    会通过插入特定的内存屏障的方式来禁止指令重排序。
+    双重检验锁实现对象单例：
+        public class Singleton{
+            private volatile static Singleton uniqueInstance;
+            private Singleton(){}
+
+            public static getInstance(){
+                if(uniqueInstance == null){
+                    synchronized(Singleton.class){
+                        if(uniqueInstance==null){
+                            uniqueInstance = new Singleton();
+                        }
+                    }
+                }
+                return uniqueInstance;
+            }
+        }
+3、volatile可以保证原子性吗？
+    volatile关键字能保证变量的可见性，但不能保证对变量的操作是原子性的。
+    public class VolatileAtomicityDemo{
+        public volatile static int inc = 0;
+        public void increase(){
+            inc++;
+        }
+        public static void main(String[] args) throws InterruptedException{
+            ExecutorService threadPool = Executors.newFixedThreadPool(5);
+            VolatileAtomicityDemo volatileAtomicityDemo = new VolatileAtomicityDemo();
+            for(int i = 0; i < 5; i++){
+                threadPool.execute(() -> {
+                    for (int j = 0; j < 500; j++){
+                        volatileAtomicityDemo.increase();
+                    }
+                })
+            }
+            Thread.sleep(1500);
+            System.out.println(inc);
+            threadPool.shutdown();
+        }
+    }
+    原则上应该输出的最终结果是2500，但实际上并不是2500。因为inc++并不是一个原子操作，inc++其实是一个复合操作，分为三步：读取inc的值；对inc加1；
+    将inc的值写回内存。当两个线程对inc进行操作，线程1先读取inc的值，还未对inc进行操作，线程2也读取了inc的值，并将其加1，再将inc的值写回内存。而
+    线程1不知道inc的值已经改变，依然对inc的值加1，此时线程1持有的inc的值为2，再将其写回内存。这样两个线程执行了两次，但是inc的值只增加了1。
+    使用synchronized改进：
+        public synchronized void increase(){
+            inc++;
+        }
+    使用AtomicInteger改进：
+        public AtomicInteger inc = new AtomicInteger();
+        public void increase(){
+            inc.getAndIncrement();
+        }
+    使用ReentrantLock改进：
+        Lock lock = new ReentrantLock();
+        public void increase(){
+            lock.lock();
+            try{
+                inc++;
+            } finally {
+                lock.unlock();
+            }
+        }
+
+五、乐观锁和悲观锁
+1、悲观锁
+    悲观锁总是假设最坏的情况，认为共享资源每次被访问的时候就会出问题，所以每次在获取资源的时候都会上锁，这样其他线程拿到这个资源就会阻塞直到锁被
+    上一个持有者释放。
+    高并发的场景下，激烈的锁竞争会造成线程阻塞，大量阻塞线程会导致系统的上下文切换，增加系统的性能开销。悲观锁还可能存在死锁问题，影响代码运行。
+2、乐观锁
+    乐观锁总是假设最好的情况，认为共享资源每次被访问的时候不会出问题，线程可以不停执行，无需加锁也无需等待，只是在提交修改的时候去验证资源是否被
+    其他线程修改了。
+3、如何实现乐观锁
+    版本号机制和CAS算法。
+4、版本号机制
+    一般是在数据表上加一个数据版本号version字段，表示被修改的次数。当数据被修改时，version会加一。当线程A更新数据值时，在读取数据的同时也会读取
+    version值，在提交更新时，如果读取的version值跟当前数据的version值相等才更新，否则重试更新，直到成功。
+5、CAS算法
+    CAS全称是Compare And Swap（比较交换），用于实现乐观锁，就是用一个预期值和要更新的变量值进行比较，两值相等才会更新。
+    CAS涉及三个操作数：
+        V：要更新的变量值（Var）
+        E：预期值（Expected）
+        N：要写入的新值（New）
+    当且仅当C的值等于E时，CAS通过原子方式用新值N来更新V的值。如果不等说明有别的线程更新了V，则放弃这次更新。
+6、Java如何实现的CAS
+    Java中实现CAS操作的一个关键类是Unsafe。Unsafe类位于sun.misc下，是一个提供低级别、不安全操作的类。不推荐在应用程序中使用。
+7、CAS算法的问题
+（1）ABA问题
+    如果一个变量初次读取的时候是A值，并且在准备更新的时候还是A值，这无法说明这个变量没有被更新过。在这段时间中可能被改成了其他值，又改回了A值，
+    但是CAS会认为该变量从来没有被修改过。
+    如何解决：
+        在变量前面追加版本号或者时间戳。AtomicStampedReference类就是用来解决ABA问题的，其中的compareAndSet()方法就是首先检查当前引用是否
+        等于预期引用，并且当前标志是否等于预期标志，如果全部相等，则用原子方式将该引用和该标志的值设为给定的更新值。
+（2）循环时间长开销大
+    CAS操作会用自旋来重试，不成功就一直循环直到成功，长时间不成功会给CPU带来非常大的执行开销。
+（3）只能保证一个共享变量的原子操作
+
+六、synchronized关键字
+1、synchronized的作用
+    主要解决多个线程之间访问资源的同步性，可以保证被修饰的方法或者代码块在任一时刻只能有一个线程执行。
+    在Java早期版本中，synchronized属于重量级锁。因为监视器锁是依赖于底层操作系统的Mutex Lock来实现的，Java的线程是映射到操作系统的原生线程上的，
+    如果要挂起或者唤醒一个线程都需要操作系统的帮忙，操作系统实现线程之间的切换需要从用户态转换到内核态，这个操作需要比较长的时间。
+2、如何使用synchronized
+（1）修饰实例方法（锁当前对象实例）
+    synchronized void method(){}
+（2）修饰静态方法（锁当前类）
+    synchronized static void method(){}
+    静态synchronized方法和非静态synchronized方法之间的调用互斥吗？
+        不互斥，如果一个线程A调用一个实例对象的非静态synchronized方法，而线程B需要调用这个实例对象所属类的静态synchronized方法，不会发生互斥。
+        因为访问静态syncrhonized占用的锁是，而访问非静态synchronized方法占用的锁是当前实例对象锁。
+（3）修饰代码块（锁指定对象/类）
+    synchronized(object){} 表示进入同步代码库前要获得给定对象的锁。
+    synchronized(类.class){} 表示进入同步代码前要获得给定Class的锁。
+3、synchronized底层原理
+（1）synchronized代码块
+    synchronized同步语句块的实现使用的是monitorenter和monitorexit指令，其中monitorenter指令指向同步代码块的开始位置，monitorexit指令
+    则指向同步代码块的结束位置。
+    当执行monitorenter指令时，线程试图获取对象监视器monitor的持有权。在执行monitorenter时会尝试获取对象的锁，如果锁的计数器为0则表示锁可以
+    被获取，获取后将锁计数器设为1。对象锁的拥有者线程才可以执行monitorexit指令来释放锁。在执行monitorexit之后，将锁计数器设为0，表明锁被释放，
+    其他线程可以尝试获取锁。
+（2）synchronized修饰方法
+    synchronized使用的是ACC_SYNCHRONIZED标识，该标识指明了该方法是一个同步方法。JVM通过该标志来辨别一个方法是否声明为同步方法，从而执行相应的方法调用。
+4、synchronized和volatile的区别
+    volatile关键字是线程同步的轻量级实现。volatile关键字只能用于变量而synchronized关键字可以修饰方法和代码块。
+    volatile关键字能保证数据的可见性，但不能保证数据的原子性。synchronized关键字两者都能保证。
+    volatile关键字主要用于解决变量在多个线程之间的可见性，而synchronized关键字结局的是多个线程之间访问资源的同步性。
