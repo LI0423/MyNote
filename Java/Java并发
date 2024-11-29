@@ -200,7 +200,221 @@
     其他线程可以尝试获取锁。
 （2）synchronized修饰方法
     synchronized使用的是ACC_SYNCHRONIZED标识，该标识指明了该方法是一个同步方法。JVM通过该标志来辨别一个方法是否声明为同步方法，从而执行相应的方法调用。
-4、synchronized和volatile的区别
+4、JDK1.6之后的syncrhonized做了哪些优化
+    引入了大量的优化，如自选锁、适应性自选锁、锁消除、锁粗化、偏向锁、轻量级锁等技术来减少锁操作的开销。
+    锁主要存在四种状态，无锁状态、偏向锁状态、轻量级锁状态、重量级锁状态，会随着竞争的激烈逐渐升级。锁不能降级，是为了提高获得锁和释放锁的效率。
+5、synchronized和volatile的区别
     volatile关键字是线程同步的轻量级实现。volatile关键字只能用于变量而synchronized关键字可以修饰方法和代码块。
     volatile关键字能保证数据的可见性，但不能保证数据的原子性。synchronized关键字两者都能保证。
-    volatile关键字主要用于解决变量在多个线程之间的可见性，而synchronized关键字结局的是多个线程之间访问资源的同步性。
+    volatile关键字主要用于解决变量在多个线程之间的可见性，而synchronized关键字解决的是多个线程之间访问资源的同步性。
+
+六、ReentrantLock
+1、ReentrantLokc是什么
+    ReentrantLock实现了Lock接口，是一个可重入且独占的锁。ReentrantLock里面有一个内部类Sync，Sync继承了AQS（AbstracQueuedSynchronizer），添加锁和释放锁
+    的大部分操作实际上都是在Sync中实现的。Sync有公平锁和非公平锁两个子类。默认使用非公平锁，也可以通过构造器显式指定。
+2、公平锁和非公平锁的区别
+    公平锁：锁被释放后，先申请的线程先得到锁。因为公平锁为了保证时间上的绝对顺序，上下文切换更频繁。
+    非公平锁：锁被释放后，线程是随机或者按照其他优先级排序的顺序获取锁的。性能更好，但可能导致某些线程永远无法获取锁。
+3、synchronized和ReentrantLock的区别
+（1）两者都是可重入锁
+    可重入锁也叫递归锁，指的是线程可以再次获取自己的内部锁。JDK提供的Lock实现类，都是可重入的。
+        public class SynchronizedDemo{
+            public synchronized void method1(){
+                System.out.println("method1");
+                method2();
+            }
+            public synchronized void method2(){
+                System.out.println("method2");
+            }
+        }
+        因为synchronized是可重入的，同一个线程在调用method1的时可以直接获取当前对象的锁，执行method2时可以再次获取该对象的锁，不会产生死锁。
+        如果是不可重入的，由于当前对象锁已经持有且无法释放，再执行method2时无法获取锁，出现死锁问题。
+（2）synchronized依赖于JVM，ReentrantLock依赖于API
+（3）ReentrantLock比synchronized增加了一些高级功能
+    等待可中断：通过lock.lockInterruptibly()来实现这个机制。也就是正在等待的锁可以放弃等待锁释放，转而去做别的事情。
+    可实现公平锁：ReentrantLock可以指定是公平锁还是非公平锁，而synchronized只能是非公平锁。ReentrantLock默认是非公平锁，可以通过构造方法参数来指定。
+    可实现选择性通知：synchronized关键字与wait()和notify()/notifyAll()可以实现等待通知机制。ReentrantLock需要通过Condition接口和
+        newCondition()方法。线程对象可以注册在指定的Condition中，从而可以有选择性的进行线程通知，在调度上更加灵活。使用notify()/notifyAll()
+        进行唤醒时，线程是由JVM选择的，用ReentrantLock类结合Condition实例可以实现选择性通知。而synchronized相当于整个Lock对象只有一个
+        Condition实例，所有的线程都注册在它身上。如果执行notifyAll()将会唤醒所有等待的线程。而Condition实例的signalAll()方法，只会唤醒
+        注册在Condition实例中的所有等待线程。
+4、可中断锁和不可中断锁的区别
+    可中断锁就是在获取锁的过程中可以被打断，不需要一直等待获取锁之后才执行别的逻辑。ReentrantLock就是可中断锁。
+    不可中断锁就是一旦申请锁，就只能等待拿到锁以后才能进行别的逻辑处理。synchronized就是不可中断锁。
+
+七、ReentrantReadWriteLock
+1、ReentrantReadWirteLock是什么
+    ReentrantReadWirteLock实现了ReadWriteLock，是一个可重入的读写锁，既可以保证多个线程同时读的效率。
+    一般锁进行并发控制的规则：读读互斥、读写互斥、写写互斥。
+    读写锁进行并发控制的规则：读读不互斥、读写互斥、写写互斥。
+    ReentrantReadWirteLock其实是两把锁，一把锁是WriteLock（写锁），一把是ReadLock（读锁）。读锁是共享锁，写锁是独占锁。读锁可以被多个线程持有，
+    写锁只能同时被一个线程持有。
+    底层是基于AQS实现的，也支持公平锁和非公平锁，默认使用非公平锁，可以通过构造器显式指定。
+2、ReentrantReadWriteLock适合什么场景
+    在读多写少的情况下，使用ReentrantReadWriteLock能明显提升效率。
+3、线程持有读锁还能获取写锁
+    线程持有读锁的时候，不能再持有写锁。因为再获取写锁的时候，如果发现当前读锁被占用，则会立即获取失败。
+    线程持有写锁的时候，该线程还能继续获取读锁。只有写锁没有被当前线程占用才会获取失败。
+4、读锁为什么不能升级为写锁
+    写锁可以降级为读锁，但是写锁不能升级为写锁。这是因为读锁升级为写锁会引起线程的争夺，写锁属于是独占锁。
+
+八、StampedLock
+1、StampedLock是什么
+    是在JDK1.8引入的性能更好的读写锁，不可重入且不支持条件变量Condition。
+    不同于一般的Lock类，StampedLock并不是直接实现Lock或ReadWriteLock接口，而是基于CLH锁独立实现的。
+    三种读写控制模式
+        写锁：独占锁，一把锁只能被一个线程获取。当一个线程获取写锁后，其他请求读锁和写锁的线程必须等待。这里的写锁是不可重入的。
+        读锁：共享锁，没有线程获取写锁的情况下，多个线程可以同时持有读锁。如果已经有线程持有写锁，则其他线程请求获取该读锁会被阻塞。这里的写锁是不可重入的。
+        乐观读：允许多个线程获取乐观读以及读锁。同时允许一个写线程获取写锁。
+2、StampedLock的性能为什么更好
+    StampedLock的乐观读允许一个写线程获取写锁，不会导致所有写线程阻塞，也就是当读多写少的时候，写线程有机会获取写锁，减少了线程饥饿的问题。
+3、StampedLock适合什么场景
+    StampedLock适合读多写锁的业务场景，可以作为ReentrantReadWriteLock替代品，性能更好。不过Stamped不可重入，不支持变量条件，对中断操作支持
+    也不太友好。
+4、StampedLock底层原理
+    StampedLock不是直接实现Lock或ReadWriteLock接口，而是基于CLH锁实现的，CLH锁是对自旋锁的一种改良，是一种隐式的链表队列。StampedLock通过
+    CLH队列进行线程的管理，通过同步状态值state来表示锁的状态和类型。
+
+九、ThreadLock
+1、ThreadLock有什么用
+    ThreadLock解决的就是每个线程绑定自己的值。如果创建了一个ThreadLock变量，那么访问这个这个变量的每个线程都会有这个变量的本地副本。可以使用
+    get()和set()方法来获取默认值或将其更改为当前线程所存的副本的值，避免线程安全问题。
+2、ThreadLocal的原理
+    ThreadLocal可以理解是ThreadLocalMap的封装，封装了变量值。ThreadLocal类可以通过Thread.currentThread()获取当前线程对象后，直接通过
+    getMap(Thread t)可以访问到该线程的ThreadLocalMap对象。每个Thread都具备一个ThreadLocalMap，而ThreadLocalMap可以存储以ThreadLocal
+    为key，Object对象为value的键值对。
+3、ThreadLocal内存泄露问题
+    ThreadLocalMap中使用的key为ThreadLocal的弱引用，而value是强引用。如果ThreadLocal没有被外部强引用的情况下，在垃圾回收的时候，key会被清理掉，
+    而value不会被清理掉。ThreadLocalMap中就出现了key为null的Entry。如果不做任何措施，value永远不会被GC回收，就产生了内存泄露。
+    ThreadLocalMap实现中已经考虑了这种情况，在调用set()、get()、remove()方法的时候，会清理掉key为null的记录。使用完ThreadLocal方法后最好
+    手动调用remove()。
+
+十、线程池
+1、为什么要用线程池
+    池化技术的思想主要是为了减少每次获取资源的消耗，提高对资源的利用率。
+    线程池提供了一种限制和管理资源（包括执行一个任务）的方式。每个线程池还维护一些基本统计信息。
+2、线程池的好处
+    降低资源消耗：通过重复利用已创建的线程降低线程创建和销毁造成的消耗。
+    提高响应速度：当任务到达时，任务可以不需要等到线程创建就能立即执行。
+    提高线程的可管理性：线程是稀缺资源如果无限制创建，不仅会消耗系统资源，还会降低系统的稳定性，使用线程池可以统一分配，调优和监控。
+3、如何创建线程池
+（1）ThreadPoolExecutor
+（2）Executor框架的工具类Executors
+    FixedThreadPool：固定线程数量的线程池，该线程池中的线程数量始终保持不变。当有一个新的任务提交时，线程池中若有空闲线程，则立即执行。如果没有
+        则新的任务会被暂存在一个任务队列中，待有线程空闲时，便处理在任务队列中的任务。
+    SingledThreadPool：只有一个线程的线程池。如果多余一个任务被提交到该线程池，任务会被保存在一个任务队列中，待线程空闲，按先入先出的顺序执行队列中的任务。
+    CachedThreadPool：可以根据实际情况调整线程数量的线程池。线程池的线程数量不确定，如果有空闲线程可以复用，则优先使用可复用的线程。如果所有线程
+        都在工作，又有新的任务提交，则会创建新的线程处理任务。所有线程在当前任务执行完毕后，将返回线程池进行复用。
+    ScheduledThreadPool：给定的延迟后运行任务或定期执行任务的线程池。
+4、Executors返回线程池的弊端
+    FixedThreadPool和SingleThreadExecutor：使用的是有界阻塞队列是LinkedBlockingQueue，其任务队列的最大长度为Integer.MAX_VALUE，
+        可能堆积大量的请求，从而导致OOM。
+    CachedThreadPool：使用的是同步队列SynchronousQueue，允许创建的线程数量为Integer.MAX_VALUE，如果任务数量过多且执行速度较慢，可能创建
+        大量的线程，从而导致OOM。
+    ScheduledThreadPool和SingleThreadScheduledExecutor：使用的无界的延迟阻塞队列为DelayedWorkQueue，任务队列最大长度为Integer.MAX_VALUE，
+        可能堆积大量的请求，从而导致OOM。
+5、线程池常见参数
+    corePoolSize：线程池的核心线程数。
+    maximumPoolSize：线程池的最大线程数。
+    keepAliveTime：当线程数大于核心线程数时，多余的空闲线程存活的最长时间。
+    unit：时间单位。
+    workQueue：任务队列，用来存储等待执行任务的队列。
+    threadFactory：线程工厂，用来创建线程，一般默认即可。
+    handler：拒绝策略，当提交的任务过多而不能及时处理时，可以定制策略来处理任务。
+6、线程池的核心线程会被回收吗？
+    ThreadPoolExecutor默认不会回收核心线程。这是为了减少创建线程的开销，因为核心线程池通常是要保持长期活跃的。但是如果线程池是被用于周期性使用
+    的场景，且频率不高，可以考虑将allowCoreThreadTimeOut(boolean value) 方法的参数设置为true，就会回收空闲的核心线程了。
+7、线程池的拒绝策略
+    AbortPolicy：抛出Rejected ExecutionException来拒绝新任务的处理。
+    CallerRunsPolicy：调用执行自己的线程运行任务，也就是直接在调用execute方法的线程中运行被拒绝的任务，如果执行程序已关闭，则会丢弃该任务。
+    DiscardPolicy：不处理新任务，直接丢弃。
+    DiscardOldesPolicy：此策略将丢弃最早的未处理的任务请求。
+8、CallerRunsPolicy策略有什么风险？
+    如果想要保证任何一个任务请求都要被执行的话，那选择CallerRunsPolicy。如果走到CallerRunsPolicy是个非常耗时的任务，且处理提交任务的线程是
+    主线程，可能导致主线程阻塞，影响程序正常运行。
+    如何解决：
+    （1）增加阻塞队列BlockingQueue的大小并调整堆内存以容纳更多的任务。
+    （2）调整线程池maximumPoolSize参数提高任务处理速度。
+    （3）任务持久化
+        将任务数据存入到MySQL数据库中。
+        Redis缓存任务。
+        将任务提交到消息队列中。
+    如何实现：实现RejectedExecutionHandler接口自定义拒绝策略，自定义拒绝策略负责将线程池暂时无法处理的任务入库。继承BlockingQueue实现一个
+        混合式阻塞队列，该队列包含JDK自带的ArrayBlockingQueue。该混合式阻塞队列需要修改取任务处理的逻辑，也就是重写take()方法，取任务时优先
+        从数据库中读取最早的任务，数据库中无任务时再从ArrayBlockingQueue中取任务，以避免饥饿问题。
+9、线程池常用的阻塞队列
+（1）LinkedBlockingQueue（有界阻塞队列）：容量为Integer.MAX_VALUE。FixedThreadPool最多只能创建核心线程数的线程（核心线程数和最大线程数相等），
+    SingledThreadPool只能创建一个线程（核心线程数和最大线程数都是1），二者的任务队列永远不会被放满。
+（2）SynchronousQueue（同步队列）：没有容量，不存储元素，目的是保证对于提交的任务，如果有空闲线程，则用空闲线程来处理；否则新建一个线程来处理任务。
+    也就是CachedThreadPool的最大线程数是Integer.MAX_VALUE，可以理解为线程数是可以无限扩张的，可能会创建大量线程，从而导致OOM。
+（3）DelayedWorkQueue（延迟队列）：DelayedWorkQueue添加元素满了之后会自动扩容，增加原来容量的50%，即永远不会阻塞，最大扩容可达Integer.MAX_VALUE。
+    ScheduledThreadPool和SingleThreadScheduledExecutor。DelayedWorkQueue的内部元素并不是按照放入的时间排序，而是会按照延迟的时间长短对
+    任务进行排序，内部采用的是“堆”的数据结构，可以保证每次出队的任务都是当前队列中执行时间最靠前的。
+（4）ArrayBlockingQueue（有界阻塞队列）：底层由数组实现，容量一旦创建，就不能修改。
+10、线程池处理任务的流程
+（1）如果当前运行的线程数小于核心线程数，那么就会新建一个线程来执行任务。
+（2）如果当前运行的线程数等于或大于核心线程数，但是小于最大线程数，那么就把该任务放到任务队列里等待执行。
+（3）如果任务队列已经满了，但是当前运行的线程数是小于最大线程数的，就新建一个线程来执行任务。
+（4）如果当前运行的线程数已经等同于最大线程数了，新建线程将会使当前运行的线程超出最大线程数，那么当前线程任务会被拒绝，拒绝策略会调用RejectedExecutionHandler.rejectedExecution()方法。
+11、线程池在提交任务前，可以提前创建线程吗？
+    可以的！ThreadPoolExecutor提供了两个方法在提交任务前，完成核心线程池的创建，从而实现线程池预热的效果：
+    prestartCoreThread()：启动一个线程，等待任务，如果已达到核心线程数，返回false，否则返回true；
+    prestartAllCoreThreads()：启动所有的核心线程，并返回启动成功的核心线程数。
+12、线程池中线程异常后，销毁还是复用
+    使用execute()提交任务：当任务通过execute()提交到线程池并在执行过程中抛出异常时，如果这个异常没有在任务内被捕获，那么该异常会导致当前线程终止，
+        并且异常会被打印到控制台或日志文件中。线程池会检测到这种线程终止，并创建一个新线程来替换它，从而保持配置的线程数不变。
+    使用submit()提交任务：对于通过submit()提交的任务，如果在任务执行中发生异常，这个异常不会打印出来。异常会被封装在由submit()返回的Future对象中，
+        当调用Future.get()方法时，可以捕获到一个ExecutionException。在这种情况下，线程不会因为异常而终止，会继续存在于线程池中，准备执行后续
+        的任务。
+13、如何给线程池命名？
+    初始化线程池时要显式命名，方便定位问题。
+（1）利用guava的ThreadFactoryBuilder
+    ThreadFactory threadFactory = new ThreadFactoryBuilder().setNameFormat(threadNamePrefix + '-%d').setDaemon(true).build();
+（2）自己实现ThreadFactory
+    public class NamingThreadFactory implements ThreadFactory {
+        private final AtomicInteger threadNum = new AtomicInteger();
+        private final String name;
+
+        public NamingThreadFactory(String name){
+            this.name = name;
+        }
+
+        @Override
+        public Thread newThread(Runnable r){
+            Thread t = new Thread();
+            t.setName(name + "[#" + threadNum.incrementAndGet() + "]");
+            return t;
+        }
+    }
+14、如何设定线程池的大小
+    CPU密集型任务：N+1，即为CPU核心数+1。比CPU核心多出来的一个线程是为了防止线程偶发的缺页中断，或者其他原因导致的任务暂停而带来的影响。一旦任务
+        暂停，CPU就会处于空闲状态，多出来的一个线程可以充分利用CPU的空闲时间。
+    IO密集型任务：2N，系统会应用大部分的时间来处理IO交互，而线程在处理IO的时间段内不会占用CPU来处理，就可以将CPU交出给其他线程使用。
+15、如何设计一个能够根据任务的优先级来执行的线程池
+    使用PriorityBlockingQueue（优先级）阻塞队列作为任务队列。
+    PriorityBlockingQueue是一个支持优先级的阻塞队列，可以看作是线程安全的PrioritQueue，两者底层都是使用小顶堆形式的二叉堆，值最小的元素先出队。
+    要想让PriorityBlockingQueue实现对任务的排序，传入其中的任务必须是具备排序能力的，有两种方式：
+        提交到线程池的任务实现Comparable接口，并重写compareTo方法来指定任务间的优先级比较规则。
+        创建PriorityBlockingQueue时传入一个Comparator对象来指定任务间的排序规则。
+    这种方案存在风险：
+        PriorityBlockingQueue是无界的，可能堆积大量的请求，导致OOM。
+        可能会导致饥饿问题，即优先级低的任务长时间得不到执行。
+        由于需要队列中的元素进行排序操作，并保证线程安全（并发控制采用的是可重入锁ReentrantLock），因此会降低性能。
+    解决OOM问题，继承PriorityBlockingQueue并重写offer方法的逻辑，当插入的元素数量超过指定值就返回false。
+    解决饥饿问题，等待时间过长的任务会被移除并重新添加到队列中，但是优先级会被提升。
+    性能影响问题，无法避免。
+
+十一、Future
+1、Future类的作用
+    是异步思想的典型运用，主要用在一些需要耗时任务的场景，避免程序一直原地等待耗时任务执行完成，执行效率太低。
+2、Callable和Future有什么关系
+    FutureTask提供了Future接口的基本实现，常用来封装Callable和Runnable，具有取消任务、查看任务是否执行完成以及获取执行结果的方法。
+
+十二、AQS
+1、AQS是什么
+    AQS全称为AbstractQueuedSynchronizer，抽象队列同步器。AQS就是一个抽象类，主要用来构建锁和同步器。
+2、AQS原理
+    AQS核心思想是，如果被请求的共享资源空闲，则将当前请求资源的线程设置为有效的工作线程，并且将共享资源设置为锁定状态。如果被请求的共享设置为锁定状态。
+    如果被请求的共享资源被占用，那么就需要一套线程阻塞等待以及被唤醒时锁分配的机制，这个机制AQS是用CLH队列锁实现的，即将暂时获取不到的线程加入到队列中。
+    CLH队列是一个虚拟的双向队列（虚拟的双向队列即不存在队列实例，仅存在结点之间的关联关系）。AQS是将每条请求共享资源封装成CLH锁队列的一个节点来
+    实现锁的分配。在CLH同步队列中，一个节点表示一个线程，保存着线程的引用、当前节点在队列中的状态、前驱节点、后继节点。
