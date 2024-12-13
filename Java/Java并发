@@ -299,6 +299,35 @@
     提高线程的可管理性：线程是稀缺资源如果无限制创建，不仅会消耗系统资源，还会降低系统的稳定性，使用线程池可以统一分配，调优和监控。
 3、如何创建线程池
 （1）ThreadPoolExecutor
+    Spring框架的ThreadPoolTaskExecutor
+        @Configuration
+        public class ThreadPoolConfig {
+
+            @Bean(name = "taskExecutor")
+            public TaskExecutor taskExecutor() {
+                ThreadPoolTaskExecutor threadPoolTaskExecutor = new ThreadPoolTaskExecutor();
+
+                String threadName = "thread-pool-";
+                int corePoolSize = Runtime.getRuntime().availableProcessors();
+
+                // 核心线程池
+                threadPoolTaskExecutor.setCorePoolSize(corePoolSize);
+                // 最大线程数
+                threadPoolTaskExecutor.setMaxPoolSize(corePoolSize * 2 + 1);
+                // 任务队列大小
+                threadPoolTaskExecutor.setQueueCapacity(500);
+                // 空闲队列线程存活时间
+                threadPoolTaskExecutor.setKeepAliveSeconds(60);
+                // 线程名前缀
+                threadPoolTaskExecutor.setThreadNamePrefix(threadName);
+                // 拒绝策略
+                threadPoolTaskExecutor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
+                // 线程初始化
+                threadPoolTaskExecutor.initialize();
+                System.out.println("线程池初始化。。。。。。");
+                return threadPoolTaskExecutor;
+            }
+        }
 （2）Executor框架的工具类Executors
     FixedThreadPool：固定线程数量的线程池，该线程池中的线程数量始终保持不变。当有一个新的任务提交时，线程池中若有空闲线程，则立即执行。如果没有
         则新的任务会被暂存在一个任务队列中，待有线程空闲时，便处理在任务队列中的任务。
@@ -315,7 +344,7 @@
         可能堆积大量的请求，从而导致OOM。
 5、线程池常见参数
     corePoolSize：线程池的核心线程数。
-    maximumPoolSize：线程池的最大线程数。
+    maximumPoolSize：线程池的最大线程数。一定要大于核心线程数，否则会创建失败。
     keepAliveTime：当线程数大于核心线程数时，多余的空闲线程存活的最长时间。
     unit：时间单位。
     workQueue：任务队列，用来存储等待执行任务的队列。
@@ -386,7 +415,7 @@
             return t;
         }
     }
-14、如何设定线程池的大小
+14、如何设定线程池最大线程数的大小
     CPU密集型任务：N+1，即为CPU核心数+1。比CPU核心多出来的一个线程是为了防止线程偶发的缺页中断，或者其他原因导致的任务暂停而带来的影响。一旦任务
         暂停，CPU就会处于空闲状态，多出来的一个线程可以充分利用CPU的空闲时间。
     IO密集型任务：2N，系统会应用大部分的时间来处理IO交互，而线程在处理IO的时间段内不会占用CPU来处理，就可以将CPU交出给其他线程使用。
@@ -403,6 +432,20 @@
     解决OOM问题，继承PriorityBlockingQueue并重写offer方法的逻辑，当插入的元素数量超过指定值就返回false。
     解决饥饿问题，等待时间过长的任务会被移除并重新添加到队列中，但是优先级会被提升。
     性能影响问题，无法避免。
+16、线程池参数配置
+（1）核心线程数
+    核心线程数是线程池中保持活跃的最小线程数，即使处于空闲状态，也不会被销毁。通常配置为系统可用处理器的数量。这种配置能确保系统资源的有效利用，
+    同时避免线程上下文切换带来的开销。
+（2）最大线程数
+    当核心线程都在忙碌且任务队列已满，线程池会创建新的线程，但不超过最大线程数。
+    根据任务的特性和系统的负载来决定。如果是CPU密集型，设为N+1。如果是IO密集型设置为2N。
+（3）队列容量
+    当核心线程都在忙碌，新的任务会被放入队列中等待执行。队列容量配置需要考虑系统的内存、任务的执行和任务的数量。如果队列容量太小，可能导致频繁的
+    任务拒绝；如果太大会导致任务等待时间过长。
+    根据系统的内存和任务的特性来配置队列容量，通常设置为核心线程数的100-1000倍。
+17、核心线程数配置过大产生的问题
+    当遇到IO密集型任务，比如写文件的操作，会有多个线程请求分配内存空间，如果文件过大，多线程请求的空间就会比较大，如果内存不足，造成内存溢出，
+    抛出OOM异常，并且线程会阻塞等待分配空间，导致效率低下。“Retried waiting for GCLocker too often allocating 262146 words”
 
 十一、Future
 1、Future类的作用
@@ -414,7 +457,39 @@
 1、AQS是什么
     AQS全称为AbstractQueuedSynchronizer，抽象队列同步器。AQS就是一个抽象类，主要用来构建锁和同步器。
 2、AQS原理
-    AQS核心思想是，如果被请求的共享资源空闲，则将当前请求资源的线程设置为有效的工作线程，并且将共享资源设置为锁定状态。如果被请求的共享设置为锁定状态。
-    如果被请求的共享资源被占用，那么就需要一套线程阻塞等待以及被唤醒时锁分配的机制，这个机制AQS是用CLH队列锁实现的，即将暂时获取不到的线程加入到队列中。
+    AQS核心思想是，如果被请求的共享资源空闲，则将当前请求资源的线程设置为有效的工作线程，并且将共享资源设置为锁定状态。如果被请求的共享资源被占用，
+    那么就需要一套线程阻塞等待以及被唤醒时锁分配的机制，这个机制AQS是用CLH队列锁实现的，即将暂时获取不到的线程加入到队列中。
     CLH队列是一个虚拟的双向队列（虚拟的双向队列即不存在队列实例，仅存在结点之间的关联关系）。AQS是将每条请求共享资源封装成CLH锁队列的一个节点来
     实现锁的分配。在CLH同步队列中，一个节点表示一个线程，保存着线程的引用、当前节点在队列中的状态、前驱节点、后继节点。
+3、AQS使用什么表示同步状态
+    AQS使用int成员变量state表示同步状态，通过内置的线程等待队列来完成获取资源线程的排队工作。
+    state变量由volatile修饰，用于展示当前临界资源的获锁情况。状态信息可以通过protected类型的getState()、setState()和compareAndSetState()
+    进行操作。并且这几个方法都是final修饰的，在子类中无法被重写。
+（1）以ReentrantLock为例，state初始值为0，表示未锁定状态。A线程lock()时，会调用tryAcquire()独占该锁并将state+1。此后其他线程再tryAcquire()
+    时就会失败，直到A线程unlock()到state=0（即释放锁）为止，其他线程才有机会获取该锁。当然，释放锁之前，A线程是可以重复获取此锁的（state会累加），
+    这就是可重入的概念。获取多少次就要释放多少次，这样才能保证state是能回到零态的。
+（2）以CountDownLatch为例，任务分为N个子线程去执行，state也初始化为N（N要与线程个数一致）。这N个子线程执行后countDown()一次，state会CAS减一。
+    等到所有子线程都执行完后（即state=0），会unpark()主调用线程，然后主调用线程就会从await()函数返回，进行后续操作。
+4、Semaphore有什么用
+    synchronized和ReentrantLock都是一次只允许一个线程访问某个资源，而Semaphore（信号量）可以用来控制同时访问特定资源的线程数量。
+5、Semaphore的原理是什么
+    Semaphore是共享锁的一种实现，默认构造AQS的state值为permits。调用Semaphore.acquire()，线程尝试获取许可证，如果state>=0的话，则表示
+    可以获取成功。如果state<0的话，则表示许可证数量不足。此时会创建一个Node节点加入阻塞队列，挂起当前线程。
+6、CountDownLatch有什么用
+    CountDownLatch允许count个线程阻塞在一个地方，直至所有线程的任务都执行完毕。
+    CountDownLatch是一次性的，计数器的值只能在构造方法中初始化一次，之后没有任何机制再对其设置值，当CountDownLatch使用完毕后，不能再被使用。
+7、CountDownLatch的原理是什么
+    CountDownLatch是共享锁的一种实现，默认构造AQS的state值为count。当线程使用countDown()方法时，其实使用了tryReleaseShared方法以CAS
+    的操作来减少state，直至state为0。当调用await()方法的时候，如果state不为0，那就说明任务还没有执行完，await()方法就会一直阻塞，也就是说
+    await()方法之后的语句不会执行。直到count个线程调用了countDown()使state值被减为0，或者调用await()的线程被中断，该线程才会从阻塞中被唤醒，
+    await()方法之后的语句得到执行。
+8、CyclicBarrier有什么用，原理是什么
+    CyclicBarrier和CountDownLatch非常类似，也可以实现线程间的技术等待。
+    CyclicBarrier内部通过一个count变量作为计数器，count的初始值为parties属性的初始化值，每当一个线程到了栅栏这里，那么计数器减1.如果count值
+    为0了，表示这一代最后一个线程到达栅栏，就尝试执行构造方法中输入的任务。
+
+十三、虚拟线程
+1、什么是虚拟线程
+    虚拟线程是JDK而不是OS实现的轻量级线程，由JVM调度。许多虚拟线程共享同一个操作系统线程，虚拟线程的数量可以远大于操作系统线程的数量。
+2、虚拟线程和平台线程有什么关系
+    
