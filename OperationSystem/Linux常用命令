@@ -34,3 +34,8 @@
 11.查找文件位置
 	which xxx 
 	whereis xxx 
+
+12.Linux修改pip指向的python
+	创建新的pip链接，首先找到pip的可执行文件路径，通常位于Python3.x的安装目录下，例如/usr/local/bin/pip3.9。
+	更新pip指向，sudo ln -sf /usr/local/bin/pip3.9 /usr/local/bin/pip
+	验证更改，pip --version
