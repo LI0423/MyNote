@@ -1,4 +1,0 @@
-一、架构以及角色
-1、角色
-（1）Broker
-    理解成RocketMQ本身，broker主要用于producer和consumer接收和发送消息。broker会定时向nameserver提交自己的信息。是消息中间件

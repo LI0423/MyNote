@@ -10,6 +10,19 @@
         vfr：可变帧率模式
         cfr：恒定帧率模式
         pfr：伪恒定帧率模式
+    -rtsp_flags 指定在处理RTSP流时优先使用的协议
+        udp：默认使用UDP协议传输数据
+        tcp：使用TCP协议传输数据
+        udp_multicast：使用UDP多播传输数据
+        http：使用HTTP协议传输数据
+        prefer_tcp：优先使用TCP协议
+        listen：使FFmpeg监听RTSP命令和数据，而不是主动连接
+        filter_src：过滤掉来自源地址的RTSP命令和响应
+    -avioflags format的缓冲设置，默认为0，就是有缓冲
+        direct： 使用直接I/O模式，减少对缓冲区的使用，从而提高性能
+        direct_no_filesize：
+    -fflags 
+
 ## 3、输入、输出参数
     -i input 指定输入文件（可多个输入）
     -f format 强制指定输入、输出格式（-f mp4, -f mpegts）
