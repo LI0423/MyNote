@@ -47,7 +47,7 @@ $
 所有权重之和为：
 
 $$
-\sum_{i=0}^{\infty} w_i = \sum_{i=0}^{\infty} \alpha(1-\alpha)^i = 1.
+\sum_{i=0}^{\infty} w_i = \sum_{i=0}^{\infty} \alpha(1-\alpha)^i = 1
 $$
 
 ### 2.2 初始条件

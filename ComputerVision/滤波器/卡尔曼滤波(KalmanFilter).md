@@ -1,4 +1,4 @@
-# 卡尔曼滤波详解
+# 卡尔曼滤波
 
 ## 原理
 
@@ -6,7 +6,7 @@
 
 ### 1.解释
 
-    就是一种聪明的“预测+修正”的办法，用来从带噪声的数据里，尽量估计出真实值。它相信：“我对未来的预测 + 现在的观测值，综合一下，能得到更靠谱的估计。”
+    就是一种聪明的“预测+修正”的办法，用来从带噪声的数据里，尽量估计出真实值。它相信：“对未来的预测 + 现在的观测值，综合一下，能得到更靠谱的估计。”
 
 ### 2.处理步骤
 
@@ -110,7 +110,7 @@ $$
 #### 5.1 状态向量定义
 
 $$
-x = \begin{bmatrix} \text{位置} \\ \text{速度} \end{bmatrix}
+x = \begin{bmatrix} \text{position} \\ \text{velocity} \end{bmatrix}
 $$
 
 #### 5.2 状态转移矩阵
@@ -122,6 +122,43 @@ F = \begin{bmatrix}
 \end{bmatrix}
 $$
 
+##### 物理意义
+
+1. 位置更新：新位置 = 原位置 + 速度 x 时间间隔
+
+   对应矩阵元素：$F[0,0] = 1, F[0,1] = \Delta t$
+
+2. 速度更新：假设匀速运动，速度保持不变
+
+   对应矩阵元素：$F[1,0] = 0, F[1,1] = 1$
+
+##### 矩阵相乘过程
+
+$$
+\begin{bmatrix}
+x_{new} \\
+v_{new}
+\end{bmatrix}
+=
+\begin{bmatrix}
+1 & \Delta t \\
+0 & 1
+\end{bmatrix}
+\times
+\begin{bmatrix}
+    x \\
+    v
+\end{bmatrix}
+=
+\begin{bmatrix}
+    1 · x + \Delta t · v \\
+    0 · x + 1 · v
+\end{bmatrix}
+$$
+
+- 新位置：$x_{new} = x + v · \Delta t$
+- 新速度：$v_{new} = v （假设匀速）$
+
 #### 5.3 过程噪声协方差（随机加速度假设）
 
 $$
@@ -130,3 +167,7 @@ Q = \sigma_a^2 \begin{bmatrix}
 \frac{\Delta t^3}{2} & \Delta t^2
 \end{bmatrix}
 $$
+
+##### 物理基础
+
+来自匀速运动模型中的随机加速度
