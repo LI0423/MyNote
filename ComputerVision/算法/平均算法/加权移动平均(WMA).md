@@ -125,76 +125,76 @@ $$
 
 1. **线性加权移动平均**
 
-```python
-class LinearWeightedMovingAverage:
-    """
-    线性加权移动平均
-    - window_size: 观察窗口大小
-    - mode: 权重模式 ('linear'或'custom')
-    - custom_weights: 自定义权重数组
-    """
-    def __init__(self, window_size=5, mode='linear', custom_weights=None):
-        self.window = deque(maxlen=window_size)
-        self.window_size = window_size
-        
-        if mode == 'linear':
-            # 生成线性递减权重 [n, n-1, ..., 1]
-            self.weights = list(range(1, window_size+1))[::-1]
-        elif mode == 'custom' and custom_weights:
-            if len(custom_weights) != window_size:
-                raise ValueError("自定义权重长度需与窗口大小一致")
-            self.weights = custom_weights
-        else:
-            raise ValueError("不支持的权重模式")
+    ```python
+    class LinearWeightedMovingAverage:
+        """
+        线性加权移动平均
+        - window_size: 观察窗口大小
+        - mode: 权重模式 ('linear'或'custom')
+        - custom_weights: 自定义权重数组
+        """
+        def __init__(self, window_size=5, mode='linear', custom_weights=None):
+            self.window = deque(maxlen=window_size)
+            self.window_size = window_size
             
-        # 归一化权重
-        self.weights = [w/sum(self.weights) for w in self.weights]
-        
-    def update(self, value):
-        self.window.append(value)
-        if len(self.window) < self.window_size:
-            return None  # 窗口未填满时返回空
+            if mode == 'linear':
+                # 生成线性递减权重 [n, n-1, ..., 1]
+                self.weights = list(range(1, window_size+1))[::-1]
+            elif mode == 'custom' and custom_weights:
+                if len(custom_weights) != window_size:
+                    raise ValueError("自定义权重长度需与窗口大小一致")
+                self.weights = custom_weights
+            else:
+                raise ValueError("不支持的权重模式")
+                
+            # 归一化权重
+            self.weights = [w/sum(self.weights) for w in self.weights]
             
-        # 计算加权平均
-        weighted_sum = sum(w * x for w, x in zip(self.weights, self.window))
-        return weighted_sum
+        def update(self, value):
+            self.window.append(value)
+            if len(self.window) < self.window_size:
+                return None  # 窗口未填满时返回空
+                
+            # 计算加权平均
+            weighted_sum = sum(w * x for w, x in zip(self.weights, self.window))
+            return weighted_sum
 
-if __name__ == "__main__":
-    # 测试数据：10天的收盘价和成交量
-    stock_data = [
-        [50.2, 1_000_000],
-        [51.5, 1_200_000],
-        [52.3, 900_000],
-        [53.6, 1_500_000],
-        [54.1, 800_000],
-        [55.7, 1_100_000],
-        [56.2, 1_300_000],
-        [57.4, 950_000],
-        [58.0, 1_400_000],
-        [59.1, 1_600_000]
-    ]
-    wma = LinearWeightedMovingAverage(window_size=5)
-    for price, _ in stock_data:
-        result = wma.update(price)
-        if result is not None:
-            print(f"WMA(5): {result:.2f}")
-```
+    if __name__ == "__main__":
+        # 测试数据：10天的收盘价和成交量
+        stock_data = [
+            [50.2, 1_000_000],
+            [51.5, 1_200_000],
+            [52.3, 900_000],
+            [53.6, 1_500_000],
+            [54.1, 800_000],
+            [55.7, 1_100_000],
+            [56.2, 1_300_000],
+            [57.4, 950_000],
+            [58.0, 1_400_000],
+            [59.1, 1_600_000]
+        ]
+        wma = LinearWeightedMovingAverage(window_size=5)
+        for price, _ in stock_data:
+            result = wma.update(price)
+            if result is not None:
+                print(f"WMA(5): {result:.2f}")
+    ```
 
 2. **通用加权移动平均**
 
-```python
-def weighted_moving_average(data, weights):
-    window = len(weights)
-    total_weight = sum(weights)
-    
-    wma = []
-    for i in range(len(data)-window+1):
-        window_data = data[i:i+window]
-        weighted_sum = sum(w * d for w, d in zip(weights, window_data))
-        wma.append(weighted_sum / total_weight)
-    return wma
+    ```python
+    def weighted_moving_average(data, weights):
+        window = len(weights)
+        total_weight = sum(weights)
+        
+        wma = []
+        for i in range(len(data)-window+1):
+            window_data = data[i:i+window]
+            weighted_sum = sum(w * d for w, d in zip(weights, window_data))
+            wma.append(weighted_sum / total_weight)
+        return wma
 
-# 自定义权重示例
-custom_weights = [0.5, 0.3, 0.2]  # 最新数据权重最高
-print(weighted_moving_average(prices, custom_weights))
-```
+    # 自定义权重示例
+    custom_weights = [0.5, 0.3, 0.2]  # 最新数据权重最高
+    print(weighted_moving_average(prices, custom_weights))
+    ```
