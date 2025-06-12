@@ -1,4 +1,4 @@
-# 直方图均衡化（HE，Histogram Equalization）
+# 直方图均衡化（Histogram Equalization，HE）
 
 直方图均衡化是一种全局对比度增强技术，通过对整幅图像的灰度分布进行线性拉伸，使输出图像的灰度直方图尽可能趋于均匀分布，从而提升亮部和暗部的整体对比度。适合对比度低、亮度分布集中的图像，如夜景、暗光拍摄照片。
 
@@ -41,3 +41,11 @@
   - 转换为HSV/HSI/Lab颜色空间：仅对亮度（V/I/L）通道进行均衡化，保持色度（H/S/ab）通道不变，再转回RGB空间。
   - 对RGB通道独立均衡：效果通常较差，会产生严重色偏。
 - 无法恢复丢失的信息：如果原始图像中某个亮度范围完全没有信息（例如严重曝光不足导致一片死黑），均衡化无法凭空创造出这些细节，只能拉伸现有的信息。
+
+## 代码示例
+
+```Python
+def histogram_equalization(img):
+    channels_res = [cv2.equalizeHist(channel) for channel in cv2.split(img)]
+    return cv2.merge(channels_res)
+```
