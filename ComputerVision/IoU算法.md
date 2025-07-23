@@ -203,27 +203,27 @@ def calculate_iou(boxA, boxB):
 1. 自适应IoU阈值
 
     ```Python
-        def adaptive_iou_threshold(track):
-            """
-            根据目标状态动态调整IoU阈值
-            :param track: 跟踪目标对象
-            :return: 自适应IoU阈值
-            """
-            base_threshold = 0.3
+    def adaptive_iou_threshold(track):
+        """
+        根据目标状态动态调整IoU阈值
+        :param track: 跟踪目标对象
+        :return: 自适应IoU阈值
+        """
+        base_threshold = 0.3
 
-            # 基于目标速度调整
-            if len(track.history) > 2:
-                prev_box = track.history[-2]['bbox']
-                current_box = track.history[-1]['bbox']
-                speed = calculate_speed(prev_box, current_box)
+        # 基于目标速度调整
+        if len(track.history) > 2:
+            prev_box = track.history[-2]['bbox']
+            current_box = track.history[-1]['bbox']
+            speed = calculate_speed(prev_box, current_box)
 
-                # 快速移动目标使用较低阈值
-                if speed > 20:
-                    return max(0.15, base_threshold * 0.7)
+            # 快速移动目标使用较低阈值
+            if speed > 20:
+                return max(0.15, base_threshold * 0.7)
 
-            w, h = track.get_size()
-            size_factor = min(1.0, (w * h) / 1000)
-            return min(0.5, base_threshold + (0.2 * size_factor))
+        w, h = track.get_size()
+        size_factor = min(1.0, (w * h) / 1000)
+        return min(0.5, base_threshold + (0.2 * size_factor))
     ```
 
 2. IoU与外观特征融合
