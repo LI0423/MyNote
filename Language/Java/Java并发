@@ -201,7 +201,7 @@
 （2）synchronized修饰方法
     synchronized使用的是ACC_SYNCHRONIZED标识，该标识指明了该方法是一个同步方法。JVM通过该标志来辨别一个方法是否声明为同步方法，从而执行相应的方法调用。
 4、JDK1.6之后的syncrhonized做了哪些优化
-    引入了大量的优化，如自选锁、适应性自选锁、锁消除、锁粗化、偏向锁、轻量级锁等技术来减少锁操作的开销。
+    引入了大量的优化，如自旋锁、适应性自旋锁、锁消除、锁粗化、偏向锁、轻量级锁等技术来减少锁操作的开销。
     锁主要存在四种状态，无锁状态、偏向锁状态、轻量级锁状态、重量级锁状态，会随着竞争的激烈逐渐升级。锁不能降级，是为了提高获得锁和释放锁的效率。
 5、synchronized和volatile的区别
     volatile关键字是线程同步的轻量级实现。volatile关键字只能用于变量而synchronized关键字可以修饰方法和代码块。
@@ -269,15 +269,15 @@
 2、StampedLock的性能为什么更好
     StampedLock的乐观读允许一个写线程获取写锁，不会导致所有写线程阻塞，也就是当读多写少的时候，写线程有机会获取写锁，减少了线程饥饿的问题。
 3、StampedLock适合什么场景
-    StampedLock适合读多写锁的业务场景，可以作为ReentrantReadWriteLock替代品，性能更好。不过Stamped不可重入，不支持变量条件，对中断操作支持
+    StampedLock适合读多写少的业务场景，可以作为ReentrantReadWriteLock替代品，性能更好。不过Stamped不可重入，不支持变量条件，对中断操作支持
     也不太友好。
 4、StampedLock底层原理
     StampedLock不是直接实现Lock或ReadWriteLock接口，而是基于CLH锁实现的，CLH锁是对自旋锁的一种改良，是一种隐式的链表队列。StampedLock通过
     CLH队列进行线程的管理，通过同步状态值state来表示锁的状态和类型。
 
-九、ThreadLock
-1、ThreadLock有什么用
-    ThreadLock解决的就是每个线程绑定自己的值。如果创建了一个ThreadLock变量，那么访问这个这个变量的每个线程都会有这个变量的本地副本。可以使用
+九、ThreadLocal
+1、ThreadLocal有什么用
+    ThreadLocal解决的就是每个线程绑定自己的值。如果创建了一个ThreadLocal变量，那么访问这个这个变量的每个线程都会有这个变量的本地副本。可以使用
     get()和set()方法来获取默认值或将其更改为当前线程所存的副本的值，避免线程安全问题。
 2、ThreadLocal的原理
     ThreadLocal可以理解是ThreadLocalMap的封装，封装了变量值。ThreadLocal类可以通过Thread.currentThread()获取当前线程对象后，直接通过

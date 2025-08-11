@@ -1,6 +1,8 @@
 # IoU算法详解
 
-IoU（Intersection over Union，交并比）是用于衡量两个边界框（bounding box）重叠程度的指标。计算两个边界框交集面积与并集面积的比值，是目标检测、目标跟踪等任务中最常用的评估指标之一。
+IoU（Intersection over Union，交并比）是用于衡量两个边界框（bounding box）重叠程度的指标。计算两个边界框交集面积与并集面积的比值，是目标检测、目标跟踪等任务中最常用的评估指标之一。IOU越大，两个框越重合，越可能是同一个目标。
+
+IOU范围是[0,1]：IOU=1 说明完全重合；IOU=0 说明没有交集。
 
 ## 计算公式
 
@@ -52,7 +54,7 @@ def calculate_iou(boxA, boxB):
     使用IoU作为相似性度量进行数据关联。
 
     ```Python
-    def associate_detections_to_tracks(detections, tracks, iou_threshhold=0.3):
+    def associate_detections_to_tracks(detections, tracks, iou_threshold=0.3):
         """
         使用IoU将检测关联到现有跟踪目标
         :param detections: 当前帧检测框 [[x1, y1, x2, y2, ...], ...]
