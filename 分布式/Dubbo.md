@@ -66,3 +66,33 @@ Dubbo是一款高性能、轻量级的开源RPC框架，提供服务自动注册
 5. 当前线程再使用callback的get()方法试图获取远程返回的结果，在get()内部，则先使用synchronized获取回调对象的callback的锁，检测是否已经获取到结果，如果没有，然后调用callback的write()方法，释放callback上的锁，让当前线程处于等待状态。
 6. 服务端接收到请求并处理后，将结果（包含了唯一ID）回传给客户端，客户端socket连接上专门监听消息的线程收到消息后，分析结果，取到ID，再从前面的ConcurrentHashMap里面get(ID)，从而找到callback，将方法调用结果设置到callback对象里。
 7. 最后监听线程再获取回调对象callback的synchronized锁（因为前面调用过wait()导致释放callback的锁），先使用notifyAll()唤醒前面处于等待状态的线程继续执行，这样callback的get()方法继续执行就能拿到调用结果了，整个过程结束。
+
+## Dubbo负载均衡策略
+
+### RandomLoadBalance
+
+默认情况下，dubbo是RandomLoadBalance，即随机调用实现负载均衡，可以对provider不同实例设置不同的权重，会按照权重来负载均衡，权重越大，分配流量越高。
+
+### RoundRobinLoadBalance
+
+默认均匀的将流量打到各个机器上，但如果各个机器的性能不一样，容易导致性能差的机器负载过高。所以此时需要调整权重，让性能差的机器承载权重小一些，流量小一些。
+
+### LeastActiveLoadBalance
+
+最小活跃数负载均衡，活跃调用数越小，表明该服务提供者效率越高，单位时间内可处理更多的请求，此时请求会优先分配给该服务提供者。
+
+算法思想：
+
+每个服务提供者会对应着一个活跃数active。初始情况下，所有服务提供者的active均为0.每当收到一个请求，对应的服务提供者的active会加1，处理完请求后，active会减1.如果服务提供者的性能越好，处理请求的效率就越高，active也会下降的越快。因此可以给这样的服务提供者优先分配请求。
+
+除了最小活跃数，LeastActiveLoadBalance在实现上还引入了权重值。准确来说，LeastActiveLoadBalance是基于加权最小活跃数算法实现的。
+
+### ConsistentHashLoadBalance
+
+一致性Hash算法，相同参数的请求一定分发到一个provider上去，provider挂掉的时候，会基于虚拟节点均匀分配剩余的流量，抖动不会太大。如果需要的不是随机负载均衡，是要一类请求都到同一个节点上，可以选择这个一致性Hash策略。
+
+## Dubbo序列化协议
+
+dubbo支持dubbo协议 dubbo://
+
+默认走dubbo协议，单一长链接，进行的是NIO异步通信，基于hessian作为序列化协议。使用场景：传输数据量小（每次请求100kb以内），但是并发量很高，以及服务消费者机器数远大于服务提供者机器数的情况。

@@ -6,6 +6,62 @@
     "configurations": [
         {
             "type": "java",
+            "name": "GroupAnagrams",
+            "request": "launch",
+            "mainClass": "GroupAnagrams",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "LongestConsecutive",
+            "request": "launch",
+            "mainClass": "Algorithm.哈希.LongestConsecutive",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "LongestConsecutive",
+            "request": "launch",
+            "mainClass": "LongestConsecutive",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "AnswerQueries",
+            "request": "launch",
+            "mainClass": "Algorithm.leetcode.AnswerQueries",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "Attach",
+            "request": "attach",
+            "hostName": "localhost",
+            "port": "<debug port of the debuggee>"
+        },
+        {
+            "type": "java",
+            "name": "GroupAnagrams",
+            "request": "launch",
+            "mainClass": "Algorithm.哈希.GroupAnagrams",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "GroupAnagrams",
+            "request": "launch",
+            "mainClass": "Algorithm.hash.GroupAnagrams",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "GroupAnagrams",
+            "request": "launch",
+            "mainClass": "Algorithm.Hash.GroupAnagrams",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
             "name": "Test",
             "request": "launch",
             "mainClass": "DesignPattern.Interpreter.Test",
