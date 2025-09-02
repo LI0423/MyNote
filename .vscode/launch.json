@@ -6,6 +6,34 @@
     "configurations": [
         {
             "type": "java",
+            "name": "LengthOfLongestSubstring",
+            "request": "launch",
+            "mainClass": "Algorithm.滑动窗口.LengthOfLongestSubstring",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "MaxArea",
+            "request": "launch",
+            "mainClass": "MaxArea",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "MoveZero",
+            "request": "launch",
+            "mainClass": "MoveZero",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
+            "name": "TwoSum",
+            "request": "launch",
+            "mainClass": "TwoSum",
+            "projectName": "MyNote_f98cd070"
+        },
+        {
+            "type": "java",
             "name": "GroupAnagrams",
             "request": "launch",
             "mainClass": "GroupAnagrams",
