@@ -1,65 +1,81 @@
-1.IOC配置的三种方式
-（1）XML配置
-    将bean的配置信息配置到.xml文件中，通过spring加载文件创建bean。
+# Spring IOC
+
+## IOC配置的三种方式
+
+### XML配置
+
+将bean的配置信息配置到.xml文件中，通过spring加载文件创建bean。
+
+```xml
     <bean id="userService" class="service.UserServiceImpl">
         <property name="userDao" ref="userDao"/>
     </bean>
-（2）Java配置
-    将类的创建交给JavaConfig类来完成，Spring只负责维护和管理。创建一个配置类，添加@Configuration注解声明为配置类，创建方法并加上@Bean，该方法用于创建实例并返回，
-    该实例创建后会交给soring管理。
-（3）注解配置
-    通过在类上加注解的方式来声明一个类交给Spring管理，spring会自动扫描带有@Component，@Controller，@Service，@Reposity这四个注解的类。
+```
 
-2.依赖注入的三种方式
-（1）setter方式
-    在XML配置方式中，property都是setter方式注入。本质上是两步，先new UserServiceImpl()创建对象，所以需要默认构造函数，然后调用setUserDao()函数注入userDao的值，
-    所以需要setUserDao()函数。
-（2）构造函数
-    在XML配置方式中，<constructor-arg>是通过构造函数参数注入。
+### Java配置
+
+将类的创建交给JavaConfig类来完成，Spring只负责维护和管理。创建一个配置类，添加@Configuration注解声明为配置类，创建方法并加上@Bean，该方法用于创建实例并返回，该实例创建后会交给soring管理。
+
+### 注解配置
+
+通过在类上加注解的方式来声明一个类交给Spring管理，spring会自动扫描带有@Component，@Controller，@Service，@Reposity这四个注解的类。
+
+## 依赖注入的三种方式
+
+### setter方式
+
+在XML配置方式中，property都是setter方式注入。本质上是两步，先new UserServiceImpl()创建对象，所以需要默认构造函数，然后调用setUserDao()函数注入userDao的值，所以需要setUserDao()函数。
+
+### 构造函数
+
+在XML配置方式中，\<constructor-arg\>是通过构造函数参数注入。
+
+```xml
     <bean id="userService" class="service.UserServiceImpl">
         <constructor-arg name="userDao" ref="userDao">
     </bean>
-（3）注解注入
-    以@Autowired（自动注入）注解为例，修饰符有三个属性：Constructor，byType，byName，默认是byType。
-    constructor：通过构造方法进行自动注入，spring会匹配与构造方法参数类型一致的bean进行注入，如果有一个多参数的构造方法，一个只有一个参数的构造方法，在容器中查找到
-    多个匹配多参数构造方法的bean，Spring就会优先将bean注入到多参数的构造方法中。
-    byName：被注入的id名必须与set方法后半截匹配，并且id名称的第一个单词首字母必须小写。
-    byType：查找所有的set方法，将符合参数类型的bean注入。
+```
 
-2.SpringBean的生命周期          https://segmentfault.com/a/1190000040365130
+### 注解注入
 
-    springbean的生命周期会经过四个阶段，实例化，属性赋值，初始化，销毁。在进行bean实例化之前会执行InstantiationAwareBeanPostProcessor.postProcessBeforeInstantiation()方法，
-    然后进行实例化，之后执行postProcessAfterInstantiation()，接下来调用执行postProcessPropertyValues()，然后再给bean设置属性值。如果bean实现了beanNameAware接口，
-    spring将bean的id传给setBeanName()方法，用来获取bean的id或者name。如果bean实现了beanfactoryaware接口的话，spring将调用setBeanFactory()方法将beanfactory容器实例
-    传入，用来获取当前环境中的beanfactory。如果bean实现了ApplicationContext接口的话，spring将调用setApplicationContext()方法，将bean所在的上下文传进来，用来获取当前
-    环境中的applicationContext，获取到ioc容器后可以对bean进行修改操作。如果bean实现了beanPostProccessor接口，spring将调用postProcessBeforeInitialization()方法，
-    可以通过beanName来筛选出我们需要进行个性化定制的bean。如果bean实现了initializingBean接口，spring将调用afterPropertiSet()方法，在属性注入完成后调用。接下来bean进行初始化操作，
-    然后spring将调用postProcessAfterInitialization()方法。在此之后bean已经准备就绪，如果bean的作用域是singleton，spring将返回bean给用户并存入缓存池。
-    如果是prototype将返回bean给用户，剩下的生命周期由用户控制。如果bean实现了DisposableBean接口，Spring将调用它的destory()接口方法，同样，如果bean使用了destroy-method声
-    明销毁方法，该方法也会被调用，最后进行销毁操作。
+以@Autowired（自动注入）注解为例，修饰符有三个属性：Constructor，byType，byName，默认是byType。
 
-    SpringBean的作用域
-        singleton：唯一bean实例，Spring中的bean默认都是单例的。
-        prototype：每次请求都会创建一个新的bean实例。
-        request：每一次HTTP请求都会产生一个新的bean，该bean仅在当前HTTP request内有效。
-        session：每一次HTTP请求都会产生一个新的bean，该bean仅在当前HTTP session内有效。
-        global-session：全局session作用域，仅仅在基于Portlet的web应用中才有意义。
-    
-    实例化 Instantiation
-    属性赋值 Populate
-    初始化 Initialization
-    销毁 Destruction
+1. constructor：通过构造方法进行自动注入，spring会匹配与构造方法参数类型一致的bean进行注入，如果有一个多参数的构造方法，一个只有一个参数的构造方法，在容器中查找到多个匹配多参数构造方法的bean，Spring就会优先将bean注入到多参数的构造方法中。
+2. byName：被注入的id名必须与set方法后半截匹配，并且id名称的第一个单词首字母必须小写。
+3. byType：查找所有的set方法，将符合参数类型的bean注入。
 
-    Spring启动，查找并加载需要被Spring管理的Bean，将Bean解析成Spring内部的BeanDefinition结构，进行Bean的实例化；
-    Bean实例化后对将Bean的引入和值注入到Bean的属性中；
-    如果Bean实现了BeanNameAware接口的话，Spring将Bean的Id传递给setBeanName()方法，用来获取bean的id或者name；
-    如果Bean实现了BeanFactoryAware接口的话，Spring将调用setBeanFactory()方法，将BeanFactory容器实例传入，用来获取当前环境中的BeanFactory；
-    如果Bean实现了ApplicationContextAware接口的话，Spring将调用Bean的setApplicationContext()方法，将Bean所在应用上下文传入进来，用来获取当前环境中的ApplicationContext，获取到IOC容器之后，可以对beans进行修改操作；
-    如果Bean实现了BeanPostProcessor接口，Spring将调用postProcessBeforeInitialization()方法，我们可以通过 beanName 来筛选出我们需要进行个性化定制的 bean。；
-    如果Bean实现了InitializingBean接口，Spring将调用他们的afterPropertiSet()方法，在属性注入完成后调用；
-    如果Bean实现了BeanPostProcessor接口，Spring将调用它的postProcessAfterInitialization()方法，我们可以通过 beanName 来筛选出我们需要进行个性化定制的 bean。；
-    此时，Bean已经准备就绪，可以被应用程序使用了，将一直驻留在应用上下文中，直到应用上下文被销毁；
-    如果bean实现了DisposableBean接口，Spring将调用它的destory()接口方法，同样，如果bean使用了destroy-method声明销毁方法，该方法也会被调用。
+## SpringBean的生命周期
+
+springbean的生命周期会经过四个阶段，实例化，属性赋值，初始化，销毁。
+
+### 实例化 Instantiation
+
+Spring启动，查找并加载需要被Spring管理的Bean，将Bean解析成Spring内部的BeanDefinition结构，进行Bean的实例化；
+
+### 属性赋值 Populate
+
+Bean实例化后对将Bean的引入和值注入到Bean的属性中；
+
+### 初始化 Initialization
+
+1. 如果Bean实现了BeanNameAware接口的话，Spring将Bean的Id传递给setBeanName()方法，用来获取bean的id或者name；
+2. 如果Bean实现了BeanFactoryAware接口的话，Spring将调用setBeanFactory()方法，将BeanFactory容器实例传入，用来获取当前环境中的BeanFactory；
+3. 如果Bean实现了ApplicationContextAware接口的话，Spring将调用Bean的setApplicationContext()方法，将Bean所在应用上下文传入进来，用来获取当前环境中的ApplicationContext，获取到IOC容器之后，可以对beans进行修改操作；
+4. 如果Bean实现了BeanPostProcessor接口，Spring将调用postProcessBeforeInitialization()方法，我们可以通过 beanName 来筛选出我们需要进行个性化定制的 bean。；
+5. 如果Bean实现了InitializingBean接口，Spring将调用他们的afterPropertiSet()方法，在属性注入完成后调用；
+6. 如果Bean实现了BeanPostProcessor接口，Spring将调用它的postProcessAfterInitialization()方法，我们可以通过 beanName 来筛选出我们需要进行个性化定制的 bean。；
+
+### 销毁 Destruction
+
+如果bean实现了DisposableBean接口，Spring将调用它的destory()接口方法，同样，如果bean使用了destroy-method声明销毁方法，该方法也会被调用。
+
+## SpringBean的作用域
+
+1. singleton：唯一bean实例，Spring中的bean默认都是单例的。
+2. prototype：每次请求都会创建一个新的bean实例。
+3. request：每一次HTTP请求都会产生一个新的bean，该bean仅在当前HTTP request内有效。
+4. session：每一次HTTP请求都会产生一个新的bean，该bean仅在当前HTTP session内有效。
+5. global-session：全局session作用域，仅仅在基于Portlet的web应用中才有意义。
 
 （1）springbean元信息配置阶段
             spring容器启动的过程中会将bean解析成spring内部的beanDefinition结构，里面包含了bean定义的各种信息，如bean对应的class、scope、lazy信息、
