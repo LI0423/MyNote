@@ -275,3 +275,84 @@ $$
         1 & \Delta t \\
         0 & 1
     \end{bmatrix}$$
+
+## 代码示例
+
+    ```python
+    import torch
+
+
+    class KalmanFilter1D:
+        """一维位置-速度卡尔曼滤波器"""
+
+        def __init__(self, dt, process_variance, meas_variance, init_y):
+            """
+            :param dt: 帧间隔 (s)，25fps -> 1/25
+            :param process_variance: 过程噪声方差 1e-2 适度信任模型，允许小幅加速度变化，增大过程噪声 Q，滤波器更敏感于动态变化 越大 → 越不信物理模型（F·x），更依赖测量。越小 → 越相信上一帧预测出的位移+速度，认为脚踝变化平稳，少突变。
+            :param meas_variance: 测量噪声方差 检测误差方差约为 0.1 (像素²)，减小测量噪声 R，滤波器更“信”观测值。越大 → 越不信观测点，更多用模型预测。
+            :param init_y: 传入脚踝y坐标的初始化值
+            """
+            self.dt = dt
+
+            # 状态转移矩阵 F (改为 torch.Tensor)
+            self.F = torch.tensor([[1.0, self.dt],
+                                [0.0, 1.0]], dtype=torch.float32)  # 注意浮点数类型
+
+            # 观测矩阵 H
+            self.H = torch.tensor([[1.0, 0.0]], dtype=torch.float32)
+
+            # 过程噪声协方差 Q (使用 torch 计算)
+            q = process_variance
+            self.Q = q * torch.tensor([[self.dt ** 4 / 4, self.dt ** 3 / 2],
+                                    [self.dt ** 3 / 2, self.dt ** 2]], dtype=torch.float32)
+
+            # 测量噪声协方差 R (保持标量但包装成 1x1 矩阵)
+            self.R = torch.tensor([[meas_variance]], dtype=torch.float32)
+
+            if init_y is not None:
+                self.x = torch.tensor([[init_y], [0.0]], dtype=torch.float32)
+                self.P = torch.diag(torch.tensor([0.5, 100.0]))
+            else:
+                # 后验状态估计 x (保持 2x1 向量形状)
+                self.x = torch.zeros((2, 1))
+                # 估计误差协方差矩阵 P
+                self.P = torch.eye(2)
+
+            self.warmup_steps = 5
+            self.step = 0
+
+        def update_init_y(self, init_y):
+            self.x = torch.tensor([[init_y], [0.0]], dtype=torch.float32)
+
+        def predict(self):
+            # 矩阵乘法
+            self.x = self.F @ self.x
+            self.P = self.F @ self.P @ self.F.T + self.Q
+            return self.x
+
+        def update(self, z):
+            self.step += 1
+            # 热身：跳过前 warmup_steps 次 update 只做 predict
+            if self.step <= self.warmup_steps:
+                return self.predict()
+
+            # 将观测值 z 转换为 1x1 张量 (保持维度一致性)
+            z = torch.tensor([[z]], dtype=torch.float32)
+
+            # 残差计算(1×1) H(1×2) @ x(2×1) → 标量(包装为1×1)
+            y = z - self.H @ self.x
+
+            # 残差协方差(1×1) H(1×2)@P(2×2)@Hᵀ(2×1)→1×1
+            S = self.H @ self.P @ self.H.T + self.R
+
+            # 卡尔曼增益 P(2×2)@Hᵀ(2×1)→2×1, 再@S⁻¹(1×1)
+            K = self.P @ self.H.T @ torch.inverse(S)
+
+            # 更新状态和(2×1) K(2×1)@y(1×1)→2×1
+            self.x = self.x + K @ y
+            # 协方差更新(2×2) K(2×1)@H(1×2)→2×2 torch.eye 单位矩阵
+            self.P = (torch.eye(2) - K @ self.H) @ self.P
+
+            return self.x
+
+    ```

@@ -77,3 +77,51 @@ print(output.shape)
 2. 设置变量可求导属性：可以通过将变量包装成torch.autograd.Variable并设置requires_grad=True来实现。PyTorch会跟踪该变量在计算过程中的梯度信息。
 3. 计算函数的导数：使用backward()方法来计算函数的导数，这个方法会自动根据计算图进行反向传播，计算出各个变量的梯度。
 4. 获取导数的值：通过变量的grad属性可以获取该变量的导数值。
+
+## API
+
+### torch.einsum
+
+用于执行高效张量运算的函数，基于爱因斯坦求和约定（Einstein summation convention）。能够处理复杂的张量操作，并简化代码书写。
+
+torch.einsum(subscriptions, *operands)
+
+- subscriptions：一个字符串，用于输入张量的维度如何结合
+- *operands：待操作的张量
+
+```python
+# "i,i->" 表示对向量进行点积操作
+# i：索引表示
+# -> 之后为空表示求和
+torch.einsum('i,i->', a, b)
+
+# "ij,jk->ik" 表示矩阵乘法
+# i和k是结果的维度，j是求和维度
+torch.einsum('ij,jk->ik', a, b)
+
+# "bij,bjk->bik" 表示批量矩阵乘法
+torch.einsum("bij,bjk->bik", a, b)
+
+# "nqhd,nkhd->nhqk" 描述了如何对这两个张量进行操作
+# n：批次大小（batch size）
+# q：查询序列大小（query length）
+# k：键序列长度（key length）
+# h：注意力头的数量（number of heads）
+# d：每个注意力头的维度（dimension per head）
+torch.einsum("nqhd,nkhd->nhqk", [queries, keys]) # 计算点积相似性分数
+
+# "ij->ji" 表示将矩阵进行转置操作
+torch.einsum('ij->ji', a)
+```
+
+### torch.bmm
+
+torch.bmm(input1, input2, out=None)
+
+- input1：输入的第一个张量，形状必须为(b, n, m)，b是批次大小，n和m是张量的行和列。
+- input2：输入的第二个张量，形状必须为(b, m, p)，第一个矩阵的列数必须和第二个矩阵的行数匹配。
+- out：输出张量，用于存储计算结果，形状为(b, n, p)。
+
+```python
+torch.bmm(m1, m2.transpose(1, 2))
+```
