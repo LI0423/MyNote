@@ -80,7 +80,9 @@ print(output.shape)
 
 ## API
 
-### torch.einsum
+### torch
+
+#### torch.einsum
 
 用于执行高效张量运算的函数，基于爱因斯坦求和约定（Einstein summation convention）。能够处理复杂的张量操作，并简化代码书写。
 
@@ -114,7 +116,7 @@ torch.einsum("nqhd,nkhd->nhqk", [queries, keys]) # 计算点积相似性分数
 torch.einsum('ij->ji', a)
 ```
 
-### torch.bmm
+#### torch.bmm
 
 torch.bmm(input1, input2, out=None)
 
@@ -125,3 +127,18 @@ torch.bmm(input1, input2, out=None)
 ```python
 torch.bmm(m1, m2.transpose(1, 2))
 ```
+
+### torchvision
+
+#### ToTensor
+
+将输入图像数据转换为PyTorch模型可以接受的格式。
+
+- 转换数据类型：将输入图像的数据类型从unit8转换为浮点数（通常是float32）。
+- 维度变换：将图像的维度从HWC（高度、宽度、通道数）变换为CHW（通道数、高度、宽度）。
+- 缩放像素值：将像素值从范围0-255线性缩放到0-1。
+
+#### Normalize
+
+- 减去均值：从图像的每个通道中减去指定的均值。均值通常是根据整个数据集的每个通道的像素值计算得到的。
+- 除以标准差：将减去均值后的图像数据除以对应通道的标准差。

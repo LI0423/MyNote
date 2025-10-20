@@ -21,10 +21,6 @@
 
 ### 循环结果与“记忆”概念
 
-简单的循环神经网络：
-
-![简易图](images/RNN1.png)
-
 RNN的关键在于它有一个循环连接，允许信息从一个时间步传递到下一个时间步。将上一时间步的隐藏状态与当前输入结合，形成对序列依赖关系的建模能力。本质是通过参数共享实现对时间维度的特征提取，数学公式为：
 
 计算新的隐藏状态：
@@ -34,7 +30,7 @@ $$s_t = f(Ux_t + Ws_{t-1} + b_h) （1）$$
 
 神经网络在t时刻接收到输入$x_t$之后，隐藏层的值是$s_t$，输出值是$o_t$。$s_t$的值不仅取决于$x_t$还取决于$s_{t-1}$。
 
-![展开图](images/RNN2.png)
+![展开图](images/RNN1.png)
 
 - $U：输入$x_t$的权重矩阵$
 - $x_t$：当前时间步输入向量
@@ -53,6 +49,8 @@ $$y_t = g(Vs_t + b_y) （2）$$
 $$y_t=g(Vf(Ux_t + Ws_{t-1} + b_h) + b_y)
 = g(Vf(Ux_t + Wf(Ux_t + Ws_{t-2} + b_h) + b_h) + b_y)
 $$
+
+循环神经网络的输出值$y_t$，是受前面历次输入值$x_t、x_{t-1}、x_{t-2}、...$影响的，这就是循环神经网络可以往前看任意多个输入值的原因。
 
 ### 前向传播与损失
 
@@ -191,4 +189,78 @@ class ManualRNN(nn.Moudle):
 manual_rnn = ManualRNN(input_size, hidden_size, output_size)
 manual_output = manual_rnn(test_input)
 print(f"手动实现RNN输出形状: {manual_output.shape}")
+```
+
+### 双向RNN
+
+```python
+import torch
+import torch.nn as nn
+import torch.optim as optim
+
+class BidirectionalRNN(nn.Module):
+    def __init__(self, input_size, hidden_size, num_layers, output_size, rnn_type='RNN', dropout=0.2):
+        super(BidirectionalRNN, self).__init__()
+        self.hidden_size = hidden_size
+        self.num_layers = num_layers
+        self.rnn_type = rnn_type
+        self.bidirectional = True
+
+        if self.rnn_type == 'RNN':
+            self.rnn = nn.RNN(
+                input_size=input_size,
+                hidden_size=hidden_size,
+                num_layers=num_layers,
+                batch_first=True,
+                bidirectional=True,
+                dropout=dropout if num_layers > 1 else 0
+            )
+        elif self.rnn_type == 'LSTM':
+            self.rnn = nn.LSTM(
+                input_size=input_size,
+                hidden_size=hidden_size,
+                num_layers=num_layers,
+                batch_first=True,
+                bidirectional=True,
+                dropout=dropout if num_layers > 1 else 0
+            )
+        elif self.rnn_type == 'GRU':
+            self.rnn = nn.GRU(
+                input_size=input_size,
+                hidden_size=hidden_size,
+                num_layers=num_layers,
+                batch_first=True,
+                bidirectional=True,
+                dropout=dropout if num_layers > 1 else 0
+            )
+        self.fc = nn.Linear(hidden_size * 2, output_size)
+        self.dropout = nn.Dropout(dropout)
+    
+    def forward(self, x):
+        batch_size = x.size(0)
+        if self.rnn_type == 'LSTM':
+            h0 = torch.zeros(self.num_layers * 2, batch_size, self.hidden_size).to(x.device)
+            c0 = torch.zeros(self.num_layers * 2, batch_size, self.hidden_size).to(x.device)
+            hidden = (h0, c0)
+        else:
+            h0 = torch.zeros(self.num_layers * 2, batch_size, self.hidden_size).to(x.device)
+            hidden = h0
+
+        if self.rnn_type == 'LSTM':
+            rnn_out, (hidden_state, cell_state) = self.rnn(x, hidden)
+        else:
+            rnn_out, hidden_state = self.rnn(x, hidden)
+        
+        # 双向RNN的输出处理
+        # rnn_out形状: (batch_size, seq_len, hidden_size * 2)
+        # 其中前hidden_size是正向，后hidden_size是反向
+        
+        # 取最后一个时间步的输出
+        # 对于双向RNN，最后一个时间步包含正向的最后一个和反向的第一个
+        last_output = rnn_out[:, -1, :]
+        
+        # 通过全连接层
+        output = self.fc(self.dropout(last_output))
+        
+        return output
 ```

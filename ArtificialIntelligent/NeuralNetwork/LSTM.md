@@ -92,8 +92,8 @@ class BasicLSTM(nn.Module):
     def forward(self, x):
         batch_size = x.size(0)
         # 初始化隐藏状态和细胞状态
-        h0 = torch.size(self.num_layers, batch_size, self.hidden_size).to(x.device)
-        c0 = torch.size(self.num_layers, batch_size, self.hidden_size).to(x.device)
+        h0 = torch.zeros(self.num_layers, batch_size, self.hidden_size).to(x.device)
+        c0 = torch.zeros(self.num_layers, batch_size, self.hidden_size).to(x.device)
         # LSTM前向传播
         # lstm_out形状: (batch_size, seq_len, hidden_size)
         # hidden: 元组(h_n, c_n)
