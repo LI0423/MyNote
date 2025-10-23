@@ -110,6 +110,87 @@ cv2.GaussianBlur(src=frame, ksize=(5, 5), sigmaX=0)
 - sigmaY，如果将该值设置为0，则只采用sigmaX的值。
 - borderType，该值决定以何种方式处理边界，一般不需要考虑该值，直接采用默认值就好。
 
+## 边缘检测
+
+### Sobel算子
+
+一种离散的微分算子，结合了高斯平滑（离像素点越远的值越小）和微分求导运算（像素变化率，从左到右或从右到左）。利用局部差分寻找边缘，计算所得的是一个梯度的近似值。
+
+cv2.Sobel(src, ddepth, dx, dy[, ksize[, delta[, [borderType]]]])
+
+- ddepth，输出图像的深度（可以理解为数据类型），-1表示与原图像相同的深度。
+- dx，dy，当组合为dx=1，dy=0时求x方向的一阶导数，当组合为dx=0，dy=1时求y方向的一阶导数（如果同时为1，通常效果不佳）。
+- ksize，（可选参数）Sobel算子的大小，必须是1，3，5或7，默认为3。
+
+```python
+yuan = cv2.imread('yuan.png')
+x_64 = cv2.Sobel(yuan, cv2.CV_64F, dx=1, dy=0)
+x_full = cv2.convertScaleAbs(x_64)
+y_64 = cv2.Sobel(yuan, cv2.CV_64F, dx=0, dy=1)
+y_full = cv2.convertScaleAbs(y_64)
+xy_full = cv2.addWeighted(x_full, 1, y_full, 1, 0)
+```
+
+### Scharr算子
+
+Scharr算子是Sobel算子在ksize=3时的优化，与Sobel的速度相同，且精度更高。
+
+cv2.Scharr(src, ddepth, dx, dy[, dst[, scale[, delta[, borderType]]]])
+
+- ddepth，输出图片的数据深度，由输入图像的深度进行选择
+- dx，x轴方向导数的阶数
+- dy，y轴方向导数的阶数
+
+```python
+yuan = cv2.imread('yuan.png', cv2.IMREAD_GRAYSCALE)
+x_64 = cv2.Scharr(yuan, cv2.CV_64F, dx=1, dy=0)
+x_full = cv2.convertScaleAbs(x_64)
+y_64 = cv2.Scharr(yuan, cv2.CV_64F, dx=0, dy=1)
+y_full = cv2.convertScaleAbs(y_64)
+xy_full = cv2.addWeighted(x_full, 1, y_full, 1, 0)
+```
+
+### Laplacian
+
+不再以x和y的方向计算，而是以圆方向计算变化率。因此不需要Gx+Gy。
+
+cv2.Laplacian(src, ddepth, [, dst[, ksize[, scale[, delta[, borderType]]]]])
+
+- ddepth，输出图片的数据深度
+- ksize，计算二阶导数滤波器的孔径大小，必须为正奇数
+- scale，缩放比例因子，可选项，默认为1
+- delta，输出图像的偏移量，可选项，默认为0
+
+```python
+yuan = cv2.imread('yuan.png', cv2.IMREAD_GRAYSCALE)
+lap = cv2.Laplacian(yuan, cv2.CV_64F)
+full = cv2.convertScaleAbs(lap)
+```
+
+### Canny
+
+1. 图像降噪
+2. 梯度计算
+   - 根据图像的梯度幅值和梯度方向来确定边缘，一般均采用sobel算子对图像进行梯度幅值与梯度方向计算。
+3. 非极大值抑制
+   - 在梯度图像中寻找梯度方向上的最大值作为边缘，不是梯度方向上的最大值则抑制为0。梯度方向是灰度变化最大的方向。
+4. 双阈值边界跟踪
+   - 根据实际情况需要设置一个灰度高阈值和一个灰度低阈值对NMS后的图像进行过滤，使得得到的边缘尽可能是真实的边缘。
+   - $f_H$和$f_L$分别表示大阈值和小阈值，由用户设定：
+     - $f > f_H$，将当前像素点标记为强边缘像素；
+     - $f_L < f < f_H$，将当前像素点标记为弱边缘像素；
+     - $f < f_L$，将当前像素点灰度置0。
+
+cv2.Canny(src, threashold1, threshold2[, apertureSize[, L2gradient]])
+
+- threshold1，表示处理过程中的第一个阈值。
+- threshold2，表示处理过程中的第二个阈值。
+
+```python
+yuan = cv2.imread('yuan.png', cv2.IMREAD_GRAYSCALE)
+canny = cv2.Canny(yuan, 100, 150)
+```
+
 ## 深度神经网络模块（DNN）
 
 ### blobFromImage
