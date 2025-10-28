@@ -197,3 +197,86 @@ n. 判决 sentences
   - He will get a heavy sentence.
 - death sentence 死刑
 - life sentece 无期徒刑
+
+## pressure
+
+n. 压力（不可数）
+
+- under pressure 在压力下
+  - Everyone is under pressure.
+- under the pressure of ... 在……的压力下
+  - Under the pressure of the deadline, she completed the task.
+
+## career
+
+n. 职业，职业生涯
+
+- a successful career 成功的职业生涯
+  - She has a successful career.
+- a bright career prospect
+  - I took the job with a bright career prospect.
+
+## case
+
+n. 案例，情况
+
+- in this/that case 在这种/那种情况下
+  - We will make an experience in this case.
+- in the case of ... 说到……，就……而言
+  - In the case of the project, teamwork was essential.
+
+## certain
+
+adj. 肯定的，确定的
+
+- be certain about ... 对……很确定
+  - I am certain about the importance of education.
+
+## challenge
+
+n. 挑战 challenges v. 挑战，质疑
+
+- face the challenge 迎接挑战
+  - We must face the challenge of the new technology.
+
+- challenge + sb./sth. 质疑某人/事
+  - I challenge your idea.
+
+## interest
+
+n. 兴趣，爱好
+
+- have an interest in ... 对……感兴趣
+  - I have an interest in running.
+
+## knowledge
+
+n. 知识（不可数）
+
+- gain knowledge of ... 获得……的知识
+  - Students can gain knowledge of different subjects.
+- have knowledge of ... 拥有……的知识
+  - Doctors must have knowledge of various diseases.
+
+## relationship
+
+n. 关系 relationships
+
+- relationship between ... and ... ……和……之间的关系
+  - The relationship between parents and children is unique.
+- close relationship 亲密的关系
+  - The close relationship between friends is built on trust.
+
+## situation
+
+n. 情况，状况 situations
+
+- be in a ... situation 处于……的状态中
+  - I am in a good situation with my new job.
+
+## speech
+
+n. 演讲 speechs
+
+- deliver/make/give a speech 发表演讲
+  - I delivered a speech about global warming.
