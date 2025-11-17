@@ -1,21 +1,33 @@
-本机直接部署启动minio
-minio server --console-address :9090
+# MinIO
 
-docker部署MinIO
+## 部署
+
+### 本机直接部署启动minio
+
+    ```
+    minio server --console-address :9090
+    ```
+
+### docker部署MinIO
+
+    ```
     docker pull minio/minio
 
     docker run -p 9000:9000 --name minio \
-               -e "MINIO_ACCESS_KEY=your-access-key" \
-               -e "MINIO_SECRET_KEY=your-secret-key" \
-               -v /mnt/data:/data \
-               -v /mnt/config:/root/.minio \    将主机上的目录挂载到容器的目录，用于存储配置信息
+                -e "MINIO_ACCESS_KEY=your-access-key" \
+                -e "MINIO_SECRET_KEY=your-secret-key" \
+                -v /mnt/data:/data \
+                -v /mnt/config:/root/.minio \    将主机上的目录挂载到容器的目录，用于存储配置信息
                 minio/minio server /data        运行MinIO服务器，并将数据存储在/data目录中
 
     浏览器访问 http://localhost:9000 即可进入管理界面，输入上面设置的账号密码
 
     docker run -p 9000:9000 -p 9090:9090 -d  --name=minio-1 -e "MINIO_ROOT_USER=minioAdmin" -e "MINIO_ROOT_PASSWORD=minioAdmin" -v /root/minio/data:/data minio/minio server /data --console-address ":9090"
+    ```
 
-docker部署MinIO集群
+### docker部署MinIO集群
+
+    ```
     docker run -p 9000:9000 -p 9001:9001 \
                 -d \
                 --name=minio \
@@ -30,3 +42,4 @@ docker部署MinIO集群
                         http://minio3:9000/miniodisk \
                         http://minio4:9000/miniodisk \
                 --console-address ":9001"
+    ```
