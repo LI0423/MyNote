@@ -24,6 +24,52 @@ Prompt是一种基于人工智能（AI）指令的技术，通过明确而具体
 
 **上下文**：包含外部信息或额外的上下文信息，引导语言模型更好地响应。
 
+**例子**：必要时给出举例，学术中称为one-shot learning, few-shot learning, in-context learning；实践证明其对输出正确性有很大帮助。
+
 **输入数据**：用户输入的内容或问题。
 
 **输出指示**：指定输出的类型或格式。
+
+## 示例
+
+### Zero-Shot
+
+```python
+import sys
+sys.argv=['']
+del sys
+from api import cot
+
+question = "There were 10 friends playing a video game online when 7 players quit. If each player left had 8 lives, how many lives did they have total?"
+print("Example: Zero-Shot")
+# To use GPT-3, please add your openai-api key in utils.py (#Line 59)
+# method = ["zero_shot", "zero_shot_cot", "manual_cot", "auto_cot"]
+cot(method="zero_shot", question=question)
+```
+
+### Zero-Shot-CoT
+
+```python
+from api import cot
+question = "There were 10 friends playing a video game online when 7 players quit. If each player left had 8 lives, how many lives did they have total?"
+print("Example: Zero-Shot-CoT")
+cot(method="zero_shot_cot", question=question)
+```
+
+### Manual-CoT
+
+```python
+from api import cot
+question = "In a video game, each enemy defeated gives you 7 points. If a level has 11 enemies total and you destroy all but 8 of them, how many points would you earn?"
+print("Example: Manual-CoT")
+cot(method="manual_cot", question=question)
+```
+
+### Auto-CoT
+
+```python
+from api import cot
+question = "In a video game, each enemy defeated gives you 7 points. If a level has 11 enemies total and you destroy all but 8 of them, how many points would you earn?"
+print("Example: Auto-CoT")
+cot(method="auto_cot", question=question)
+```
