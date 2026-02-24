@@ -65,3 +65,41 @@ Agent是智能体：
 - 反思：
   - 作用：让Agent批判性地评估自己行动的结果和质量。
   - 实现：在关键节点或任务结束时，让LLM作为一个“审查者”，回答诸如“这个结果正确吗？”“有没有更好的方法？”“我犯了什么错误？”等问题，并根据反思结果决定下一步行动（如重试、修正）。
+
+## 长短期记忆
+
+### 工程实现
+
+#### 短期记忆（STM）
+
+1. 会话状态存储（Session State）
+   1. Redis（最常见）：会话状态、临时变量、工具调用结果缓存、分布式锁
+   2. PostgreSQL/MySQL：需要持久化审计/回放时
+   3. 内存缓存
+2. 短期工作记忆结构
+   1. 结构化JSON状态机
+      - goal / plan / subquestions / retrived_evidence / open_questions / constraints / tool_outputs
+3. 上下文压缩与摘要
+   1. Summarizer：把对话/证据压缩成可控长度的“session summary”
+   2. 窗口策略：滑动窗口 + 关键事件
+4. 缓存（可显著降低成本）
+   1. Query -> retrieval结果缓存（Redis）
+   2. rerank 缓存
+   3. prompt 缓存
+
+#### 长期记忆（LTM）
+
+1. 结构化记忆
+   1. PostgreSQL / MySQL：
+      - 存“事实/规则/偏好/经验”以及元信息
+2. 语义记忆（模糊匹配、相似触发）
+   1. 向量数据库/向量索引
+      1. pgvector（Postgres内嵌）、Milvus、Qdrant、Weaviate、Pinecone
+   2. Embedding模型服务
+      1. OpenAI/本地embedding
+3. 写入管道
+   1. Reflection/Distillation组件
+   2. 去重/聚合
+   3. 置信度评估：规则+LLM judge
+   4. 异步任务队列
+   5. 数据处理框架
