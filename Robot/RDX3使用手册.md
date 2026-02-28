@@ -1,25 +1,27 @@
-# OE安装手册
+# RDX3使用手册
 
-## Docker安装
+## OE安装手册
 
-## 镜像下载
+### Docker安装
+
+### 镜像下载
 
 [https://hub.docker.com/r/openexplorer/ai_toolchain_ubuntu_20_j5_gpu](https://hub.docker.com/r/openexplorer/ai_toolchain_ubuntu_20_j5_gpu)
 
-## 镜像加载
+### 镜像加载
 
 docker load -i <image_name>
 
-## OE包挂载
+### OE包挂载
 
-## docker 启动
+### docker 启动
 
 ```bash
 cd /opt/horizon
 bash run_docker.sh data
 ```
 
-## 模型验证
+### 模型验证
 
 ```bash
 cd root@[containerId]:/open_explorer/ddk/samples/ai_toolchain/horizon_model_convert_sample/04_detection/03_yolov5s/mapper/
@@ -28,7 +30,7 @@ sh 01_checker.sh
 hb_mapper checker --model-type onnx --march bernoulli2 --model ball_best.onnx
 ```
 
-## 修改preprocess.py
+### 修改preprocess.py
 
 ```python
 def calibration_transformers():
@@ -46,7 +48,7 @@ def calibration_transformers():
     return transformers
 ```
 
-## 生成校准数据
+### 生成校准数据
 
 ```bash
 sh 02_preprocess.sh
@@ -59,15 +61,15 @@ python3 data_preprocess.py \
   --saved_data_type float32
 ```
 
-## 修改配置文件
+### 修改配置文件
 
-## 模型转换
+### 模型转换
 
 ```bash
 sh 03_build.sh
 ```
 
-## 模型测试
+### 模型测试
 
 ```bash
 hrt_model_exec perf --model_file ball_640x640_nv12.bin \
@@ -79,9 +81,9 @@ hrt_model_exec perf --model_file ball_640x640_nv12.bin \
                       --profile_path="."
 ```
 
-## 模型训练和部署
+### 模型训练和部署
 
-### 环境配置
+#### 环境配置
 
 ```bash
 # 环境配置
@@ -92,7 +94,7 @@ pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
 pip install apex -i https://pypi.tuna.tsinghua.edu.cn/simple
 ```
 
-### 拉取代码
+#### 拉取代码
 
 ```bash
 # 拉取yolov5仓库
@@ -102,14 +104,14 @@ cd yolov5
 git checkout v2.0
 ```
 
-### 模型训练
+#### 模型训练
 
 ```bash
 # 使用yolov5s.pt进行模型训练
 python train.py --img 640 --batch 16 --epochs 1 --data /data/data.yaml --weights yolov5s.pt
 ```
 
-### 模型训练报错修复
+#### 模型训练报错修复
 
 进行模型训练时会发生报错，需要一一修改
 
@@ -170,15 +172,15 @@ at = torch.tensor(torch.arange(na).view(na, 1).repeat(1, nt),device=targets.devi
 for pred in o.cpu():
 ```
 
-## 模型导出为ONNX
+### 模型导出为ONNX
 
-### 依赖安装
+#### 依赖安装
 
 ```bash
 pip  install onnx==1.7 -i https://pypi.tuna.tsinghua.edu.cn/simple
 ```
 
-### 修改代码
+#### 修改代码
 
 ```python
 # export.py文件第48行
@@ -189,14 +191,14 @@ torch.onnx.export(model, img, f, verbose=False, opset_version=11, input_names=['
 x[i] = x[i].permute(0, 2, 3, 1).contiguous()
 ```
 
-### 执行导出命令
+#### 执行导出命令
 
 ```bash
 export PYTHONPATH="$PWD"
 python models/export.py --weights runs/exp28/weights/best.pt --img-size 640 --batch-size 1
 ```
 
-## 模型量化
+### 模型量化
 
 ```bash
 # 进入工具链文件夹
@@ -245,7 +247,7 @@ sudo docker cp ball_best.onnx 1ff56ccc3634:/open_explorer/ddk/samples/ai_toolcha
 
 ```
 
-## 上板使用
+### 上板使用
 
 ```bash
 复制 https://github.com/D-Robotics/rdk_model_zoo/blob/rdk_x3/demos/detect/YOLOv5/YOLOv5_Detect.py
@@ -257,4 +259,56 @@ sudo docker cp ball_best.onnx 1ff56ccc3634:/open_explorer/ddk/samples/ai_toolcha
 修改 rdk_colors = [所有类别画线颜色]
 
 python3 yolov5_Detect.py
+```
+
+## 官方资料
+
+### 镜像下载
+
+[RDKX5](https://archive.d-robotics.cc/downloads/os_images/rdk_x5/)
+
+[RDKX3](https://archive.d-robotics.cc/downloads/os_images/rdk_x3/)
+
+### 官方用例
+
+https://developer.d-robotics.cc/nodehub
+
+### 官方代码仓库
+
+https://github.com/HorizonRDK
+
+### 主流模型部署
+
+https://github.com/D-Robotics/rdk_model_zoo?tab=readme-ov-file
+
+### 官方消息结构
+
+https://github.com/D-Robotics/hobot_msgs
+
+## ROS2 Node创建流程
+
+```shell
+sudo apt update
+
+sudo apt install python3-colcon-common-extensions
+
+source /opt/ros/humble/setup.bash
+
+# 创建工作空间
+mkdir ~/dev_ws/src/my_node
+
+# 创建package
+cd ~/dev_ws/src/my_node
+ros2 pkg create --build-type ament_python my_node
+
+# 在my_node/package.xml中添加依赖
+# 在my_node/setup.py中添加依赖
+
+# 编译
+cd ~/dev_ws
+colcon build
+
+# 运行
+source install/setup.bash
+ros2 run my_node my_node
 ```
